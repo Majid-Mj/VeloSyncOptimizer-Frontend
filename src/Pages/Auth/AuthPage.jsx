@@ -1,17 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { authApi } from '../../api/auth.api';
+import { loginSuccess, loginFailure, setLoading } from '../../Store/authSlice';
 import './Auth.css';
 
 const AuthPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { loading: storeLoading } = useSelector((state) => state.auth);
+
   const [isLogin, setIsLogin] = useState(location.pathname === '/login');
   const [showPwd, setShowPwd] = useState(false);
   const [showCPwd, setShowCPwd] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState({ show: false, msg: '', type: '' });
   const [pwd, setPwd] = useState('');
   const [strength, setStrength] = useState(0);
+  const [role, setRole] = useState('2');
 
   // Sync state with URL
   useEffect(() => {
@@ -22,11 +28,9 @@ const AuthPage = () => {
     navigate(`/${page}`);
   };
 
-  const [role, setRole] = useState('2');
-
   const showToast = (msg, type = '') => {
     setToast({ show: true, msg, type });
-    setTimeout(() => setToast({ show: false, msg: '', type: '' }), 3000);
+    setTimeout(() => setToast({ show: false, msg: '', type: '' }), 4000);
   };
 
   const checkStrength = (val) => {
@@ -39,30 +43,71 @@ const AuthPage = () => {
     setStrength(score);
   };
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      showToast('Account created! Awaiting admin approval.', 'success');
-      setTimeout(() => togglePage('login'), 1800);
-    }, 1800);
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+
+    if (data.password !== data.confirmPassword) {
+      showToast('Passwords do not match', 'error');
+      return;
+    }
+
+    dispatch(setLoading(true));
+    try {
+      const response = await authApi.register({
+        email: data.email,
+        password: data.password,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        confirmPassword: data.confirmPassword,
+        role: parseInt(role)
+      });
+
+      if (response.isSuccess) {
+        showToast('Account created! Awaiting admin approval.', 'success');
+        setTimeout(() => togglePage('login'), 2000);
+      } else {
+        showToast(response.message || 'Registration failed', 'error');
+      }
+    } catch (error) {
+      const errorMsg = error.response?.data?.errors?.[0] || error.response?.data?.message || 'Connection failed';
+      showToast(errorMsg, 'error');
+    } finally {
+      dispatch(setLoading(false));
+    }
   };
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      showToast('Welcome back! Redirecting to dashboard...', 'success');
-    }, 1500);
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+
+    dispatch(setLoading(true));
+    try {
+      const response = await authApi.login(data.email, data.password);
+      if (response.isSuccess) {
+        dispatch(loginSuccess(response.data));
+        showToast('Welcome back! Redirecting...', 'success');
+        setTimeout(() => navigate('/dashboard'), 1000);
+      } else {
+        dispatch(loginFailure(response.message));
+        showToast(response.message || 'Login failed', 'error');
+      }
+    } catch (error) {
+      const errorMsg = error.response?.data?.errors?.[0] || error.response?.data?.message || 'Connection failed';
+      dispatch(loginFailure(errorMsg));
+      showToast(errorMsg, 'error');
+    } finally {
+      dispatch(setLoading(false));
+    }
   };
 
   const fillDemo = (email, pass) => {
-    // In a real controlled form we'd use state, 
-    // but here we can just target elements for the UI demo as requested
-    document.getElementById('l-email').value = email;
-    document.getElementById('l-pwd').value = pass;
+    const emailField = document.getElementById('l-email');
+    const pwdField = document.getElementById('l-pwd');
+    if (emailField) emailField.value = email;
+    if (pwdField) pwdField.value = pass;
   };
 
   const strengthClass = strength <= 1 ? 'weak' : strength <= 2 ? 'medium' : strength <= 3 ? 'medium' : 'strong';
@@ -128,18 +173,18 @@ const AuthPage = () => {
               <div className="form-row">
                 <div className="form-group">
                   <label className="form-label">First name</label>
-                  <input className="form-input" type="text" placeholder="Arun" required />
+                  <input className="form-input" name="firstName" type="text" placeholder="Arun" required />
                 </div>
                 <div className="form-group">
                   <label className="form-label">Last name</label>
-                  <input className="form-input" type="text" placeholder="Kumar" required />
+                  <input className="form-input" name="lastName" type="text" placeholder="Kumar" required />
                 </div>
               </div>
             )}
 
             <div className="form-group">
               <label className="form-label">Email address</label>
-              <input className="form-input" id={isLogin ? "l-email" : "r-email"} type="email" placeholder={isLogin ? "admin@velosync.com" : "arun@velosync.com"} required />
+              <input className="form-input" id={isLogin ? "l-email" : "r-email"} name="email" type="email" placeholder={isLogin ? "admin@velosync.com" : "arun@velosync.com"} required />
             </div>
 
             {!isLogin && (
@@ -147,7 +192,7 @@ const AuthPage = () => {
                 <label className="form-label">Position / Role</label>
                 <select 
                   className="form-input" 
-                  id="r-role" 
+                  name="role" 
                   required 
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
@@ -165,6 +210,7 @@ const AuthPage = () => {
                 <input 
                   className="form-input" 
                   id={isLogin ? "l-pwd" : "r-pwd"} 
+                  name="password"
                   type={showPwd ? "text" : "password"} 
                   placeholder={isLogin ? "Your password" : "Min 8 chars, include uppercase & symbol"} 
                   onInput={(e) => !isLogin && checkStrength(e.target.value)}
@@ -192,7 +238,7 @@ const AuthPage = () => {
               <div className="form-group">
                 <label className="form-label">Confirm password</label>
                 <div className="input-wrap">
-                  <input className="form-input" type={showCPwd ? "text" : "password"} placeholder="Re-enter your password" required />
+                  <input className="form-input" name="confirmPassword" type={showCPwd ? "text" : "password"} placeholder="Re-enter your password" required />
                   <button className="eye-btn" type="button" onClick={() => setShowCPwd(!showCPwd)}>
                     <svg viewBox="0 0 24 24" style={{ opacity: showCPwd ? 1 : 0.4 }}>
                       <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
@@ -203,7 +249,7 @@ const AuthPage = () => {
             )}
 
             {isLogin && (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '7px', fontSize: '12px', color: 'var(--text2)', cursor: 'pointer' }}>
                   <input type="checkbox" style={{ accentColor: 'var(--navy2)', width: '13px', height: '13px' }} />
                   Remember me
@@ -219,8 +265,8 @@ const AuthPage = () => {
               </div>
             )}
 
-            <button className={`btn-primary ${loading ? 'loading' : ''}`} type="submit" disabled={loading}>
-              {loading ? (isLogin ? 'Signing in...' : 'Creating account...') : (isLogin ? 'Sign in' : 'Create account')}
+            <button className={`btn-primary ${storeLoading ? 'loading' : ''}`} type="submit" disabled={storeLoading}>
+              {storeLoading ? (isLogin ? 'Signing in...' : 'Creating account...') : (isLogin ? 'Sign in' : 'Create account')}
             </button>
 
             {isLogin && (
