@@ -1,0 +1,105 @@
+# =========================
+# Logs
+# =========================
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# =========================
+# Dependencies
+# =========================
+node_modules
+
+# =========================
+# Build / Production
+# =========================
+dist
+dist-ssr
+build
+coverage
+
+# =========================
+# Environment variables
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# Local config files
+# =========================
+*.local
+
+# =========================
+# Cache files
+# =========================
+.cache
+.parcel-cache
+.vite
+.eslintcache
+
+# =========================
+# Editor directories/files
+# =========================
+.vscode/*
+!.vscode/extensions.json
+
+.idea
+.DS_Store
+
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.tmp
+
+# =========================
+# OS generated files
+# =========================
+Thumbs.db
+Desktop.ini
+
+# =========================
+# Testing
+# =========================
+coverage/
+playwright-report/
+test-results/
+
+# =========================
+# Storybook
+# =========================
+storybook-static
+
+# =========================
+# Temporary files
+# =========================
+temp
+tmp
+
+# =========================
+# Optional package managers
+# =========================
+.pnpm-store
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# =========================
+# Mac system files
+# =========================
+.AppleDouble
+.LSOverride
+
+# =========================
+# Debug files
+# =========================
+*.pid
+*.seed
+*.pid.lock
