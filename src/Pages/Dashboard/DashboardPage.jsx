@@ -2,32 +2,17 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import StatCard from '../../Components/Dashboard/StatCard';
 import VelocityChart from '../../Components/Dashboard/VelocityChart';
+import AlertsList from '../../Components/Dashboard/AlertsList';
 
 const DashboardPage = () => {
   const { user } = useSelector((state) => state.auth);
 
   return (
-    <div className="p-8 max-w-[1600px] mx-auto">
-      {/* Header */}
-      <div className="mb-8 flex items-end justify-between">
-        <div>
-          <h1 className="text-2xl font-black text-gray-900 flex items-center gap-3 tracking-tight">
-            Dashboard
-            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]"></span>
-          </h1>
-          <p className="text-[13px] text-gray-400 mt-1 font-bold italic tracking-wide">
-            Real-time overview — connected via SignalR
-          </p>
-        </div>
-        <div className="text-[11px] font-bold text-gray-300 uppercase tracking-widest pb-1 border-b-2 border-gray-100">
-          Last sync: 2 mins ago
-        </div>
-      </div>
-
+    <div className="p-10 max-w-[1600px] mx-auto pb-20">
       {/* KPI Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
         <StatCard 
-          icon={<svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>}
+          icon={<svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>}
           label="Total SKUs"
           value="2,847"
           trend="12%"
@@ -35,7 +20,7 @@ const DashboardPage = () => {
           color="blue"
         />
         <StatCard 
-          icon={<svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>}
+          icon={<svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>}
           label="Total stock value"
           value="RM 4.2M"
           trend="8%"
@@ -43,7 +28,7 @@ const DashboardPage = () => {
           color="green"
         />
         <StatCard 
-          icon={<svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>}
+          icon={<svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>}
           label="Active warehouses"
           value="6"
           trend="0%"
@@ -51,7 +36,7 @@ const DashboardPage = () => {
           color="amber"
         />
         <StatCard 
-          icon={<svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m21.73 18-8-14a2 2 0 00-3.48 0l-8 14A2 2 0 004 21h16a2 2 0 001.73-3z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>}
+          icon={<svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>}
           label="Pending reorders"
           value="14"
           trend="3"
@@ -61,16 +46,9 @@ const DashboardPage = () => {
       </div>
 
       {/* Charts & Alerts Section */}
-      <div className="mt-10 flex flex-col lg:flex-row gap-6">
+      <div className="flex flex-col lg:flex-row gap-8 items-stretch">
         <VelocityChart />
-        
-        {/* Placeholder for Alerts */}
-        <div className="w-full lg:w-80 h-full min-h-[300px] bg-white rounded-3xl border-2 border-dashed border-gray-100 flex flex-col items-center justify-center text-gray-300 font-bold p-6 text-center">
-          <svg className="w-10 h-10 mb-4 opacity-20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-          </svg>
-          Live alerts component coming next...
-        </div>
+        <AlertsList />
       </div>
     </div>
   );

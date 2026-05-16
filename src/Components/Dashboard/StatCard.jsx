@@ -6,52 +6,39 @@ const StatCard = ({ icon, label, value, trend, trendType = 'up', color = 'blue' 
   const isUp = trendType === 'up';
 
   const colorClasses = {
-    blue: {
-      icon: 'bg-blue-100 text-blue-700',
-      card: 'from-white to-blue-100/40'
-    },
-    green: {
-      icon: 'bg-green-100 text-green-700',
-      card: 'from-white to-green-100/40'
-    },
-    amber: {
-      icon: 'bg-amber-100 text-amber-700',
-      card: 'from-white to-amber-100/40'
-    },
-    red: {
-      icon: 'bg-red-100 text-red-700',
-      card: 'from-white to-red-100/40'
-    },
-    gray: {
-      icon: 'bg-gray-100 text-gray-700',
-      card: 'from-white to-gray-200/30'
-    }
+    blue: 'bg-blue-50 text-blue-600',
+    green: 'bg-green-50 text-green-600',
+    amber: 'bg-amber-50 text-amber-600',
+    red: 'bg-red-50 text-red-600',
+    gray: 'bg-gray-50 text-gray-500'
+  };
+
+  const trendClasses = {
+    up: 'bg-green-50 text-green-600',
+    down: 'bg-red-50 text-red-600',
+    neutral: 'bg-gray-50 text-gray-400'
   };
 
   return (
-    <div className={`bg-gradient-to-br rounded-2xl p-4 shadow shadow-gray-200/50 border border-gray-200/60 flex flex-col gap-3 hover:shadow-lg transition-all duration-300 cursor-default group relative overflow-hidden ${colorClasses[color].card}`}>
-      {/* Decorative subtle background circle */}
-      <div className={`absolute -right-2 -top-2 w-16 h-16 rounded-full opacity-[0.12] pointer-events-none transition-transform duration-700 group-hover:scale-150 ${colorClasses[color].icon.split(' ')[0]}`}></div>
-      
-      <div className="flex items-center justify-between relative z-10">
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105 duration-300 shadow-sm ${colorClasses[color].icon}`}>
-          <div className="scale-90">{icon}</div>
+    <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col gap-5 hover:shadow-md transition-all duration-300 cursor-default group">
+      <div className="flex items-center justify-between">
+        {/* Icon with light shaded background */}
+        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-105 duration-300 ${colorClasses[color]}`}>
+          <div className="scale-110">{icon}</div>
         </div>
+        
+        {/* Trend tag with light background and colored text */}
         {trend && (
-          <div className={`flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-[10px] font-black shadow-sm ${
-            isUp ? 'bg-green-600 text-white' : 
-            isDown ? 'bg-red-600 text-white' : 
-            'bg-gray-200 text-gray-700'
-          }`}>
-            <span>{isUp ? '▲' : isDown ? '▼' : '—'}</span>
+          <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-bold ${trendClasses[trendType]}`}>
+            <span className="text-[10px]">{isUp ? '▲' : isDown ? '▼' : '—'}</span>
             <span>{trend}</span>
           </div>
         )}
       </div>
       
-      <div className="relative z-10">
-        <div className="text-2xl font-black text-gray-900 tracking-tight">{value}</div>
-        <div className="text-[11px] font-bold text-gray-500 mt-1 uppercase tracking-wider">{label}</div>
+      <div>
+        <div className="text-3xl font-black text-gray-900 tracking-tight leading-none">{value}</div>
+        <div className="text-[12px] font-bold text-gray-400 mt-2 uppercase tracking-wide">{label}</div>
       </div>
     </div>
   );
