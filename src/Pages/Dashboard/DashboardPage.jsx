@@ -1,21 +1,27 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import StatCard from '../../Components/Dashboard/StatCard';
+import VelocityChart from '../../Components/Dashboard/VelocityChart';
 
 const DashboardPage = () => {
   const { user } = useSelector((state) => state.auth);
 
   return (
-    <div className="p-8">
+    <div className="p-8 max-w-[1600px] mx-auto">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
-          Dashboard
-          <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-        </h1>
-        <p className="text-[13px] text-gray-400 mt-1 font-medium italic">
-          Real-time overview — connected via SignalR
-        </p>
+      <div className="mb-8 flex items-end justify-between">
+        <div>
+          <h1 className="text-2xl font-black text-gray-900 flex items-center gap-3 tracking-tight">
+            Dashboard
+            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]"></span>
+          </h1>
+          <p className="text-[13px] text-gray-400 mt-1 font-bold italic tracking-wide">
+            Real-time overview — connected via SignalR
+          </p>
+        </div>
+        <div className="text-[11px] font-bold text-gray-300 uppercase tracking-widest pb-1 border-b-2 border-gray-100">
+          Last sync: 2 mins ago
+        </div>
       </div>
 
       {/* KPI Cards Grid */}
@@ -54,19 +60,16 @@ const DashboardPage = () => {
         />
       </div>
 
-      {/* Placeholders for next sections */}
-      <div className="mt-10 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 h-80 bg-white rounded-3xl border-2 border-dashed border-gray-100 flex flex-col items-center justify-center text-gray-300 font-medium">
-          <svg className="w-12 h-12 mb-4 opacity-20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/>
-          </svg>
-          Stock velocity chart coming soon...
-        </div>
-        <div className="h-80 bg-white rounded-3xl border-2 border-dashed border-gray-100 flex flex-col items-center justify-center text-gray-300 font-medium">
-          <svg className="w-12 h-12 mb-4 opacity-20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      {/* Charts & Alerts Section */}
+      <div className="mt-10 flex flex-col lg:flex-row gap-6">
+        <VelocityChart />
+        
+        {/* Placeholder for Alerts */}
+        <div className="w-full lg:w-80 h-full min-h-[300px] bg-white rounded-3xl border-2 border-dashed border-gray-100 flex flex-col items-center justify-center text-gray-300 font-bold p-6 text-center">
+          <svg className="w-10 h-10 mb-4 opacity-20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
           </svg>
-          Live alerts coming soon...
+          Live alerts component coming next...
         </div>
       </div>
     </div>
