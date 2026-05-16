@@ -156,8 +156,8 @@ const Sidebar = () => {
                     </svg>
                 </div>
                 <div>
-                    <div className="text-white text-[15px] font-semibold leading-tight">VeloSync</div>
-                    <div className="text-white/40 text-[10px] mt-0.5">Inventory Optimizer</div>
+                    <div className="text-white text-[15px] font-semibold leading-tight tracking-tight">VeloSync</div>
+                    <div className="text-white/40 text-[10px] font-medium mt-0.5">Inventory Optimizer</div>
                 </div>
             </div>
 
@@ -167,7 +167,7 @@ const Sidebar = () => {
                     <div key={section.label} className="mb-1">
 
                         {/* Section label */}
-                        <p className="text-[10px] font-semibold tracking-[0.08em] text-white/30 uppercase px-5 pt-3 pb-1">
+                        <p className="text-[10px] font-bold tracking-[0.05em] text-white/30 uppercase px-5 pt-3 pb-1">
                             {section.label}
                         </p>
 
@@ -183,8 +183,8 @@ const Sidebar = () => {
                     text-[13px] text-left border-none cursor-pointer
                     transition-all duration-150
                     ${active
-                                            ? 'bg-[#4285F4]/20 text-white font-medium'
-                                            : 'bg-transparent text-white/55 hover:bg-white/[0.06] hover:text-white/85'
+                                            ? 'bg-[#4285F4]/20 text-white font-semibold'
+                                            : 'bg-transparent text-white/55 font-medium hover:bg-white/[0.06] hover:text-white/85'
                                         }
                   `}
                                 >
@@ -221,10 +221,10 @@ const Sidebar = () => {
                     </div>
                     {/* Info */}
                     <div className="overflow-hidden">
-                        <div className="text-white text-[13px] font-medium truncate">
+                        <div className="text-white text-[13px] font-semibold truncate">
                             {user?.firstName} {user?.lastName}
                         </div>
-                        <div className="text-white/40 text-[11px] mt-0.5 truncate">
+                        <div className="text-white/40 text-[11px] font-medium mt-0.5 truncate">
                             {getRoleLabel(user?.role)}
                         </div>
                     </div>
