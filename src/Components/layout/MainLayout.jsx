@@ -1,10 +1,18 @@
 import React, { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, Navigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
 
 const MainLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+
+  // If the user is not authenticated (e.g. they refreshed the page or token expired)
+  // redirect them to the Login page automatically
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
 
   return (
     <div className="flex h-screen bg-[#F8FAFC] overflow-hidden">

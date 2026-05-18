@@ -1,7 +1,7 @@
 import React from 'react';
 import WarehouseCard from './WarehouseCard';
 
-const WarehouseGrid = ({ filteredWarehouses }) => {
+const WarehouseGrid = ({ filteredWarehouses, isAdmin, onDelete }) => {
   if (filteredWarehouses.length === 0) {
     return (
       <div className="flex-1 bg-white border border-gray-100 rounded-2xl p-12 text-center flex flex-col items-center justify-center min-h-[300px]">
@@ -21,7 +21,12 @@ const WarehouseGrid = ({ filteredWarehouses }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
       {filteredWarehouses.map((wh) => (
-        <WarehouseCard key={wh.id} wh={wh} />
+        <WarehouseCard 
+          key={wh.id} 
+          wh={wh} 
+          isAdmin={isAdmin} 
+          onDelete={onDelete} 
+        />
       ))}
     </div>
   );
