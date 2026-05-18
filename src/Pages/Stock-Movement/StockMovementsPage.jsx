@@ -1,17 +1,33 @@
 import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import StockMovementsStats from './StockMovementsStats';
 import StockMovementsToolbar from './StockMovementsToolbar';
 import StockMovementsTable from './StockMovementsTable';
+import TransferStockModal from './TransferStockModal';
 import stockApi from '../../api/stock.api';
 import warehouseApi from '../../api/warehouse.api';
 import productApi from '../../api/product.api';
 
 const StockMovementsPage = () => {
+  // User context & Auth role guards
+  const user = useSelector((s) => s.auth.user);
+  const userRole = user?.role || 'Guest';
+  const canTransfer = userRole === 'Admin' || userRole === 'WarehouseManager';
+
   // Live API data state lists
   const [movements, setMovements] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [warehouses, setWarehouses] = useState([]);
   const [products, setProducts] = useState([]);
+
+  // Modal and toast notifications state
+  const [transferModalOpen, setTransferModalOpen] = useState(false);
+  const [toast, setToast] = useState({ show: false, msg: '', type: '' });
+
+  const showToast = (msg, type = 'success') => {
+    setToast({ show: true, msg, type });
+    setTimeout(() => setToast({ show: false, msg: '', type: '' }), 4000);
+  };
 
   // Loaders & Network boundaries
   const [loading, setLoading] = useState(true);
@@ -135,18 +151,31 @@ const StockMovementsPage = () => {
   }
 
   return (
-    <div className="p-4 md:p-6 max-w-[1600px] mx-auto min-h-[calc(100vh-4rem)] flex flex-col gap-5">
+    <div className="p-4 md:p-6 max-w-[1600px] mx-auto min-h-[calc(100vh-4rem)] flex flex-col gap-5 relative">
       {/* Page Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2.5 tracking-tight">
-          Stock Movements
-          <span className="text-[12px] bg-blue-50 text-blue-600 font-semibold px-2 py-0.5 rounded-full border border-blue-100">
-            {totalCount} events logged
-          </span>
-        </h1>
-        <p className="text-[11px] font-bold text-gray-400 mt-0.5 tracking-wide uppercase">
-          Live Inventory Ledger Trail — Receivals, Shipments, Transfers & Adjustments
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2.5 tracking-tight">
+            Stock Movements
+            <span className="text-[12px] bg-blue-50 text-blue-600 font-semibold px-2 py-0.5 rounded-full border border-blue-100">
+              {totalCount} events logged
+            </span>
+          </h1>
+          <p className="text-[11px] font-bold text-gray-400 mt-0.5 tracking-wide uppercase">
+            Live Inventory Ledger Trail — Receivals, Shipments, Transfers & Adjustments
+          </p>
+        </div>
+        {canTransfer && (
+          <button
+            onClick={() => setTransferModalOpen(true)}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-[12px] rounded-xl shadow-md shadow-blue-100 hover:shadow-lg hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-1.5 self-start sm:self-auto border-none cursor-pointer"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+            </svg>
+            Transfer Stock
+          </button>
+        )}
       </div>
 
       {/* Stats Summary Cards */}
@@ -236,6 +265,26 @@ const StockMovementsPage = () => {
               </svg>
             </button>
           </div>
+        </div>
+      )}
+
+      {/* ── Modal Dialogs ── */}
+      <TransferStockModal 
+        isOpen={transferModalOpen}
+        onClose={() => setTransferModalOpen(false)}
+        warehouses={warehouses}
+        products={products}
+        onSuccess={showToast}
+      />
+
+      {/* ── Toast Alerts ── */}
+      {toast.show && (
+        <div 
+          className={`fixed bottom-5 right-5 z-50 flex items-center gap-2 px-4.5 py-3 rounded-2xl shadow-lg border text-xs font-bold text-white transition-all duration-300 animate-slide-up ${
+            toast.type === 'error' ? 'bg-red-500 border-red-400' : 'bg-green-500 border-green-400'
+          }`}
+        >
+          {toast.type === 'error' ? '⚠️' : '✅'} {toast.msg}
         </div>
       )}
     </div>
