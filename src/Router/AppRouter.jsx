@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "../Pages/Auth/LoginPage";
 import RegisterPage from "../Pages/Auth/RegisterPage";
 import DashboardPage from "../Pages/Dashboard/DashboardPage";
-import WarehousePage from "../Pages/Dashboard/WarehousePage";
+import WarehousePage from "../Pages/Warehouse/WarehousePage";
 import MainLayout from "../Components/layout/MainLayout";
 
 const AppRouter = () => {
