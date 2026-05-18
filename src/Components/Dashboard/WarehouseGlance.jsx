@@ -46,9 +46,9 @@ const WarehouseGlance = () => {
   const thumbLeft = (scrollProgress * (100 - thumbWidthPercent)) / 100;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col mt-6">
-      {/* Header */}
-      <div className="pb-4 border-b border-gray-100 mb-5">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col mt-6 overflow-hidden">
+      {/* Header with edge-to-edge border */}
+      <div className="px-6 py-4.5 border-b border-gray-100">
         <h3 className="text-[14.5px] font-black text-gray-800 tracking-tight leading-none">
           Warehouses at a glance
         </h3>
@@ -57,7 +57,7 @@ const WarehouseGlance = () => {
       {/* Cards Scroll Container */}
       <div 
         ref={scrollRef}
-        className="flex items-center gap-4 overflow-x-auto pb-5 scrollbar-none"
+        className="flex items-center gap-4 overflow-x-auto px-6 pt-6 pb-5 scrollbar-none"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {DUMMY_WAREHOUSES.map((wh) => (
@@ -66,19 +66,19 @@ const WarehouseGlance = () => {
       </div>
 
       {/* Custom Premium Scrollbar Controls */}
-      <div className="flex items-center gap-3 justify-center mt-1 shrink-0">
+      <div className="flex items-center gap-3 px-6 pb-6 shrink-0 select-none">
         {/* Left Arrow Button */}
         <button 
           onClick={() => scroll('left')}
-          className="text-gray-400 hover:text-gray-600 active:scale-95 transition-all text-[11px] bg-transparent border-none cursor-pointer p-1.5 flex items-center justify-center leading-none"
+          className="text-[#9ca3af] hover:text-[#6b7280] active:scale-95 transition-all text-xs bg-transparent border-none cursor-pointer flex items-center justify-center p-1 leading-none"
         >
           ◀
         </button>
 
         {/* Scroll Track & Dynamic Thumb */}
-        <div className="relative w-full max-w-[600px] h-2 bg-gray-100 rounded-full overflow-hidden">
+        <div className="flex-1 h-1.5 bg-[#f3f4f6] rounded-full relative overflow-hidden">
           <div 
-            className="absolute h-full bg-gray-400 rounded-full transition-all duration-75"
+            className="absolute h-full bg-[#8e939d] rounded-full transition-all duration-75"
             style={{ 
               width: `${thumbWidthPercent}%`, 
               left: `${thumbLeft}%` 
@@ -89,7 +89,7 @@ const WarehouseGlance = () => {
         {/* Right Arrow Button */}
         <button 
           onClick={() => scroll('right')}
-          className="text-gray-400 hover:text-gray-600 active:scale-95 transition-all text-[11px] bg-transparent border-none cursor-pointer p-1.5 flex items-center justify-center leading-none"
+          className="text-[#9ca3af] hover:text-[#6b7280] active:scale-95 transition-all text-xs bg-transparent border-none cursor-pointer flex items-center justify-center p-1 leading-none"
         >
           ▶
         </button>
