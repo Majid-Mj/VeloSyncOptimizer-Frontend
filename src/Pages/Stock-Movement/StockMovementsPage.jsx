@@ -33,7 +33,7 @@ const StockMovementsPage = () => {
         productApi.getAll({ pageSize: 100 })
       ]);
       if (whRes.isSuccess) setWarehouses(whRes.data || []);
-      setProducts(prodRes?.data || prodRes?.data?.items || []);
+      setProducts(prodRes?.data?.items || prodRes?.data || []);
     } catch (err) {
       console.error('Metadata load error:', err);
     }

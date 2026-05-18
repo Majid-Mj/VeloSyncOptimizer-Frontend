@@ -56,7 +56,7 @@ const StockLevelsPage = () => {
       if (stockRes.isSuccess && whRes.isSuccess) {
         setStockLevels(stockRes.data || []);
         setWarehouses(whRes.data || []);
-        setProducts(prodRes?.data || prodRes?.data?.items || []);
+        setProducts(prodRes?.data?.items || prodRes?.data || []);
       } else {
         setError(stockRes.message || whRes.message || 'Failed to load stock data');
       }
