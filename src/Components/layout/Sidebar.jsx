@@ -144,10 +144,10 @@ const Sidebar = () => {
     };
 
     return (
-        <aside className="w-[190px] min-w-[190px] h-screen bg-[#16213E] flex flex-col sticky top-0 overflow-y-auto scrollbar-none">
+        <aside className="w-[240px] min-w-[240px] h-screen bg-[#16213E] flex flex-col sticky top-0 overflow-y-auto scrollbar-none">
 
             {/* ── Brand ── */}
-            <div className="flex items-center gap-2.5 px-4 py-4 border-b border-white/[0.06]">
+            <div className="flex items-center gap-2.5 px-5 py-4 border-b border-white/[0.06]">
                 <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center shrink-0">
                     <svg className="w-[16px] h-[16px]" viewBox="0 0 16 16" fill="none" stroke="white" strokeWidth="1.8">
                         <rect x="1" y="7" width="14" height="8" rx="1" />
@@ -167,7 +167,7 @@ const Sidebar = () => {
                     <div key={section.label} className="mb-0.5">
 
                         {/* Section label */}
-                        <p className="text-[9px] font-bold tracking-[0.05em] text-white/30 uppercase px-4 pt-2.5 pb-1">
+                        <p className="text-[9px] font-bold tracking-[0.05em] text-white/30 uppercase px-5 pt-3 pb-1">
                             {section.label}
                         </p>
 
@@ -179,7 +179,7 @@ const Sidebar = () => {
                                     key={item.key}
                                     onClick={() => navigate(item.path)}
                                     className={`
-                    relative w-full flex items-center gap-2 px-4 py-2
+                    relative w-full flex items-center gap-2.5 px-5 py-2.5
                     text-[12px] text-left border-none cursor-pointer
                     transition-all duration-150
                     ${active
@@ -201,7 +201,7 @@ const Sidebar = () => {
 
                                     {/* Badge */}
                                     {item.badge && (
-                                        <span className="bg-red-600 text-white text-[9px] font-semibold px-1 py-px rounded-full min-w-[16px] text-center leading-none">
+                                        <span className="bg-red-600 text-white text-[9px] font-semibold px-1.5 py-0.5 rounded-full min-w-[16px] text-center leading-none">
                                             {item.badge}
                                         </span>
                                     )}
@@ -213,8 +213,8 @@ const Sidebar = () => {
             </nav>
 
             {/* ── User Footer ── */}
-            <div className="border-t border-white/[0.06] px-4 py-3">
-                <div className="flex items-center gap-2 mb-2">
+            <div className="border-t border-white/[0.06] px-5 py-4">
+                <div className="flex items-center gap-2.5 mb-2.5">
                     {/* Avatar */}
                     <div className="w-[30px] h-[30px] rounded-full bg-[#4285F4] text-white text-[11px] font-semibold flex items-center justify-center shrink-0">
                         {getInitials(user)}
