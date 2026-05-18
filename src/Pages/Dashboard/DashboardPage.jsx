@@ -9,9 +9,9 @@ const DashboardPage = () => {
   const { user } = useSelector((state) => state.auth);
 
   return (
-    <div className="p-6 max-w-[1600px] mx-auto">
+    <div className="p-4 max-w-[1600px] mx-auto">
       {/* Header */}
-      <div className="mb-6 flex items-end justify-between">
+      <div className="mb-4 flex items-end justify-between">
         <div>
           <h1 className="text-2xl font-black text-gray-900 flex items-center gap-2.5 tracking-tight">
             Dashboard
@@ -27,7 +27,7 @@ const DashboardPage = () => {
       </div>
 
       {/* KPI Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5">
         <StatCard
           icon={<svg className="w-4.5 h-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" /></svg>}
           label="Total SKUs"
@@ -63,7 +63,7 @@ const DashboardPage = () => {
       </div>
 
       {/* Charts & Alerts Section */}
-      <div className="mt-6 flex flex-col lg:flex-row gap-4">
+      <div className="mt-4 flex flex-col lg:flex-row gap-3.5">
         <VelocityChart />
         <LiveAlerts />
       </div>

@@ -63,10 +63,10 @@ const WarehouseGlance = () => {
   const thumbLeft = (scrollProgress * (100 - thumbWidthPercent)) / 100;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col mt-6 overflow-hidden">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col mt-4 overflow-hidden">
       {/* Header with edge-to-edge border */}
-      <div className="px-6 py-4.5 border-b border-gray-100">
-        <h3 className="text-[14.5px] font-black text-gray-800 tracking-tight leading-none">
+      <div className="px-5 py-3.5 border-b border-gray-100">
+        <h3 className="text-[14px] font-black text-gray-800 tracking-tight leading-none">
           Warehouses at a glance
         </h3>
       </div>
@@ -74,7 +74,7 @@ const WarehouseGlance = () => {
       {/* Cards Scroll Container */}
       <div 
         ref={scrollRef}
-        className={`flex items-center gap-4 overflow-x-auto px-6 pt-6 scrollbar-none ${isScrollable ? 'pb-5' : 'pb-6'}`}
+        className={`flex items-center gap-3.5 overflow-x-auto px-5 pt-4 scrollbar-none ${isScrollable ? 'pb-4' : 'pb-5'}`}
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {DUMMY_WAREHOUSES.map((wh) => (
@@ -84,7 +84,7 @@ const WarehouseGlance = () => {
 
       {/* Custom Premium Scrollbar Controls (only rendered if needed) */}
       {isScrollable && (
-        <div className="flex items-center gap-3 px-6 pb-6 shrink-0 select-none">
+        <div className="flex items-center gap-3 px-5 pb-4 shrink-0 select-none">
           {/* Left Arrow Button */}
           <button 
             onClick={() => scroll('left')}
@@ -94,7 +94,7 @@ const WarehouseGlance = () => {
           </button>
 
           {/* Scroll Track & Dynamic Thumb */}
-          <div className="flex-1 h-1.5 bg-[#f3f4f6] rounded-full relative overflow-hidden">
+          <div className="flex-1 h-1 bg-[#f3f4f6] rounded-full relative overflow-hidden">
             <div 
               className="absolute h-full bg-[#8e939d] rounded-full transition-all duration-75"
               style={{ 

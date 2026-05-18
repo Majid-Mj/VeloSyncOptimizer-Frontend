@@ -35,20 +35,20 @@ const LiveAlerts = () => {
   };
 
   return (
-    <div className="w-full lg:w-[400px] bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col p-5">
+    <div className="w-full lg:w-[400px] bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col p-4">
       {/* Header */}
-      <div className="flex items-center justify-between pb-4 border-b border-gray-50 shrink-0">
+      <div className="flex items-center justify-between pb-3 border-b border-gray-50 shrink-0">
         <div className="flex items-center gap-2">
           <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]"></span>
-          <h3 className="text-[14.5px] font-bold text-gray-800 tracking-tight">Live alerts</h3>
+          <h3 className="text-[14px] font-bold text-gray-800 tracking-tight">Live alerts</h3>
         </div>
-        <button className="text-[11.5px] font-bold text-blue-600 hover:underline bg-transparent border-none cursor-pointer p-0">
+        <button className="text-[11px] font-bold text-blue-600 hover:underline bg-transparent border-none cursor-pointer p-0">
           View all →
         </button>
       </div>
 
       {/* Alerts List */}
-      <div className="flex-1 flex flex-col gap-3.5 mt-4">
+      <div className="flex-1 flex flex-col gap-2.5 mt-3">
         {ALERTS_DATA.map((alert) => (
           <div key={alert.id} className="flex items-center justify-between gap-3.5">
             {/* Severity tag */}
