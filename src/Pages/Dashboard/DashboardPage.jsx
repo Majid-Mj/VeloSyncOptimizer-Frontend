@@ -3,15 +3,7 @@ import { useSelector } from 'react-redux';
 import StatCard from '../../Components/Dashboard/StatCard';
 import VelocityChart from '../../Components/Dashboard/VelocityChart';
 import LiveAlerts from '../../Components/alerts/LiveAlerts';
-import WarehouseCard from '../../Components/Dashboard/WarehouseCard';
-
-const DUMMY_WAREHOUSES = [
-  { id: 'WH-KL-01', location: 'Kuala Lumpur', skus: 847, capacity: 82, color: 'amber' },
-  { id: 'WH-PG-02', location: 'Penang', skus: 612, capacity: 45, color: 'blue' },
-  { id: 'WH-JB-03', location: 'Johor Bahru', skus: 934, capacity: 93, color: 'red' },
-  { id: 'WH-KK-04', location: 'Kota Kinabalu', skus: 341, capacity: 31, color: 'blue' },
-  { id: 'WH-SB-05', location: 'Sabah', skus: 220, capacity: 58, color: 'green' }
-];
+import WarehouseGlance from '../../Components/Dashboard/WarehouseGlance';
 
 const DashboardPage = () => {
   const { user } = useSelector((state) => state.auth);
@@ -76,15 +68,8 @@ const DashboardPage = () => {
         <LiveAlerts />
       </div>
 
-      {/* Warehouses Section */}
-      <div className="mt-6">
-        <h3 className="text-sm font-bold text-gray-800 tracking-tight mb-3">Warehouses at a glance</h3>
-        <div className="flex flex-wrap gap-4">
-          {DUMMY_WAREHOUSES.map((wh) => (
-            <WarehouseCard key={wh.id} {...wh} />
-          ))}
-        </div>
-      </div>
+      {/* Warehouses Glance Carousel */}
+      <WarehouseGlance />
     </div>
   );
 };
