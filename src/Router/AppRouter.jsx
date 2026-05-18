@@ -3,6 +3,7 @@ import LoginPage from "../Pages/Auth/LoginPage";
 import RegisterPage from "../Pages/Auth/RegisterPage";
 import DashboardPage from "../Pages/Dashboard/DashboardPage";
 import WarehousePage from "../Pages/Warehouse/WarehousePage";
+import StockLevelsPage from "../Pages/Stock-Levels/StockLevelsPage";
 import MainLayout from "../Components/layout/MainLayout";
 
 const AppRouter = () => {
@@ -16,7 +17,7 @@ const AppRouter = () => {
         {/* Dashboard shell — Sidebar lives here */}
         <Route path="/dashboard" element={<MainLayout />}>
           <Route index element={<DashboardPage />} />
-          <Route path="stock-levels" element={<DashboardPage />} />
+          <Route path="stock-levels" element={<StockLevelsPage />} />
           <Route path="stock-movement" element={<DashboardPage />} />
           <Route path="warehouses" element={<WarehousePage />} />
           <Route path="reorder-suggestions" element={<DashboardPage />} />
