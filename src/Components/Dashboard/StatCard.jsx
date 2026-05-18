@@ -5,41 +5,32 @@ const StatCard = ({ icon, label, value, trend, trendType = 'up', color = 'blue' 
   const isDown = trendType === 'down';
   const isUp = trendType === 'up';
 
-  // Beautiful gradient card backgrounds and matching border strokes
-  const cardBgClasses = {
-    blue: 'bg-gradient-to-br from-[#eff6ff]/75 to-[#e0e7ff]/40 border-[#dbeafe]/80 hover:from-[#eff6ff]/90 hover:to-[#e0e7ff]/60 transition-all',
-    green: 'bg-gradient-to-br from-[#f0fdf4]/75 to-[#ecfdf5]/40 border-[#dcfce7]/80 hover:from-[#f0fdf4]/90 hover:to-[#ecfdf5]/60 transition-all',
-    amber: 'bg-gradient-to-br from-[#fffbeb]/75 to-[#fff7ed]/40 border-[#fef3c7]/80 hover:from-[#fffbeb]/90 hover:to-[#fff7ed]/60 transition-all',
-    red: 'bg-gradient-to-br from-[#fef2f2]/75 to-[#fff1f2]/40 border-[#fee2e2]/80 hover:from-[#fef2f2]/90 hover:to-[#fff1f2]/60 transition-all',
-    gray: 'bg-gradient-to-br from-gray-50/75 to-gray-100/40 border-gray-200/80 hover:from-gray-50/90 hover:to-gray-100/60 transition-all'
-  };
-
-  // Vivid matching text/icon stroke colors
-  const textClasses = {
-    blue: 'text-blue-600',
-    green: 'text-green-600',
-    amber: 'text-amber-600',
-    red: 'text-red-600',
-    gray: 'text-gray-500'
+  // Soft, color-coded shaded backgrounds for each card's icon pill
+  const iconClasses = {
+    blue: 'bg-blue-50 text-blue-600',
+    green: 'bg-green-50 text-green-600',
+    amber: 'bg-amber-50 text-amber-600',
+    red: 'bg-red-50 text-red-600',
+    gray: 'bg-gray-50 text-gray-500'
   };
 
   const trendClasses = {
-    up: 'bg-green-100/60 text-green-700 border border-green-200/40',
-    down: 'bg-red-100/60 text-red-700 border border-red-200/40',
-    neutral: 'bg-gray-100/60 text-gray-500 border border-gray-200/40'
+    up: 'bg-green-50 text-green-600',
+    down: 'bg-red-50 text-red-600',
+    neutral: 'bg-gray-50 text-gray-400'
   };
 
   return (
-    <div className={`rounded-2xl p-4 shadow-sm border flex flex-col gap-3.5 hover:shadow-md transition-all duration-300 cursor-default group ${cardBgClasses[color]}`}>
+    <div className="bg-gradient-to-br from-white to-[#f8fafc] hover:to-[#f1f5f9] rounded-2xl p-4 shadow-sm border border-gray-100/90 flex flex-col gap-3.5 hover:shadow-md transition-all duration-300 cursor-default group">
       <div className="flex items-center justify-between">
-        {/* Elevated white icon card floating inside the tinted background */}
-        <div className={`w-9.5 h-9.5 bg-white border border-white/50 rounded-xl flex items-center justify-center shadow-sm shrink-0 transition-transform group-hover:scale-105 duration-300 ${textClasses[color]}`}>
+        {/* Color-coded shaded background icon pill */}
+        <div className={`w-9.5 h-9.5 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 duration-300 ${iconClasses[color]}`}>
           <div className="scale-105">{icon}</div>
         </div>
 
         {/* Trend tag with light background and colored text */}
         {trend && (
-          <div className={`flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-extrabold ${trendClasses[trendType]}`}>
+          <div className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold ${trendClasses[trendType]}`}>
             <span className="text-[9px]">{isUp ? '▲' : isDown ? '▼' : '—'}</span>
             <span>{trend}</span>
           </div>
@@ -48,7 +39,7 @@ const StatCard = ({ icon, label, value, trend, trendType = 'up', color = 'blue' 
 
       <div>
         <div className="text-2xl font-black text-gray-900 tracking-tight leading-none">{value}</div>
-        <div className="text-[10.5px] font-bold text-gray-400 mt-1.5 uppercase tracking-wide">{label}</div>
+        <div className="text-[11px] font-bold text-gray-400 mt-1.5 uppercase tracking-wide">{label}</div>
       </div>
     </div>
   );
