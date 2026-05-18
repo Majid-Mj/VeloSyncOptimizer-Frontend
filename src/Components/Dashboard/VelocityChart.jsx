@@ -21,6 +21,21 @@ const DUMMY_DATA = {
   ]
 };
 
+const BAR_COLORS = [
+  'bg-[#dbeafe]', // 0: ice blue
+  'bg-[#dbeafe]', // 1
+  'bg-[#bfdbfe]', // 2: soft light blue
+  'bg-[#93c5fd]', // 3: sky blue
+  'bg-[#93c5fd]', // 4
+  'bg-[#60a5fa]', // 5: medium blue
+  'bg-[#60a5fa]', // 6
+  'bg-[#3b82f6]', // 7: vivid blue
+  'bg-[#3b82f6]', // 8
+  'bg-[#2563eb]', // 9: royal blue
+  'bg-[#1d4ed8]', // 10: deep blue
+  'bg-[#1d4ed8]'  // 11
+];
+
 const VelocityChart = () => {
   const [selectedItem, setSelectedItem] = useState('Rice Bags 25kg');
   const bars = DUMMY_DATA[selectedItem];
@@ -54,8 +69,8 @@ const VelocityChart = () => {
       </div>
 
       {/* Chart Body with Background Container */}
-      <div className="relative pt-6 pb-3 px-4 bg-blue-50/20 rounded-xl border border-blue-50/30">
-        <div className="flex items-end justify-between gap-5 h-[140px]">
+      <div className="relative pt-6 pb-3 px-4 bg-gradient-to-b from-[#e0f2fe]/60 to-[#bae6fd]/20 rounded-2xl">
+        <div className="flex items-end justify-between gap-3 h-[140px]">
           {bars.map((bar, i) => (
             <div key={i} className="flex-1 group relative flex flex-col items-center h-full justify-end">
               {/* Tooltip */}
@@ -64,7 +79,7 @@ const VelocityChart = () => {
               </div>
 
               <div
-                className={`w-full max-w-[28px] rounded-t-sm transition-all duration-700 cursor-pointer ${bar.color} hover:brightness-95 shadow-sm shadow-blue-900/5`}
+                className={`w-full max-w-[28px] rounded-t-[6px] transition-all duration-700 cursor-pointer ${BAR_COLORS[i] || 'bg-blue-500'} hover:brightness-95 shadow-sm shadow-blue-900/5`}
                 style={{ height: bar.h }}
               ></div>
             </div>
