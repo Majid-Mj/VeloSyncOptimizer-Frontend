@@ -5,13 +5,13 @@ const StatCard = ({ icon, label, value, trend, trendType = 'up', color = 'blue' 
   const isDown = trendType === 'down';
   const isUp = trendType === 'up';
 
-  // Beautiful tinted card backgrounds and matching border strokes
+  // Beautiful gradient card backgrounds and matching border strokes
   const cardBgClasses = {
-    blue: 'bg-[#eff6ff]/60 border-[#dbeafe]/80 hover:bg-[#eff6ff]/80 transition-all',
-    green: 'bg-[#f0fdf4]/60 border-[#dcfce7]/80 hover:bg-[#f0fdf4]/80 transition-all',
-    amber: 'bg-[#fffbeb]/60 border-[#fef3c7]/80 hover:bg-[#fffbeb]/80 transition-all',
-    red: 'bg-[#fef2f2]/60 border-[#fee2e2]/80 hover:bg-[#fef2f2]/80 transition-all',
-    gray: 'bg-gray-50/60 border-gray-200/80 hover:bg-gray-50/80 transition-all'
+    blue: 'bg-gradient-to-br from-[#eff6ff]/75 to-[#e0e7ff]/40 border-[#dbeafe]/80 hover:from-[#eff6ff]/90 hover:to-[#e0e7ff]/60 transition-all',
+    green: 'bg-gradient-to-br from-[#f0fdf4]/75 to-[#ecfdf5]/40 border-[#dcfce7]/80 hover:from-[#f0fdf4]/90 hover:to-[#ecfdf5]/60 transition-all',
+    amber: 'bg-gradient-to-br from-[#fffbeb]/75 to-[#fff7ed]/40 border-[#fef3c7]/80 hover:from-[#fffbeb]/90 hover:to-[#fff7ed]/60 transition-all',
+    red: 'bg-gradient-to-br from-[#fef2f2]/75 to-[#fff1f2]/40 border-[#fee2e2]/80 hover:from-[#fef2f2]/90 hover:to-[#fff1f2]/60 transition-all',
+    gray: 'bg-gradient-to-br from-gray-50/75 to-gray-100/40 border-gray-200/80 hover:from-gray-50/90 hover:to-gray-100/60 transition-all'
   };
 
   // Vivid matching text/icon stroke colors
