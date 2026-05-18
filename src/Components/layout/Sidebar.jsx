@@ -130,7 +130,7 @@ const getInitials = (user) => {
     return (f + l).toUpperCase() || 'AM';
 };
 
-const Sidebar = () => {
+const Sidebar = ({ isOpen, onClose }) => {
     const navigate = useNavigate();
     const location = useLocation();
     const dispatch = useDispatch();
@@ -141,24 +141,39 @@ const Sidebar = () => {
     const handleLogout = () => {
         dispatch(logout());
         navigate('/login');
+        if (onClose) onClose();
     };
 
     return (
-        <aside className="w-[240px] min-w-[240px] h-screen bg-[#16213E] flex flex-col sticky top-0 overflow-y-auto scrollbar-none">
+        <aside className={`
+          fixed inset-y-0 left-0 z-30 lg:static lg:z-auto
+          w-[240px] min-w-[240px] h-screen bg-[#16213E] flex flex-col 
+          transition-transform duration-300 ease-in-out scrollbar-none overflow-y-auto
+          ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        `}>
 
             {/* ── Brand ── */}
-            <div className="flex items-center gap-2.5 px-5 py-4 border-b border-white/[0.06]">
-                <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center shrink-0">
-                    <svg className="w-[16px] h-[16px]" viewBox="0 0 16 16" fill="none" stroke="white" strokeWidth="1.8">
-                        <rect x="1" y="7" width="14" height="8" rx="1" />
-                        <path d="M4 7V5a4 4 0 018 0v2" />
-                        <line x1="8" y1="10" x2="8" y2="13" />
-                    </svg>
+            <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
+                <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center shrink-0">
+                        <svg className="w-[16px] h-[16px]" viewBox="0 0 16 16" fill="none" stroke="white" strokeWidth="1.8">
+                            <rect x="1" y="7" width="14" height="8" rx="1" />
+                            <path d="M4 7V5a4 4 0 018 0v2" />
+                            <line x1="8" y1="10" x2="8" y2="13" />
+                        </svg>
+                    </div>
+                    <div>
+                        <div className="text-white text-[14px] font-semibold leading-tight tracking-tight">VeloSync</div>
+                        <div className="text-white/40 text-[9px] font-medium mt-0.5">Inventory Optimizer</div>
+                    </div>
                 </div>
-                <div>
-                    <div className="text-white text-[14px] font-semibold leading-tight tracking-tight">VeloSync</div>
-                    <div className="text-white/40 text-[9px] font-medium mt-0.5">Inventory Optimizer</div>
-                </div>
+                {/* Mobile dismiss button */}
+                <button 
+                  onClick={onClose}
+                  className="lg:hidden p-1.5 bg-transparent border-none text-white/45 hover:text-white cursor-pointer active:scale-95 transition-all text-xl leading-none"
+                >
+                  &times;
+                </button>
             </div>
 
             {/* ── Navigation ── */}
@@ -177,7 +192,10 @@ const Sidebar = () => {
                             return (
                                 <button
                                     key={item.key}
-                                    onClick={() => navigate(item.path)}
+                                    onClick={() => {
+                                        navigate(item.path);
+                                        if (onClose) onClose();
+                                    }}
                                     className={`
                     relative w-full flex items-center gap-2.5 px-5 py-2.5
                     text-[12px] text-left border-none cursor-pointer

@@ -41,7 +41,7 @@ const VelocityChart = () => {
   const bars = DUMMY_DATA[selectedItem];
 
   return (
-    <div className="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-gray-100 flex-1 min-w-[500px] flex flex-col">
+    <div className="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-gray-100 flex-1 min-w-0 md:min-w-[500px] flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
@@ -70,7 +70,7 @@ const VelocityChart = () => {
 
       {/* Chart Body with Background Container */}
       <div className="relative pt-6 pb-3 px-4 bg-gradient-to-b from-[#e0f2fe]/60 to-[#bae6fd]/20 rounded-2xl">
-        <div className="flex items-end justify-between gap-3 h-[140px]">
+        <div className="flex items-end justify-between gap-1.5 sm:gap-2.5 md:gap-3 h-[140px]">
           {bars.map((bar, i) => (
             <div key={i} className="flex-1 group relative flex flex-col items-center h-full justify-end">
               {/* Tooltip */}
