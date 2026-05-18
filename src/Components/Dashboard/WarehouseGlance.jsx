@@ -12,6 +12,7 @@ const DUMMY_WAREHOUSES = [
 const WarehouseGlance = () => {
   const scrollRef = useRef(null);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [isScrollable, setIsScrollable] = useState(false);
 
   const handleScroll = () => {
     if (scrollRef.current) {
@@ -21,6 +22,13 @@ const WarehouseGlance = () => {
         const percentage = (scrollLeft / maxScroll) * 100;
         setScrollProgress(percentage);
       }
+    }
+  };
+
+  const checkScrollable = () => {
+    if (scrollRef.current) {
+      const { scrollWidth, clientWidth } = scrollRef.current;
+      setIsScrollable(scrollWidth > clientWidth);
     }
   };
 
@@ -36,10 +44,19 @@ const WarehouseGlance = () => {
     const el = scrollRef.current;
     if (el) {
       el.addEventListener('scroll', handleScroll, { passive: true });
+      
+      // Perform checks
+      checkScrollable();
+      const timer = setTimeout(checkScrollable, 150);
+
+      window.addEventListener('resize', checkScrollable);
+
+      return () => {
+        el.removeEventListener('scroll', handleScroll);
+        window.removeEventListener('resize', checkScrollable);
+        clearTimeout(timer);
+      };
     }
-    return () => {
-      if (el) el.removeEventListener('scroll', handleScroll);
-    };
   }, []);
 
   const thumbWidthPercent = 40; // Simulated scrollbar thumb width
@@ -57,7 +74,7 @@ const WarehouseGlance = () => {
       {/* Cards Scroll Container */}
       <div 
         ref={scrollRef}
-        className="flex items-center gap-4 overflow-x-auto px-6 pt-6 pb-5 scrollbar-none"
+        className={`flex items-center gap-4 overflow-x-auto px-6 pt-6 scrollbar-none ${isScrollable ? 'pb-5' : 'pb-6'}`}
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {DUMMY_WAREHOUSES.map((wh) => (
@@ -65,35 +82,37 @@ const WarehouseGlance = () => {
         ))}
       </div>
 
-      {/* Custom Premium Scrollbar Controls */}
-      <div className="flex items-center gap-3 px-6 pb-6 shrink-0 select-none">
-        {/* Left Arrow Button */}
-        <button 
-          onClick={() => scroll('left')}
-          className="text-[#9ca3af] hover:text-[#6b7280] active:scale-95 transition-all text-xs bg-transparent border-none cursor-pointer flex items-center justify-center p-1 leading-none"
-        >
-          ◀
-        </button>
+      {/* Custom Premium Scrollbar Controls (only rendered if needed) */}
+      {isScrollable && (
+        <div className="flex items-center gap-3 px-6 pb-6 shrink-0 select-none">
+          {/* Left Arrow Button */}
+          <button 
+            onClick={() => scroll('left')}
+            className="text-[#9ca3af] hover:text-[#6b7280] active:scale-95 transition-all text-xs bg-transparent border-none cursor-pointer flex items-center justify-center p-1 leading-none"
+          >
+            ◀
+          </button>
 
-        {/* Scroll Track & Dynamic Thumb */}
-        <div className="flex-1 h-1.5 bg-[#f3f4f6] rounded-full relative overflow-hidden">
-          <div 
-            className="absolute h-full bg-[#8e939d] rounded-full transition-all duration-75"
-            style={{ 
-              width: `${thumbWidthPercent}%`, 
-              left: `${thumbLeft}%` 
-            }}
-          ></div>
+          {/* Scroll Track & Dynamic Thumb */}
+          <div className="flex-1 h-1.5 bg-[#f3f4f6] rounded-full relative overflow-hidden">
+            <div 
+              className="absolute h-full bg-[#8e939d] rounded-full transition-all duration-75"
+              style={{ 
+                width: `${thumbWidthPercent}%`, 
+                left: `${thumbLeft}%` 
+              }}
+            ></div>
+          </div>
+
+          {/* Right Arrow Button */}
+          <button 
+            onClick={() => scroll('right')}
+            className="text-[#9ca3af] hover:text-[#6b7280] active:scale-95 transition-all text-xs bg-transparent border-none cursor-pointer flex items-center justify-center p-1 leading-none"
+          >
+            ▶
+          </button>
         </div>
-
-        {/* Right Arrow Button */}
-        <button 
-          onClick={() => scroll('right')}
-          className="text-[#9ca3af] hover:text-[#6b7280] active:scale-95 transition-all text-xs bg-transparent border-none cursor-pointer flex items-center justify-center p-1 leading-none"
-        >
-          ▶
-        </button>
-      </div>
+      )}
     </div>
   );
 };
