@@ -13,7 +13,7 @@ const DashboardPage = () => {
       {/* Header */}
       <div className="mb-4 flex items-end justify-between">
         <div>
-          <h1 className="text-2xl font-black text-gray-900 flex items-center gap-2.5 tracking-tight">
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2.5 tracking-tight">
             Dashboard
             <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]"></span>
           </h1>

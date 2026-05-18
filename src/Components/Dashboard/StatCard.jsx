@@ -38,7 +38,7 @@ const StatCard = ({ icon, label, value, trend, trendType = 'up', color = 'blue' 
       </div>
 
       <div>
-        <div className="text-2xl font-black text-gray-900 tracking-tight leading-none">{value}</div>
+        <div className="text-2xl font-bold text-gray-900 tracking-tight leading-none">{value}</div>
         <div className="text-[11px] font-bold text-gray-400 mt-1.5 uppercase tracking-wide">{label}</div>
       </div>
     </div>

@@ -66,7 +66,7 @@ const WarehouseGlance = () => {
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col mt-4 overflow-hidden">
       {/* Header with edge-to-edge border */}
       <div className="px-5 py-3.5 border-b border-gray-100">
-        <h3 className="text-[14px] font-black text-gray-800 tracking-tight leading-none">
+        <h3 className="text-[14px] font-bold text-gray-800 tracking-tight leading-none">
           Warehouses at a glance
         </h3>
       </div>
