@@ -1,7 +1,7 @@
 import React from 'react';
 
 const StockLevelsTable = ({ stockLevels, userRole, onAdjust, onTransfer }) => {
-  const canAdjust = userRole === 'Admin' || userRole === 'WarehouseManager';
+  const canAdjust = userRole === 'WarehouseManager';
   const canTransfer = userRole === 'Admin' || userRole === 'WarehouseManager';
 
   if (stockLevels.length === 0) {

@@ -221,7 +221,7 @@ const StockLevelsPage = () => {
             Real-time Inventory quantities, Allocations & Safety thresholds
           </p>
         </div>
-        {(userRole === 'Admin' || userRole === 'WarehouseManager') && (
+        {(userRole === 'WarehouseManager') && (
           <button
             onClick={() => triggerAdjust(null)}
             className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md shadow-blue-100 hover:shadow-lg hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-1.5 self-start sm:self-auto border-none cursor-pointer"
