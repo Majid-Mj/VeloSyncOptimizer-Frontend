@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
+import { useLocation } from 'react-router-dom';
 import StockLevelsStats from './StockLevelsStats';
 import StockLevelsToolbar from './StockLevelsToolbar';
 import StockLevelsTable from './StockLevelsTable';
@@ -12,6 +13,11 @@ import productApi from '../../api/product.api';
 const StockLevelsPage = () => {
   const user = useSelector((s) => s.auth.user);
   const userRole = user?.role || 'Guest';
+  const isManager = userRole === 'WarehouseManager';
+  const managerWarehouseId = user?.warehouseId;
+
+  const location = useLocation();
+  const preselected = location.state?.preselectedWarehouseId;
 
   // Core API loaded states
   const [stockLevels, setStockLevels] = useState([]);
@@ -30,9 +36,22 @@ const StockLevelsPage = () => {
 
   // Filters & Sorting state
   const [searchQuery, setSearchQuery] = useState('');
-  const [warehouseFilter, setWarehouseFilter] = useState('ALL');
+  const [warehouseFilter, setWarehouseFilter] = useState(
+    isManager && managerWarehouseId 
+      ? managerWarehouseId.toString() 
+      : (preselected ? preselected.toString() : 'ALL')
+  );
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [sortBy, setSortBy] = useState('NAME');
+
+  // Lock or pre-select warehouse dynamically
+  useEffect(() => {
+    if (isManager && managerWarehouseId) {
+      setWarehouseFilter(managerWarehouseId.toString());
+    } else if (preselected) {
+      setWarehouseFilter(preselected.toString());
+    }
+  }, [isManager, managerWarehouseId, preselected]);
 
   // Modal control states
   const [selectedItem, setSelectedItem] = useState(null);
