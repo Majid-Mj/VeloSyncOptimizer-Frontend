@@ -201,9 +201,9 @@ const Sidebar = ({ isOpen, onClose }) => {
                     text-[12px] text-left border-none cursor-pointer
                     transition-all duration-150
                     ${active
-                                            ? 'bg-[#4285F4]/20 text-white font-semibold'
-                                            : 'bg-transparent text-white/50 font-medium hover:bg-white/[0.06] hover:text-white/85'
-                                        }
+                                             ? 'bg-[#4285F4]/20 text-white font-semibold'
+                                             : 'bg-transparent text-white/50 font-medium hover:bg-white/[0.06] hover:text-white/85'
+                                         }
                   `}
                                 >
                                     {/* Active indicator bar */}
@@ -228,6 +228,43 @@ const Sidebar = ({ isOpen, onClose }) => {
                         })}
                     </div>
                 ))}
+
+                {/* ── Admin Specific Navigation ── */}
+                {user?.role === 'Admin' && (
+                    <div className="mb-0.5 animate-fade-in">
+                        <p className="text-[9px] font-bold tracking-[0.05em] text-white/30 uppercase px-5 pt-3 pb-1">
+                            ADMINISTRATION
+                        </p>
+                        <button
+                            onClick={() => {
+                                navigate('/dashboard/user-approvals');
+                                if (onClose) onClose();
+                            }}
+                            className={`
+                                relative w-full flex items-center gap-2.5 px-5 py-2.5
+                                text-[12px] text-left border-none cursor-pointer
+                                transition-all duration-150
+                                ${isActive('/dashboard/user-approvals')
+                                    ? 'bg-[#4285F4]/20 text-white font-semibold'
+                                    : 'bg-transparent text-white/50 font-medium hover:bg-white/[0.06] hover:text-white/85'
+                                }
+                            `}
+                        >
+                            {isActive('/dashboard/user-approvals') && (
+                                <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#4285F4] rounded-r-sm" />
+                            )}
+                            <span className="flex items-center shrink-0 scale-90">
+                                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                    <circle cx="9" cy="7" r="4" />
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                                </svg>
+                            </span>
+                            <span className="flex-1 truncate">User Approvals</span>
+                        </button>
+                    </div>
+                )}
             </nav>
 
             {/* ── User Footer ── */}

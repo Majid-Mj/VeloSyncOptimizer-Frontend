@@ -13,6 +13,8 @@ const StockMovementsPage = () => {
   const user = useSelector((s) => s.auth.user);
   const userRole = user?.role || 'Guest';
   const canTransfer = userRole === 'Admin' || userRole === 'WarehouseManager';
+  const isManager = userRole === 'WarehouseManager';
+  const managerWarehouseId = user?.warehouseId;
 
   // Live API data state lists
   const [movements, setMovements] = useState([]);
@@ -38,8 +40,17 @@ const StockMovementsPage = () => {
   const [pageSize, setPageSize] = useState(10);
 
   // Filters state (Server-side parameters)
-  const [warehouseFilter, setWarehouseFilter] = useState('ALL');
+  const [warehouseFilter, setWarehouseFilter] = useState(
+    isManager && managerWarehouseId ? managerWarehouseId.toString() : 'ALL'
+  );
   const [productFilter, setProductFilter] = useState('ALL');
+
+  // Synchronize manager's warehouse lock dynamically
+  useEffect(() => {
+    if (isManager && managerWarehouseId) {
+      setWarehouseFilter(managerWarehouseId.toString());
+    }
+  }, [isManager, managerWarehouseId]);
 
   // Trigger loading sequences
   const fetchMetadata = async () => {
@@ -94,7 +105,7 @@ const StockMovementsPage = () => {
   }, [pageNumber, pageSize, warehouseFilter, productFilter]);
 
   const handleResetFilters = () => {
-    setWarehouseFilter('ALL');
+    setWarehouseFilter(isManager && managerWarehouseId ? managerWarehouseId.toString() : 'ALL');
     setProductFilter('ALL');
     setPageNumber(1);
   };
@@ -150,6 +161,10 @@ const StockMovementsPage = () => {
     );
   }
 
+  const assignedWarehouse = isManager && managerWarehouseId 
+    ? warehouses.find(w => w.id.toString() === managerWarehouseId.toString())
+    : null;
+
   return (
     <div className="p-4 md:p-6 max-w-[1600px] mx-auto min-h-[calc(100vh-4rem)] flex flex-col gap-5 relative">
       {/* Page Header */}
@@ -162,7 +177,10 @@ const StockMovementsPage = () => {
             </span>
           </h1>
           <p className="text-[11px] font-bold text-gray-400 mt-0.5 tracking-wide uppercase">
-            Live Inventory Ledger Trail — Receivals, Shipments, Transfers & Adjustments
+            {assignedWarehouse 
+              ? `Live Inventory Ledger Trail for ${assignedWarehouse.name} (${assignedWarehouse.code})`
+              : 'Live Inventory Ledger Trail — Receivals, Shipments, Transfers & Adjustments'
+            }
           </p>
         </div>
         {canTransfer && (

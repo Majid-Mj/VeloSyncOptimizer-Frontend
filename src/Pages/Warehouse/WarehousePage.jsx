@@ -5,6 +5,7 @@ import WarehouseToolbar from './WarehouseToolbar';
 import WarehouseGrid from './WarehouseGrid';
 import WarehouseDrawer from './WarehouseDrawer';
 import warehouseApi from '../../api/warehouse.api';
+import { userApi } from '../../api/user.api';
 
 const MANAGERS = ['Majid Mj', 'Sarah Lee', 'Alex Tan', 'Farhan Ali', 'Wong Siew', 'Jane Doe', 'John Smith'];
 
@@ -18,7 +19,7 @@ const WarehousePage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [sortBy, setSortBy] = useState('CODE');
-  
+
   // Toast notifications state
   const [toast, setToast] = useState({ show: false, msg: '', type: '' });
 
@@ -33,6 +34,12 @@ const WarehousePage = () => {
     staff: 5,
     size: ''
   });
+
+  // Reassign Manager states
+  const [managersList, setManagersList] = useState([]);
+  const [selectedWarehouseForManager, setSelectedWarehouseForManager] = useState(null);
+  const [newManagerId, setNewManagerId] = useState('');
+  const [reassignLoading, setReassignLoading] = useState(false);
 
   const showToast = (msg, type = '') => {
     setToast({ show: true, msg, type });
@@ -96,8 +103,22 @@ const WarehousePage = () => {
     }
   };
 
+  const fetchManagers = async () => {
+    try {
+      const response = await userApi.getManagers();
+      if (response.isSuccess) {
+        setManagersList(response.data);
+      }
+    } catch (err) {
+      console.error('Failed to load managers', err);
+    }
+  };
+
   useEffect(() => {
     fetchWarehouses();
+    if (isAdmin) {
+      fetchManagers();
+    }
   }, []);
 
   // Calculate high-level KPIs based on state
@@ -114,13 +135,13 @@ const WarehousePage = () => {
   const filteredWarehouses = useMemo(() => {
     return warehouses
       .filter(w => {
-        const matchesSearch = 
+        const matchesSearch =
           w.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
           w.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           w.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
           w.manager.toLowerCase().includes(searchQuery.toLowerCase());
 
-        const matchesStatus = 
+        const matchesStatus =
           statusFilter === 'ALL' ||
           (statusFilter === 'HIGH_CAPACITY' && w.capacity >= 80) ||
           (statusFilter === 'ACTIVE' && w.status === 'ACTIVE') ||
@@ -161,7 +182,7 @@ const WarehousePage = () => {
       const response = await warehouseApi.create(payload);
       if (response.isSuccess) {
         showToast('Warehouse created successfully', 'success');
-        
+
         // Reset Form & Close Drawer
         setNewWh({
           id: '',
@@ -201,6 +222,32 @@ const WarehousePage = () => {
     }
   };
 
+  // Handle reassigning manager - Admin Only
+  const handleReassignManager = async (e) => {
+    e.preventDefault();
+    if (!selectedWarehouseForManager) return;
+
+    setReassignLoading(true);
+    try {
+      const val = newManagerId === 'unassigned' || !newManagerId ? null : Number(newManagerId);
+
+      const response = await userApi.reassignManager(selectedWarehouseForManager.dbId, val);
+      if (response.isSuccess) {
+        showToast('Warehouse manager reassigned successfully', 'success');
+        setSelectedWarehouseForManager(null);
+        setNewManagerId('');
+        fetchWarehouses();
+      } else {
+        showToast(response.message || 'Failed to reassign manager', 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      showToast(err.response?.data?.message || 'Failed to reassign manager', 'error');
+    } finally {
+      setReassignLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="p-4 md:p-6 max-w-[1600px] mx-auto min-h-[calc(100vh-4rem)] flex flex-col gap-5">
@@ -212,7 +259,7 @@ const WarehousePage = () => {
           </div>
           <div className="h-9 w-36 bg-gray-200 rounded-xl"></div>
         </div>
-        
+
         {/* Shimmering Stats Skeleton */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">
           {[...Array(4)].map((_, i) => (
@@ -245,7 +292,7 @@ const WarehousePage = () => {
         <div className="w-14 h-14 rounded-full bg-red-50 text-red-500 flex items-center justify-center text-lg font-bold">⚠️</div>
         <h3 className="text-base font-bold text-gray-800">Connection Failed</h3>
         <p className="text-xs font-semibold text-gray-400 max-w-sm leading-normal">{error}</p>
-        <button 
+        <button
           onClick={fetchWarehouses}
           className="px-4.5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-[12px] rounded-xl transition-all border-none cursor-pointer"
         >
@@ -287,7 +334,7 @@ const WarehousePage = () => {
       <WarehouseStats stats={stats} />
 
       {/* ── Search & Pill Filters Toolbar ── */}
-      <WarehouseToolbar 
+      <WarehouseToolbar
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         statusFilter={statusFilter}
@@ -297,14 +344,18 @@ const WarehousePage = () => {
       />
 
       {/* ── Grid List ── */}
-      <WarehouseGrid 
-        filteredWarehouses={filteredWarehouses} 
+      <WarehouseGrid
+        filteredWarehouses={filteredWarehouses}
         isAdmin={isAdmin}
         onDelete={handleDeleteWarehouse}
+        onEditManager={(wh) => {
+          setSelectedWarehouseForManager(wh);
+          setNewManagerId(wh.managerId || '');
+        }}
       />
 
       {/* ── Slide-Over Form Drawer ── */}
-      <WarehouseDrawer 
+      <WarehouseDrawer
         isOpen={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         newWh={newWh}
@@ -313,12 +364,98 @@ const WarehousePage = () => {
         managers={MANAGERS}
       />
 
+      {/* ── Reassign Manager Modal ── */}
+      {selectedWarehouseForManager && (
+        <div className="fixed inset-0 z-50 overflow-hidden flex items-center justify-center">
+          {/* Dim Overlay Backdrop */}
+          <div 
+            onClick={() => setSelectedWarehouseForManager(null)}
+            className="absolute inset-0 bg-black/45 backdrop-blur-sm transition-opacity duration-300"
+          ></div>
+
+          {/* Glassmorphic Card Container */}
+          <div className="relative bg-white/90 backdrop-blur-md rounded-3xl border border-white/20 p-7 shadow-2xl w-full max-w-md mx-4 z-50 transform scale-100 transition-all duration-300">
+            <div className="flex items-center justify-between border-b border-gray-100/50 pb-4 mb-5">
+              <div>
+                <h3 className="text-base font-bold text-gray-850 tracking-tight">Reassign Warehouse Manager</h3>
+                <p className="text-[10px] font-bold text-gray-400 mt-0.5 tracking-wide uppercase">
+                  {selectedWarehouseForManager.name} ({selectedWarehouseForManager.id})
+                </p>
+              </div>
+              <button 
+                onClick={() => setSelectedWarehouseForManager(null)}
+                className="p-1.5 text-gray-400 hover:text-gray-655 hover:bg-gray-100 rounded-xl transition-all border-none bg-transparent cursor-pointer"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <form onSubmit={handleReassignManager} className="space-y-5">
+              {/* Current Assignment Details */}
+              <div className="bg-gray-50/60 rounded-2xl p-4 border border-gray-100/50 flex flex-col gap-2">
+                <div className="flex justify-between text-[11px] font-bold">
+                  <span className="text-gray-400 uppercase tracking-wider">Current Manager</span>
+                  <span className="text-gray-700">{selectedWarehouseForManager.manager}</span>
+                </div>
+                <div className="flex justify-between text-[11px] font-bold">
+                  <span className="text-gray-400 uppercase tracking-wider">Storage Capacity</span>
+                  <span className="text-gray-700">{selectedWarehouseForManager.size}</span>
+                </div>
+              </div>
+
+              {/* Select New Manager Dropdown */}
+              <div>
+                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Select New Manager</label>
+                <div className="relative">
+                  <select
+                    required
+                    value={newManagerId}
+                    onChange={(e) => setNewManagerId(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-100 rounded-2xl text-xs outline-none font-semibold text-gray-700 appearance-none cursor-pointer"
+                  >
+                    <option value="">-- Choose active manager --</option>
+                    <option value="unassigned">None (Unassign Manager)</option>
+                    {managersList.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.fullName} ({m.email})
+                      </option>
+                    ))}
+                  </select>
+                  <svg className="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path d="m6 9 6 6 6-6" />
+                  </svg>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center gap-3 border-t border-gray-100/50 pt-4 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setSelectedWarehouseForManager(null)}
+                  className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 active:scale-95 text-gray-600 font-bold text-[12px] rounded-xl transition-all border-none cursor-pointer text-center"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={reassignLoading}
+                  className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-95 disabled:opacity-50 text-white font-bold text-[12px] rounded-xl shadow-md shadow-blue-100 hover:shadow-lg transition-all border-none cursor-pointer text-center"
+                >
+                  {reassignLoading ? 'Saving...' : 'Reassign'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* ── Toast Alerts ── */}
       {toast.show && (
-        <div 
-          className={`fixed bottom-5 right-5 z-50 flex items-center gap-2 px-4.5 py-3 rounded-2xl shadow-lg border text-xs font-bold text-white transition-all duration-300 animate-slide-up ${
-            toast.type === 'error' ? 'bg-red-500 border-red-400' : 'bg-green-500 border-green-400'
-          }`}
+        <div
+          className={`fixed bottom-5 right-5 z-50 flex items-center gap-2 px-4.5 py-3 rounded-2xl shadow-lg border text-xs font-bold text-white transition-all duration-300 animate-slide-up ${toast.type === 'error' ? 'bg-red-500 border-red-400' : 'bg-green-500 border-green-400'
+            }`}
         >
           {toast.type === 'error' ? '⚠️' : '✅'} {toast.msg}
         </div>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 
 const GeneratePurchaseOrderModal = ({
   isOpen,
@@ -14,10 +15,18 @@ const GeneratePurchaseOrderModal = ({
   const [lines, setLines] = useState([{ productId: '', quantityOrdered: 1, unitCost: 0.00 }]);
   const [submitting, setSubmitting] = useState(false);
 
+  const { user } = useSelector(state => state.auth);
+  const isManager = user?.role === 'WarehouseManager';
+  const managerWarehouseId = user?.warehouseId?.toString();
+
+  const allowedWarehouses = isManager && managerWarehouseId
+    ? warehouses.filter(w => w.id.toString() === managerWarehouseId)
+    : warehouses;
+
   useEffect(() => {
     if (isOpen) {
       setSupplierId(suppliers[0]?.id || '');
-      setWarehouseId(warehouses[0]?.id || '');
+      setWarehouseId(allowedWarehouses[0]?.id || '');
       
       // Default expected date: 7 days from today
       const weekFromNow = new Date();
@@ -26,7 +35,7 @@ const GeneratePurchaseOrderModal = ({
 
       setLines([{ productId: '', quantityOrdered: 1, unitCost: 0.00 }]);
     }
-  }, [isOpen, suppliers, warehouses]);
+  }, [isOpen, suppliers, allowedWarehouses]);
 
   if (!isOpen) return null;
 
@@ -147,7 +156,7 @@ const GeneratePurchaseOrderModal = ({
                 required
               >
                 <option value="" disabled>Select location...</option>
-                {warehouses.map(w => (
+                {allowedWarehouses.map(w => (
                   <option key={w.id} value={w.id}>{w.code || `WH-${w.id}`} — {w.name}</option>
                 ))}
               </select>

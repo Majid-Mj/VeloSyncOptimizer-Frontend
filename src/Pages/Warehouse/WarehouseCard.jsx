@@ -38,7 +38,7 @@ const WarehouseCard = ({ wh, isAdmin, onDelete }) => {
             <span>{wh.capacity}%</span>
           </div>
           <div className="w-full bg-[#f3f4f6] h-2.5 rounded-full overflow-hidden relative">
-            <div 
+            <div
               className={`absolute h-full rounded-full transition-all duration-700 ${wh.color === 'red' ? 'bg-[#ef4444]' : wh.color === 'amber' ? 'bg-[#f97316]' : 'bg-[#10b981]'}`}
               style={{ width: `${wh.capacity}%` }}
             ></div>
@@ -82,7 +82,7 @@ const WarehouseCard = ({ wh, isAdmin, onDelete }) => {
         </button>
         <div className="flex items-center gap-1">
           {isAdmin && (
-            <button 
+            <button
               onClick={() => {
                 if (window.confirm(`Are you sure you want to delete ${wh.name}?`)) {
                   onDelete(wh.dbId);

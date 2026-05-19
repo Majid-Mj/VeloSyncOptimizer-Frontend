@@ -6,6 +6,7 @@ import WarehousePage from "../Pages/Warehouse/WarehousePage";
 import StockLevelsPage from "../Pages/Stock-Levels/StockLevelsPage";
 import StockMovementsPage from "../Pages/Stock-Movement/StockMovementsPage";
 import PurchaseOrdersPage from "../Pages/Purchase-Orders/PurchaseOrdersPage";
+import UserApprovalPage from "../Pages/Admin/UserApprovalPage";
 import MainLayout from "../Components/layout/MainLayout";
 
 const AppRouter = () => {
@@ -26,6 +27,7 @@ const AppRouter = () => {
           <Route path="purchase-orders" element={<PurchaseOrdersPage />} />
           <Route path="suppliers" element={<DashboardPage />} />
           <Route path="reports" element={<DashboardPage />} />
+          <Route path="user-approvals" element={<UserApprovalPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

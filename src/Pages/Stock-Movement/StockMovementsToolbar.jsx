@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
 
 const StockMovementsToolbar = ({
   warehouseFilter,
@@ -11,6 +12,10 @@ const StockMovementsToolbar = ({
   products,
   onReset
 }) => {
+  const { user } = useSelector(state => state.auth);
+  const isManager = user?.role === 'WarehouseManager';
+  const managerWarehouseId = user?.warehouseId?.toString();
+
   return (
     <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm flex flex-col md:flex-row items-end md:items-center justify-between gap-4">
       {/* Filters Section */}
@@ -18,21 +23,35 @@ const StockMovementsToolbar = ({
         {/* Warehouse Filter */}
         <div className="relative">
           <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Warehouse Location</label>
-          <select
-            value={warehouseFilter}
-            onChange={(e) => setWarehouseFilter(e.target.value)}
-            className="w-full bg-[#f8fafc] text-xs font-bold text-gray-700 pl-3.5 pr-8 py-2.5 rounded-xl border border-gray-100 focus:border-blue-500 focus:bg-white outline-none appearance-none cursor-pointer"
-          >
-            <option value="ALL">All Warehouses</option>
-            {warehouses.map(w => (
-              <option key={w.id} value={w.id}>
-                {w.code || `WH-${w.id}`} — {w.name}
-              </option>
-            ))}
-          </select>
-          <svg className="w-4 h-4 text-gray-400 absolute right-3 bottom-3 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-          </svg>
+          {isManager ? (
+            <div className="w-full bg-slate-50 text-xs font-bold text-slate-700 pl-3.5 pr-4 py-2.5 rounded-xl border border-slate-100 flex items-center gap-2 select-none h-[38px]">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span className="truncate">
+                {(() => {
+                  const w = warehouses.find(x => x.id.toString() === managerWarehouseId);
+                  return w ? `${w.code || `WH-${w.id}`} — ${w.name}` : `WH-${managerWarehouseId} — Loading...`;
+                })()}
+              </span>
+            </div>
+          ) : (
+            <>
+              <select
+                value={warehouseFilter}
+                onChange={(e) => setWarehouseFilter(e.target.value)}
+                className="w-full bg-[#f8fafc] text-xs font-bold text-gray-700 pl-3.5 pr-8 py-2.5 rounded-xl border border-gray-100 focus:border-blue-500 focus:bg-white outline-none appearance-none cursor-pointer"
+              >
+                <option value="ALL">All Warehouses</option>
+                {warehouses.map(w => (
+                  <option key={w.id} value={w.id}>
+                    {w.code || `WH-${w.id}`} — {w.name}
+                  </option>
+                ))}
+              </select>
+              <svg className="w-4 h-4 text-gray-400 absolute right-3 bottom-3 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </>
+          )}
         </div>
 
         {/* Product Filter */}

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
 
 const StockLevelsToolbar = ({
   searchQuery,
@@ -11,87 +12,124 @@ const StockLevelsToolbar = ({
   setSortBy,
   warehouses
 }) => {
-  const filterPills = [
-    { key: 'ALL', label: 'All Stock' },
-    { key: 'IN_STOCK', label: 'In Stock' },
-    { key: 'LOW_STOCK', label: 'Low Stock Alerts' },
-    { key: 'OUT_OF_STOCK', label: 'Out of Stock' },
-  ];
+  const { user } = useSelector(state => state.auth);
+  const isManager = user?.role === 'WarehouseManager';
+  const managerWarehouseId = user?.warehouseId?.toString();
+
+  const renderWarehouses = () => {
+    if (isManager && managerWarehouseId) {
+      // Find the specific warehouse for the manager
+      const w = warehouses?.find(x => x.id.toString() === managerWarehouseId) || { id: managerWarehouseId, code: `WH-${managerWarehouseId}` };
+      
+      return (
+        <button 
+          className="px-4 py-1.5 text-[13px] font-medium rounded-full transition-colors whitespace-nowrap bg-[#1e293b] text-white border border-[#1e293b]"
+        >
+          {w.code || `WH-${w.id}`}
+        </button>
+      );
+    }
+
+    if (warehouses && warehouses.length > 0) {
+      return (
+        <>
+          <button 
+            onClick={() => setWarehouseFilter('ALL')}
+            className={`px-4 py-1.5 text-[13px] font-medium rounded-full transition-colors whitespace-nowrap ${
+              warehouseFilter === 'ALL' 
+                ? 'bg-[#1e293b] text-white border border-[#1e293b]' 
+                : 'bg-white border border-slate-200 text-slate-500 hover:bg-slate-50'
+            }`}
+          >
+            All warehouses
+          </button>
+          {warehouses.map(w => (
+            <button 
+              key={w.id}
+              onClick={() => setWarehouseFilter(w.id.toString())}
+              className={`px-4 py-1.5 text-[13px] font-medium rounded-full transition-colors whitespace-nowrap ${
+                warehouseFilter === w.id.toString() 
+                  ? 'bg-[#1e293b] text-white border border-[#1e293b]' 
+                  : 'bg-white border border-slate-200 text-slate-500 hover:bg-slate-50'
+              }`}
+            >
+              {w.code || `WH-${w.id}`}
+            </button>
+          ))}
+        </>
+      );
+    }
+    
+    // Fallback static pills just in case data isn't loaded yet
+    return (
+      <>
+        <button className="px-4 py-1.5 bg-[#1e293b] text-white border border-[#1e293b] text-[13px] font-medium rounded-full">All warehouses</button>
+        <button className="px-4 py-1.5 bg-white border border-slate-200 text-slate-500 text-[13px] font-medium rounded-full">WH-KL-01</button>
+        <button className="px-4 py-1.5 bg-white border border-slate-200 text-slate-500 text-[13px] font-medium rounded-full">WH-PG-02</button>
+        <button className="px-4 py-1.5 bg-white border border-slate-200 text-slate-500 text-[13px] font-medium rounded-full">WH-JB-03</button>
+        <button className="px-4 py-1.5 bg-white border border-slate-200 text-slate-500 text-[13px] font-medium rounded-full">WH-KK-04</button>
+        <button className="px-4 py-1.5 bg-white border border-slate-200 text-slate-500 text-[13px] font-medium rounded-full">WH-SB-05</button>
+      </>
+    );
+  };
 
   return (
-    <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm flex flex-col gap-4">
-      {/* Search & Select Grid */}
-      <div className="flex flex-col md:flex-row gap-3">
-        {/* Search Input */}
-        <div className="flex-1 relative">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by Product Name, SKU, or Code..."
-            className="w-full bg-[#f8fafc] text-xs font-bold text-gray-700 placeholder-gray-400 pl-9.5 pr-4 py-2.5 rounded-xl border border-gray-100 focus:border-blue-500 focus:bg-white outline-none transition-all"
-          />
-          <svg className="w-4 h-4 text-gray-400 absolute left-3.5 top-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
+    <div className="flex flex-col gap-3 w-full bg-transparent">
+      {/* Top Row: Warehouses and Risk Levels */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 w-full">
+        {/* Warehouses Pills */}
+        <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0 scrollbar-hide">
+          {renderWarehouses()}
         </div>
 
-        {/* Warehouse Dropdown */}
-        <div className="w-full md:w-60 relative">
-          <select
-            value={warehouseFilter}
-            onChange={(e) => setWarehouseFilter(e.target.value)}
-            className="w-full bg-[#f8fafc] text-xs font-bold text-gray-700 pl-3.5 pr-8 py-2.5 rounded-xl border border-gray-100 focus:border-blue-500 focus:bg-white outline-none appearance-none cursor-pointer"
+        {/* Risk Levels Dropdown */}
+        <div className="relative shrink-0">
+          <select 
+            className="bg-white border border-slate-200 text-slate-500 text-[13px] font-medium rounded-lg pl-3.5 pr-9 py-2 outline-none appearance-none cursor-pointer hover:border-slate-300 transition-colors"
+            defaultValue="ALL"
           >
-            <option value="ALL">All Warehouses</option>
-            {warehouses.map(w => (
-              <option key={w.id} value={w.id}>
-                {w.code || `WH-${w.id}`} — {w.name}
-              </option>
-            ))}
+            <option value="ALL">All risk levels</option>
+            <option value="HIGH">High</option>
+            <option value="MEDIUM">Medium</option>
+            <option value="LOW">Low</option>
           </select>
-          <svg className="w-4 h-4 text-gray-400 absolute right-3 top-3.5 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-          </svg>
-        </div>
-
-        {/* Sort Select */}
-        <div className="w-full md:w-56 relative">
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            className="w-full bg-[#f8fafc] text-xs font-bold text-gray-700 pl-3.5 pr-8 py-2.5 rounded-xl border border-gray-100 focus:border-blue-500 focus:bg-white outline-none appearance-none cursor-pointer"
-          >
-            <option value="NAME">Sort by: Product Name</option>
-            <option value="SKU">Sort by: SKU Code</option>
-            <option value="AVAIL_DESC">Available Stock: High to Low</option>
-            <option value="AVAIL_ASC">Available Stock: Low to High</option>
-          </select>
-          <svg className="w-4 h-4 text-gray-400 absolute right-3 top-3.5 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+          <svg className="w-4 h-4 text-slate-400 absolute right-3 top-2.5 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
           </svg>
         </div>
       </div>
 
-      {/* Pill Buttons Filter Row */}
-      <div className="flex flex-wrap items-center gap-1.5 pt-1.5 border-t border-gray-50">
-        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mr-2">Quick Filters:</span>
-        {filterPills.map((pill) => {
-          const isActive = statusFilter === pill.key;
-          return (
-            <button
-              key={pill.key}
-              onClick={() => setStatusFilter(pill.key)}
-              className={`px-3 py-1.5 text-[11px] font-extrabold rounded-lg transition-all border cursor-pointer ${
-                isActive
-                  ? 'bg-blue-600 border-blue-600 text-white shadow-sm'
-                  : 'bg-white border-gray-150 text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-              }`}
-            >
-              {pill.label}
-            </button>
-          );
-        })}
+      {/* Bottom Row: Categories and Search */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full">
+        {/* Categories Dropdown */}
+        <div className="relative shrink-0">
+          <select 
+            className="bg-white border border-slate-200 text-slate-500 text-[13px] font-medium rounded-lg pl-3.5 pr-9 py-2 outline-none appearance-none cursor-pointer hover:border-slate-300 transition-colors w-full sm:w-40"
+            defaultValue="ALL"
+          >
+            <option value="ALL">All categories</option>
+            <option value="FOOD">Food & Beverage</option>
+            <option value="COMMODITIES">Commodities</option>
+            <option value="ELECTRONICS">Electronics</option>
+          </select>
+          <svg className="w-4 h-4 text-slate-400 absolute right-3 top-2.5 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
+
+        {/* Search Input */}
+        <div className="relative flex-1 w-full sm:max-w-[420px]">
+          <svg className="w-4 h-4 text-slate-400 absolute left-3.5 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search product or SKU..."
+            className="w-full bg-white border border-slate-200 text-slate-700 placeholder-slate-400 text-[13px] font-medium rounded-lg pl-9 pr-4 py-2 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+          />
+        </div>
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 
 const AdjustStockModal = ({
   isOpen,
@@ -15,6 +16,14 @@ const AdjustStockModal = ({
   const [reason, setReason] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  const { user } = useSelector(state => state.auth);
+  const isManager = user?.role === 'WarehouseManager';
+  const managerWarehouseId = user?.warehouseId?.toString();
+
+  const allowedWarehouses = isManager && managerWarehouseId
+    ? warehouses.filter(w => w.id.toString() === managerWarehouseId)
+    : warehouses;
+
   useEffect(() => {
     if (selectedItem) {
       setProductId(selectedItem.productId);
@@ -24,12 +33,12 @@ const AdjustStockModal = ({
       setReason('');
     } else {
       setProductId(products[0]?.id || '');
-      setWarehouseId(warehouses[0]?.id || '');
+      setWarehouseId(allowedWarehouses[0]?.id || '');
       setAdjustType('ADD');
       setQuantity('');
       setReason('');
     }
-  }, [selectedItem, isOpen, products, warehouses]);
+  }, [selectedItem, isOpen, products, allowedWarehouses]);
 
   if (!isOpen) return null;
 
@@ -119,7 +128,7 @@ const AdjustStockModal = ({
                   required
                 >
                   <option value="" disabled>Choose a facility...</option>
-                  {warehouses.map(w => (
+                  {allowedWarehouses.map(w => (
                     <option key={w.id} value={w.id}>
                       {w.code || `WH-${w.id}`} — {w.name}
                     </option>

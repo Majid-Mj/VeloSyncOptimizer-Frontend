@@ -5,7 +5,7 @@ export const warehouseApi = {
     const response = await apiClient.get('/warehouses');
     return response.data;
   },
-  
+
   create: async (warehouseData) => {
     // Sends standard JSON to match [FromBody] CreateWarehouseCommand on the controller
     const response = await apiClient.post('/warehouses', warehouseData);
