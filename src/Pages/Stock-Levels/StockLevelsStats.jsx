@@ -3,54 +3,48 @@ import React from 'react';
 const StockLevelsStats = ({ stats }) => {
   const cards = [
     {
-      title: 'Total Monitored SKUs',
-      value: stats.totalSkus.toLocaleString(),
-      desc: 'Distinct product definitions',
+      title: 'Total SKUs',
+      value: (stats?.totalSkus ?? 0).toLocaleString(),
       icon: (
-        <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+        <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
           <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
         </svg>
       ),
-      bg: 'bg-blue-50/60 border-blue-100',
-      iconBg: 'bg-blue-100/80',
+      iconBg: 'bg-blue-50',
+      valueColor: 'text-gray-800',
     },
     {
-      title: 'Total Stock On Hand',
-      value: stats.totalOnHand.toLocaleString(),
-      desc: 'Units across all locations',
+      title: 'Stockouts',
+      value: (stats?.stockouts ?? 0).toLocaleString(),
       icon: (
-        <svg className="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+        <svg className="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       ),
-      bg: 'bg-emerald-50/60 border-emerald-100',
-      iconBg: 'bg-emerald-100/80',
+      iconBg: 'bg-red-50',
+      valueColor: 'text-red-600',
     },
     {
-      title: 'Critical Low Stock',
-      value: stats.lowStockCount.toLocaleString(),
-      desc: 'Item count below reorder point',
+      title: 'Low stock',
+      value: (stats?.lowStock ?? 0).toLocaleString(),
       icon: (
-        <svg className="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        <svg className="w-5 h-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 2l8.66 5v10L12 22l-8.66-5V7L12 2z" />
         </svg>
       ),
-      bg: 'bg-amber-50/60 border-amber-100',
-      iconBg: 'bg-amber-100/80',
-      highlight: stats.lowStockCount > 0
+      iconBg: 'bg-amber-50',
+      valueColor: 'text-amber-600',
     },
     {
-      title: 'Out of Stock Items',
-      value: stats.outOfStockCount.toLocaleString(),
-      desc: 'Immediate replenishment required',
+      title: 'Healthy stock',
+      value: (stats?.healthyStock ?? 0).toLocaleString(),
       icon: (
-        <svg className="w-5 h-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        <svg className="w-5 h-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
         </svg>
       ),
-      bg: 'bg-red-50/60 border-red-100',
-      iconBg: 'bg-red-100/80',
-      highlight: stats.outOfStockCount > 0
+      iconBg: 'bg-green-50',
+      valueColor: 'text-emerald-700',
     }
   ];
 
@@ -59,17 +53,18 @@ const StockLevelsStats = ({ stats }) => {
       {cards.map((c, i) => (
         <div 
           key={i} 
-          className={`p-4 bg-white rounded-2xl border ${c.bg} shadow-sm transition-all duration-300 flex items-center gap-4 ${
-            c.highlight ? 'ring-2 ring-offset-1 ring-red-200/50 animate-pulse' : ''
-          }`}
+          className="p-5 bg-white rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4"
         >
-          <div className={`w-10 h-10 rounded-xl ${c.iconBg} flex items-center justify-center shrink-0`}>
+          <div className={`w-12 h-12 rounded-2xl ${c.iconBg} flex items-center justify-center shrink-0`}>
             {c.icon}
           </div>
-          <div className="min-w-0">
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{c.title}</p>
-            <h3 className="text-xl font-extrabold text-gray-800 mt-0.5 tracking-tight leading-none">{c.value}</h3>
-            <p className="text-[10px] font-semibold text-gray-400 mt-1 truncate leading-none">{c.desc}</p>
+          <div className="flex flex-col">
+            <h3 className={`text-2xl font-bold ${c.valueColor} tracking-tight leading-none`}>
+              {c.value}
+            </h3>
+            <p className="text-[13px] font-semibold text-gray-400 mt-1.5 leading-none">
+              {c.title}
+            </p>
           </div>
         </div>
       ))}

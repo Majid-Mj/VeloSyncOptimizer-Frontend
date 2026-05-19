@@ -17,6 +17,12 @@ const StockLevelsPage = () => {
   const [stockLevels, setStockLevels] = useState([]);
   const [warehouses, setWarehouses] = useState([]);
   const [products, setProducts] = useState([]);
+  const [stats, setStats] = useState({
+    totalSkus: 0,
+    stockouts: 0,
+    lowStock: 0,
+    healthyStock: 0
+  });
   
   // Loading & Error states
   const [loading, setLoading] = useState(true);
@@ -47,16 +53,20 @@ const StockLevelsPage = () => {
     setError(null);
     try {
       // Parallel fetches for optimum speed
-      const [stockRes, whRes, prodRes] = await Promise.all([
+      const [stockRes, whRes, prodRes, summaryRes] = await Promise.all([
         stockApi.getAll(),
         warehouseApi.getAll(),
-        productApi.getAll({ pageSize: 100 })
+        productApi.getAll({ pageSize: 100 }),
+        stockApi.getSummary()
       ]);
 
       if (stockRes.isSuccess && whRes.isSuccess) {
         setStockLevels(stockRes.data || []);
         setWarehouses(whRes.data || []);
         setProducts(prodRes?.data?.items || prodRes?.data || []);
+        if (summaryRes?.isSuccess && summaryRes.data) {
+          setStats(summaryRes.data);
+        }
       } else {
         setError(stockRes.message || whRes.message || 'Failed to load stock data');
       }
@@ -72,15 +82,6 @@ const StockLevelsPage = () => {
     fetchData();
   }, []);
 
-  // Aggregate stats from live list
-  const stats = useMemo(() => {
-    const totalSkus = new Set(stockLevels.map(s => s.productId)).size;
-    const totalOnHand = stockLevels.reduce((acc, cur) => acc + cur.quantityOnHand, 0);
-    const lowStockCount = stockLevels.filter(s => s.stockStatus === 'LOW_STOCK' || (s.quantityOnHand - s.quantityReserved) <= s.reorderPoint).length;
-    const outOfStockCount = stockLevels.filter(s => s.quantityOnHand <= 0).length;
-
-    return { totalSkus, totalOnHand, lowStockCount, outOfStockCount };
-  }, [stockLevels]);
 
   // Search, Filter, and Sort logic
   const processedStock = useMemo(() => {

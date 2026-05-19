@@ -80,22 +80,30 @@ const StockLevelsTable = ({ stockLevels, userRole, onAdjust, onTransfer }) => {
                   </td>
                   {/* Status Badge */}
                   <td className="px-5 py-4 text-center">
-                    <span 
-                      className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                        status === 'OUT_OF_STOCK'
-                          ? 'bg-red-50 text-red-500 border-red-100'
-                          : status === 'LOW_STOCK'
-                          ? 'bg-amber-50 text-amber-600 border-amber-100'
-                          : 'bg-green-50 text-green-600 border-green-100'
-                      }`}
-                    >
-                      {status === 'OUT_OF_STOCK'
-                        ? 'OUT OF STOCK'
-                        : status === 'LOW_STOCK'
-                        ? 'LOW STOCK'
-                        : 'IN STOCK'}
-                    </span>
+                    {(() => {
+                      const isOutOfStock = status === 'OUT_OF_STOCK' || status === 'Stockout' || item.quantityOnHand <= 0;
+                      const isLowStock = status === 'LOW_STOCK' || status === 'LowStock' || (item.quantityOnHand - item.quantityReserved) <= item.reorderPoint;
+                      
+                      return (
+                        <span 
+                          className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                            isOutOfStock
+                              ? 'bg-red-50 text-red-500 border-red-100'
+                              : isLowStock
+                              ? 'bg-amber-50 text-amber-600 border-amber-100'
+                              : 'bg-green-50 text-green-600 border-green-100'
+                          }`}
+                        >
+                          {isOutOfStock
+                            ? 'OUT OF STOCK'
+                            : isLowStock
+                            ? 'LOW STOCK'
+                            : 'IN STOCK'}
+                        </span>
+                      );
+                    })()}
                   </td>
+
                   {/* Actions */}
                   <td className="px-5 py-4 text-center">
                     <div className="flex items-center justify-center gap-1">
