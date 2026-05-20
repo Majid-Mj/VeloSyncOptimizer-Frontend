@@ -35,6 +35,7 @@ const NAV_SECTIONS = [
                     </svg>
                 ),
             },
+
             {
                 key: 'stock-movement',
                 label: 'Stock movement',

@@ -23,16 +23,43 @@ const StockLevelsPage = () => {
   const [stockLevels, setStockLevels] = useState([]);
   const [warehouses, setWarehouses] = useState([]);
   const [products, setProducts] = useState([]);
-  const [stats, setStats] = useState({
-    totalSkus: 0,
-    stockouts: 0,
-    lowStock: 0,
-    healthyStock: 0
-  });
   
   // Loading & Error states
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Dynamic statistics calculation
+  const stats = useMemo(() => {
+    const targetLevels = isManager && managerWarehouseId
+      ? stockLevels.filter(s => s.warehouseId === managerWarehouseId)
+      : stockLevels;
+
+    const uniqueProducts = new Set(targetLevels.map(s => s.productId));
+    let stockouts = 0;
+    let lowStock = 0;
+    let healthyStock = 0;
+
+    targetLevels.forEach(s => {
+      const quantityOnHand = s.quantityOnHand || 0;
+      const quantityReserved = s.quantityReserved || 0;
+      const reorderPoint = s.reorderPoint || 0;
+
+      if (quantityOnHand <= 0) {
+        stockouts++;
+      } else if ((quantityOnHand - quantityReserved) <= reorderPoint) {
+        lowStock++;
+      } else {
+        healthyStock++;
+      }
+    });
+
+    return {
+      totalSkus: uniqueProducts.size,
+      stockouts,
+      lowStock,
+      healthyStock
+    };
+  }, [stockLevels, isManager, managerWarehouseId]);
 
   // Filters & Sorting state
   const [searchQuery, setSearchQuery] = useState('');
@@ -71,21 +98,17 @@ const StockLevelsPage = () => {
     setLoading(true);
     setError(null);
     try {
-      // Parallel fetches for optimum speed
-      const [stockRes, whRes, prodRes, summaryRes] = await Promise.all([
+      // Parallel fetches for optimum speed (summary endpoint is removed)
+      const [stockRes, whRes, prodRes] = await Promise.all([
         stockApi.getAll(),
         warehouseApi.getAll(),
-        productApi.getAll({ pageSize: 100 }),
-        stockApi.getSummary()
+        productApi.getAll({ pageSize: 100 })
       ]);
 
       if (stockRes.isSuccess && whRes.isSuccess) {
         setStockLevels(stockRes.data || []);
         setWarehouses(whRes.data || []);
         setProducts(prodRes?.data?.items || prodRes?.data || []);
-        if (summaryRes?.isSuccess && summaryRes.data) {
-          setStats(summaryRes.data);
-        }
       } else {
         setError(stockRes.message || whRes.message || 'Failed to load stock data');
       }
