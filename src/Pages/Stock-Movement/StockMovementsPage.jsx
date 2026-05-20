@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import StockMovementsStats from './StockMovementsStats';
 import StockMovementsToolbar from './StockMovementsToolbar';
 import StockMovementsTable from './StockMovementsTable';
-import TransferStockModal from './TransferStockModal';
 import stockApi from '../../api/stock.api';
 import warehouseApi from '../../api/warehouse.api';
 import productApi from '../../api/product.api';
 
 const StockMovementsPage = () => {
+  const navigate = useNavigate();
   // User context & Auth role guards
   const user = useSelector((s) => s.auth.user);
   const userRole = user?.role || 'Guest';
@@ -22,8 +23,7 @@ const StockMovementsPage = () => {
   const [warehouses, setWarehouses] = useState([]);
   const [products, setProducts] = useState([]);
 
-  // Modal and toast notifications state
-  const [transferModalOpen, setTransferModalOpen] = useState(false);
+  // Toast notifications state
   const [toast, setToast] = useState({ show: false, msg: '', type: '' });
 
   const showToast = (msg, type = 'success') => {
@@ -128,7 +128,7 @@ const StockMovementsPage = () => {
             <div className="h-3 w-80 bg-gray-100 rounded-lg"></div>
           </div>
         </div>
-        
+
         {/* Stats Shimmer */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">
           {[...Array(4)].map((_, i) => (
@@ -151,7 +151,7 @@ const StockMovementsPage = () => {
         <div className="w-14 h-14 rounded-full bg-red-50 text-red-500 flex items-center justify-center text-lg font-bold">⚠️</div>
         <h3 className="text-base font-bold text-gray-800">Audit Ledger Connection Failed</h3>
         <p className="text-xs font-semibold text-gray-400 max-w-sm leading-normal">{error}</p>
-        <button 
+        <button
           onClick={fetchMovements}
           className="px-4.5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition-all border-none cursor-pointer"
         >
@@ -161,7 +161,7 @@ const StockMovementsPage = () => {
     );
   }
 
-  const assignedWarehouse = isManager && managerWarehouseId 
+  const assignedWarehouse = isManager && managerWarehouseId
     ? warehouses.find(w => w.id.toString() === managerWarehouseId.toString())
     : null;
 
@@ -177,7 +177,7 @@ const StockMovementsPage = () => {
             </span>
           </h1>
           <p className="text-[11px] font-bold text-gray-400 mt-0.5 tracking-wide uppercase">
-            {assignedWarehouse 
+            {assignedWarehouse
               ? `Live Inventory Ledger Trail for ${assignedWarehouse.name} (${assignedWarehouse.code})`
               : 'Live Inventory Ledger Trail — Receivals, Shipments, Transfers & Adjustments'
             }
@@ -185,7 +185,7 @@ const StockMovementsPage = () => {
         </div>
         {canTransfer && (
           <button
-            onClick={() => setTransferModalOpen(true)}
+            onClick={() => navigate('/dashboard/stock-movement/transfer')}
             className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-[12px] rounded-xl shadow-md shadow-blue-100 hover:shadow-lg hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-1.5 self-start sm:self-auto border-none cursor-pointer"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
@@ -200,7 +200,7 @@ const StockMovementsPage = () => {
       <StockMovementsStats totalCount={totalCount} currentItems={movements} />
 
       {/* Filter and Settings toolbar */}
-      <StockMovementsToolbar 
+      <StockMovementsToolbar
         warehouseFilter={warehouseFilter}
         setWarehouseFilter={(val) => { setWarehouseFilter(val); setPageNumber(1); }}
         productFilter={productFilter}
@@ -247,28 +247,27 @@ const StockMovementsPage = () => {
             {[...Array(totalPages)].map((_, i) => {
               const pageIdx = i + 1;
               const isCurrent = pageNumber === pageIdx;
-              
+
               // Only render adjacent page buttons to avoid overflow
               if (pageIdx === 1 || pageIdx === totalPages || Math.abs(pageIdx - pageNumber) <= 1) {
                 return (
                   <button
                     key={pageIdx}
                     onClick={() => handlePageChange(pageIdx)}
-                    className={`px-3 py-1.5 text-xs font-extrabold rounded-lg border transition-all cursor-pointer ${
-                      isCurrent
-                        ? 'bg-blue-600 border-blue-600 text-white shadow-sm'
-                        : 'bg-white border-gray-200 text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                    }`}
+                    className={`px-3 py-1.5 text-xs font-extrabold rounded-lg border transition-all cursor-pointer ${isCurrent
+                      ? 'bg-blue-600 border-blue-600 text-white shadow-sm'
+                      : 'bg-white border-gray-200 text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                      }`}
                   >
                     {pageIdx}
                   </button>
                 );
               }
-              
+
               if (pageIdx === 2 || pageIdx === totalPages - 1) {
                 return <span key={pageIdx} className="text-gray-300 text-xs px-1 font-bold">...</span>;
               }
-              
+
               return null;
             })}
 
@@ -286,21 +285,13 @@ const StockMovementsPage = () => {
         </div>
       )}
 
-      {/* ── Modal Dialogs ── */}
-      <TransferStockModal 
-        isOpen={transferModalOpen}
-        onClose={() => setTransferModalOpen(false)}
-        warehouses={warehouses}
-        products={products}
-        onSuccess={showToast}
-      />
+
 
       {/* ── Toast Alerts ── */}
       {toast.show && (
-        <div 
-          className={`fixed bottom-5 right-5 z-50 flex items-center gap-2 px-4.5 py-3 rounded-2xl shadow-lg border text-xs font-bold text-white transition-all duration-300 animate-slide-up ${
-            toast.type === 'error' ? 'bg-red-500 border-red-400' : 'bg-green-500 border-green-400'
-          }`}
+        <div
+          className={`fixed bottom-5 right-5 z-50 flex items-center gap-2 px-4.5 py-3 rounded-2xl shadow-lg border text-xs font-bold text-white transition-all duration-300 animate-slide-up ${toast.type === 'error' ? 'bg-red-500 border-red-400' : 'bg-green-500 border-green-400'
+            }`}
         >
           {toast.type === 'error' ? '⚠️' : '✅'} {toast.msg}
         </div>
