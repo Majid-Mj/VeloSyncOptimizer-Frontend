@@ -7,6 +7,12 @@ export const stockApi = {
     return response.data;
   },
 
+  // Fetch stock summary KPIs
+  getSummary: async () => {
+    const response = await apiClient.get('/stock/summary');
+    return response.data;
+  },
+
 
   // Fetch stock by warehouse
   getByWarehouse: async (warehouseId) => {

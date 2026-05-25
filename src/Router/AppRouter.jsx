@@ -7,6 +7,7 @@ import StockLevelsPage from "../Pages/Stock-Levels/StockLevelsPage";
 import StockMovementsPage from "../Pages/Stock-Movement/StockMovementsPage";
 import TransferStockPage from "../Pages/TransferStock/TransferStockPage";
 import PurchaseOrdersPage from "../Pages/Purchase-Orders/PurchaseOrdersPage";
+import ReorderDashboardPage from "../Pages/ReOrder-Engine/ReOrderDashboardPage";
 import UserApprovalPage from "../Pages/Admin/UserApprovalPage";
 import MainLayout from "../Components/layout/MainLayout";
 
@@ -25,7 +26,7 @@ const AppRouter = () => {
           <Route path="stock-movement" element={<StockMovementsPage />} />
           <Route path="stock-movement/transfer" element={<TransferStockPage />} />
           <Route path="warehouses" element={<WarehousePage />} />
-          <Route path="reorder-suggestions" element={<DashboardPage />} />
+          <Route path="reorder-suggestions" element={<ReorderDashboardPage />} />
           <Route path="purchase-orders" element={<PurchaseOrdersPage />} />
           <Route path="suppliers" element={<DashboardPage />} />
           <Route path="reports" element={<DashboardPage />} />

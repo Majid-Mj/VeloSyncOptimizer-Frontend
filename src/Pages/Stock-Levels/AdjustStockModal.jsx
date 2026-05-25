@@ -8,6 +8,7 @@ const AdjustStockModal = ({
   selectedItem,
   products = [],
   warehouses = [],
+  stockLevels = [],
   onSubmit
 }) => {
   const [productId, setProductId] = useState('');
@@ -18,15 +19,11 @@ const AdjustStockModal = ({
   const [customReason, setCustomReason] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  const defaultRecentAdjustments = [
-    { id: 1, productName: 'Flour 5kg', warehouseCode: 'WH-JB-03', reason: 'Stock discrepancy', qty: -10 },
-    { id: 2, productName: 'Palm Oil 1L', warehouseCode: 'WH-KL-01', reason: 'Damaged goods', qty: -25 },
-    { id: 3, productName: 'Sugar Premium', warehouseCode: 'WH-KL-01', reason: 'System correction', qty: 15 },
-    { id: 4, productName: 'Wheat Powder', warehouseCode: 'WH-JB-03', reason: 'Manual correction', qty: 40 },
-    { id: 5, productName: 'Milk Packets', warehouseCode: 'WH-PG-02', reason: 'Expired stock', qty: -18 }
-  ];
+  // Search states for searchable product dropdown
+  const [productSearch, setProductSearch] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  const [recentAdjustments, setRecentAdjustments] = useState(defaultRecentAdjustments);
+  const [recentAdjustments, setRecentAdjustments] = useState([]);
 
   const { user } = useSelector(state => state.auth);
   const isManager = user?.role === 'WarehouseManager';
@@ -43,9 +40,8 @@ const AdjustStockModal = ({
         try {
           const res = await stockApi.getMovements({ pageSize: 40 });
           if (res?.isSuccess && res.data?.items) {
-            // Filter movements to show ADJUSTMENT type movements
             const adjustments = res.data.items
-              .filter(m => m.movementType === 'ADJUSTMENT' || m.movementType === 3)
+              .filter(m => m.movementTypeId === 3 || m.movementType?.toLowerCase().includes('adjust'))
               .map(m => ({
                 id: m.id,
                 productName: m.productName,
@@ -54,11 +50,7 @@ const AdjustStockModal = ({
                 qty: m.quantity
               }));
             
-            if (adjustments.length > 0) {
-              setRecentAdjustments(adjustments.slice(0, 5));
-            } else {
-              setRecentAdjustments(defaultRecentAdjustments);
-            }
+            setRecentAdjustments(adjustments.slice(0, 5));
           }
         } catch (err) {
           console.error('Failed to load real-time adjustments:', err);
@@ -72,12 +64,15 @@ const AdjustStockModal = ({
     if (selectedItem) {
       setProductId(selectedItem.productId);
       setWarehouseId(selectedItem.warehouseId);
+      setProductSearch(selectedItem.productName || '');
       setAdjustType('ADD');
       setQuantity(50);
       setReason('Stock count discrepancy');
       setCustomReason('');
     } else {
-      setProductId(products[0]?.id || '');
+      const initialProduct = products[0];
+      setProductId(initialProduct?.id || '');
+      setProductSearch(initialProduct?.name || '');
       setWarehouseId(allowedWarehouses[0]?.id || '');
       setAdjustType('ADD');
       setQuantity(50);
@@ -91,20 +86,43 @@ const AdjustStockModal = ({
   // Resolve current quantities and metadata
   const currentProduct = selectedItem 
     ? { name: selectedItem.productName, sku: selectedItem.sku }
-    : products.find(p => p.id.toString() === productId.toString()) || { name: 'Unknown Product', sku: 'N/A' };
+    : products.find(p => p.id?.toString() === productId?.toString()) || { name: 'Unknown Product', sku: 'N/A' };
 
   const currentWarehouse = selectedItem
     ? { name: selectedItem.warehouseName, code: selectedItem.warehouseCode || `WH-${selectedItem.warehouseId}` }
-    : warehouses.find(w => w.id.toString() === warehouseId.toString()) || { name: 'Unknown Warehouse', code: 'N/A' };
+    : warehouses.find(w => w.id?.toString() === warehouseId?.toString()) || { name: 'Unknown Warehouse', code: 'N/A' };
 
-  const currentQty = selectedItem ? selectedItem.quantityOnHand : 45; // Default fallback to match premium style
-  const reorderPoint = selectedItem?.reorderPoint || 100;
+  // Look up actual stock level from database
+  const matchedStockLevel = selectedItem || stockLevels.find(
+    s => s.productId?.toString() === productId?.toString() &&
+         s.warehouseId?.toString() === warehouseId?.toString()
+  );
+
+  const currentQty = matchedStockLevel ? matchedStockLevel.quantityOnHand : 0; 
+  const reorderPoint = matchedStockLevel?.reorderPoint || 10;
   
   // Calculate preview variables
   const qtyChange = Number(quantity) || 0;
   const delta = adjustType === 'ADD' ? qtyChange : -qtyChange;
   const newQty = Math.max(0, currentQty + delta);
   const isHealthy = newQty > reorderPoint;
+
+  // Search product helpers
+  const selectedProduct = products.find(p => p.id.toString() === productId.toString());
+  const filteredProducts = products.filter(p => {
+    const term = (productSearch || '').toLowerCase();
+    return (
+      (p.name || '').toLowerCase().includes(term) ||
+      (p.sku || '').toLowerCase().includes(term)
+    );
+  });
+
+  const handleDropdownClose = () => {
+    setIsDropdownOpen(false);
+    if (selectedProduct) {
+      setProductSearch(selectedProduct.name);
+    }
+  };
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
@@ -140,256 +158,34 @@ const AdjustStockModal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-[#1e293b]/40 backdrop-blur-[2px] transition-opacity" 
+        className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity duration-300" 
         onClick={onClose} 
       />
 
-      {/* Modal Box split container */}
-      <div 
-        className="bg-white rounded-xl border border-slate-200 shadow-xl max-w-[780px] w-full mx-4 z-10 overflow-hidden flex flex-col md:flex-row transition-all duration-300"
-        style={{
-          fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
-        }}
-      >
+      {/* Modal Split Box Container */}
+      <div className="bg-white rounded-3xl border border-slate-100 shadow-2xl max-w-[820px] w-full z-10 overflow-hidden flex flex-col md:flex-row transition-all duration-300 transform scale-100">
+        
         {/* Left Column: Form Details */}
-        <div className="w-full md:w-1/2 border-b md:border-b-0 md:border-r border-slate-100 flex flex-col">
+        <div className="w-full md:w-1/2 border-b md:border-b-0 md:border-r border-slate-100 flex flex-col bg-white">
+          
           {/* Header */}
-          <div className="px-4 py-3.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-            <h3 className="text-[13px] font-bold text-slate-800 flex items-center gap-1.5">
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#f59e0b" strokeWidth="2">
-                <circle cx="8" cy="8" r="7"/>
-                <path d="M8 4v4M8 11v1"/>
-              </svg>
-              Adjustment details
-            </h3>
+          <div className="px-5 py-4 border-b border-slate-100 bg-slate-50/40 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-lg bg-amber-50 border border-amber-200/60 flex items-center justify-center">
+                <svg className="w-3.5 h-3.5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider">
+                Adjust Inventory Stock
+              </h3>
+            </div>
             <button 
               onClick={onClose} 
               className="text-slate-400 hover:text-slate-600 bg-transparent border-none cursor-pointer p-0.5 flex items-center justify-center transition-colors md:hidden"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-
-          {/* Form */}
-          <form onSubmit={handleFormSubmit} className="p-4 flex-1">
-            {/* PRODUCT DETAIL BOX */}
-            <div className="bg-[#f1f5f9] border border-[#e2e8f0] rounded-[8px] p-[11px] mb-[10px]">
-              <div className="text-[13px] font-semibold text-[#1e293b] mb-[2px]">
-                {currentProduct.name}
-              </div>
-              <div className="text-[10px] font-mono text-[#64748b]">
-                {currentProduct.sku} · {currentWarehouse.code}
-              </div>
-              <div className="grid grid-cols-3 gap-[8px] mt-[8px]">
-                <div>
-                  <div className="text-[9px] text-[#64748b]">Current qty</div>
-                  <div className="text-[13px] font-semibold" style={{ color: currentQty <= reorderPoint ? '#991b1b' : '#1e293b' }}>
-                    {currentQty}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-[9px] text-[#64748b]">Reorder point</div>
-                  <div className="text-[13px] font-semibold text-[#1e293b]">
-                    {reorderPoint}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-[9px] text-[#64748b]">90d velocity</div>
-                  <div className="text-[13px] font-semibold text-[#1e293b]">
-                    52/day
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* DIRECTION */}
-            <div className="text-[10px] font-semibold text-[#64748b] mb-[6px]">
-              Adjustment direction
-            </div>
-            <div className="grid grid-cols-2 gap-[6px] mb-[12px]">
-              <div 
-                onClick={() => setAdjustType('ADD')}
-                className="rounded-[8px] p-[10px] text-center cursor-pointer transition-all border-[1.5px]"
-                style={{
-                  borderColor: adjustType === 'ADD' ? '#22c55e' : '#e2e8f0',
-                  background: adjustType === 'ADD' ? '#f0fdf4' : '#fff'
-                }}
-              >
-                <div className="text-[18px] mb-[2px]" style={{ color: adjustType === 'ADD' ? '#166534' : '#94a3b8' }}>↑</div>
-                <div className="text-[10px] font-bold" style={{ color: adjustType === 'ADD' ? '#166534' : '#64748b' }}>Increase</div>
-                <div className="text-[9px]" style={{ color: adjustType === 'ADD' ? '#166534' : '#94a3b8', opacity: 0.7 }}>Add to stock</div>
-              </div>
-              <div 
-                onClick={() => setAdjustType('SUBTRACT')}
-                className="rounded-[8px] p-[10px] text-center cursor-pointer transition-all border-[1.5px]"
-                style={{
-                  borderColor: adjustType === 'SUBTRACT' ? '#ef4444' : '#e2e8f0',
-                  background: adjustType === 'SUBTRACT' ? '#fef2f2' : '#fff'
-                }}
-              >
-                <div className="text-[18px] mb-[2px]" style={{ color: adjustType === 'SUBTRACT' ? '#991b1b' : '#94a3b8' }}>↓</div>
-                <div className="text-[10px] font-bold" style={{ color: adjustType === 'SUBTRACT' ? '#991b1b' : '#64748b' }}>Decrease</div>
-                <div className="text-[9px]" style={{ color: adjustType === 'SUBTRACT' ? '#991b1b' : '#94a3b8', opacity: 0.7 }}>Remove from stock</div>
-              </div>
-            </div>
-
-            {/* Dynamic Dropdowns if no selected item */}
-            {!selectedItem && (
-              <>
-                <div className="mb-[10px]">
-                  <label className="text-[10px] font-semibold text-[#64748b] mb-[4px] block">Product</label>
-                  <select 
-                    value={productId}
-                    onChange={(e) => setProductId(e.target.value)}
-                    className="w-full border border-[#e2e8f0] rounded-[6px] px-[10px] py-[7px] text-[11px] outline-none text-[#1e293b] bg-white cursor-pointer"
-                  >
-                    {products.map(p => (
-                      <option key={p.id} value={p.id}>[{p.sku}] — {p.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="mb-[10px]">
-                  <label className="text-[10px] font-semibold text-[#64748b] mb-[4px] block">Warehouse</label>
-                  <select 
-                    value={warehouseId}
-                    onChange={(e) => setWarehouseId(e.target.value)}
-                    className="w-full border border-[#e2e8f0] rounded-[6px] px-[10px] py-[7px] text-[11px] outline-none text-[#1e293b] bg-white cursor-pointer"
-                  >
-                    {allowedWarehouses.map(w => (
-                      <option key={w.id} value={w.id}>{w.code || `WH-${w.id}`} — {w.name}</option>
-                    ))}
-                  </select>
-                </div>
-              </>
-            )}
-
-            {/* Quantity Field */}
-            <div className="mb-[10px]">
-              <label className="text-[10px] font-semibold text-[#64748b] mb-[4px] block">Quantity to adjust</label>
-              <div className="flex gap-[6px] items-center">
-                <button 
-                  type="button"
-                  onClick={decrementQty}
-                  className="w-[30px] h-[30px] border border-[#e2e8f0] rounded-[6px] bg-white cursor-pointer font-bold text-[16px] flex items-center justify-center text-[#64748b] hover:bg-slate-50 transition-colors"
-                >
-                  −
-                </button>
-                <input 
-                  className="w-full border border-[#e2e8f0] rounded-[6px] py-[7px] text-[13px] font-semibold outline-none text-[#1e293b] bg-white text-center" 
-                  type="number" 
-                  value={quantity}
-                  onChange={(e) => setQuantity(Math.max(1, Number(e.target.value) || 0))}
-                />
-                <button 
-                  type="button"
-                  onClick={incrementQty}
-                  className="w-[30px] h-[30px] border border-[#e2e8f0] rounded-[6px] bg-white cursor-pointer font-bold text-[16px] flex items-center justify-center text-[#64748b] hover:bg-slate-50 transition-colors"
-                >
-                  +
-                </button>
-              </div>
-            </div>
-
-            {/* Reason Field */}
-            <div className="mb-[10px]">
-              <label className="text-[10px] font-semibold text-[#64748b] mb-[4px] block">Reason for adjustment</label>
-              <select 
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                className="w-full border border-[#e2e8f0] rounded-[6px] px-[10px] py-[7px] text-[11px] outline-none text-[#1e293b] bg-white cursor-pointer"
-              >
-                <option value="Stock count discrepancy">Stock discrepancy</option>
-                <option value="Damaged goods">Damaged goods</option>
-                <option value="Expired stock">Expired stock</option>
-                <option value="System correction">System correction</option>
-                <option value="Manual correction">Manual correction</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-
-            {reason === 'Other' && (
-              <div className="mb-[10px]">
-                <label className="text-[10px] font-semibold text-[#64748b] mb-[4px] block">Specify Custom Reason</label>
-                <input
-                  type="text"
-                  value={customReason}
-                  onChange={(e) => setCustomReason(e.target.value)}
-                  placeholder="Specify details..."
-                  className="w-full border border-[#e2e8f0] rounded-[6px] px-[10px] py-[7px] text-[11px] outline-none text-[#1e293b] bg-white"
-                  required
-                />
-              </div>
-            )}
-
-            {/* PREVIEW */}
-            <div className="bg-[#f1f5f9] rounded-[7px] p-[11px] mt-[6px]">
-              <div className="text-[9px] text-[#64748b] mb-[3px]">After adjustment</div>
-              <div className="text-[19px] font-bold mb-[6px]" style={{ color: isHealthy ? '#166534' : '#991b1b' }}>
-                {newQty}
-              </div>
-              <div className="flex justify-between text-[10px] text-[#64748b] py-[2px]">
-                <span>Before</span>
-                <span style={{ color: currentQty <= reorderPoint ? '#991b1b' : '#64748b', fontWeight: 600 }}>{currentQty}</span>
-              </div>
-              <div className="flex justify-between text-[10px] text-[#64748b] py-[2px]">
-                <span>Adjustment</span>
-                <span style={{ color: adjustType === 'ADD' ? '#166534' : '#991b1b', fontWeight: 600 }}>
-                  {adjustType === 'ADD' ? '+' : '-'}{qtyChange}
-                </span>
-              </div>
-              <hr className="border-none border-t border-[#e2e8f0] my-[5px]"/>
-              <div className="flex justify-between text-[11px] font-semibold text-[#1e293b]">
-                <span>New qty on hand</span>
-                <span>{newQty}</span>
-              </div>
-            </div>
-
-            {/* Alert Warnings */}
-            {!isHealthy ? (
-              <div className="flex items-center gap-[5px] bg-[#fef3c7] border border-[#fcd34d] rounded-[6px] p-[6px_8px] text-[10px] text-[#92400e] mt-[7px]">
-                <span>⚠</span> Still below reorder point ({reorderPoint}) — a reorder suggestion will be auto-raised
-              </div>
-            ) : (
-              <div className="flex items-center gap-[5px] bg-[#f0fdf4] border border-[#86efac] rounded-[6px] p-[6px_8px] text-[10px] text-[#166534] mt-[7px]">
-                <span>✓</span> Stock will be healthy after this movement
-              </div>
-            )}
-
-            {/* FORM FOOTER */}
-            <div className="flex gap-[7px] mt-[14px] pt-[12px] border-t border-[#e2e8f0]">
-              <button 
-                type="button"
-                onClick={onClose}
-                className="border border-[#e2e8f0] bg-white text-[#64748b] rounded-[6px] p-[8px] text-[11px] cursor-pointer w-full font-medium hover:bg-slate-50 transition-colors"
-              >
-                Cancel
-              </button>
-              <button 
-                type="submit"
-                disabled={submitting}
-                className="bg-[#1a2a4a] text-white border-none rounded-[6px] p-[8px] text-[11px] font-semibold cursor-pointer w-full hover:bg-[#243558] transition-colors disabled:opacity-50"
-              >
-                {submitting ? 'Saving...' : 'Save adjustment →'}
-              </button>
-            </div>
-          </form>
-        </div>
-
-        {/* Right Column: Recent Adjustments */}
-        <div className="w-full md:w-1/2 p-4 bg-white flex flex-col justify-between">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-2">
-            <h3 className="font-bold text-[14px] text-slate-800">
-              Recent Adjustments
-            </h3>
-            <button 
-              onClick={onClose} 
-              className="text-slate-400 hover:text-slate-650 bg-transparent border-none cursor-pointer p-0.5 hidden md:flex items-center justify-center transition-colors"
             >
               <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -397,39 +193,355 @@ const AdjustStockModal = ({
             </button>
           </div>
 
-          <div className="flex flex-col flex-1 divide-y divide-slate-100">
-            {recentAdjustments.map((item) => {
-              const isPositive = item.qty > 0;
-              return (
-                <div key={item.id} className="flex justify-between items-center py-3.5 first:pt-1">
-                  <div>
-                    <div className="font-bold text-[12.5px] text-[#1e293b]">
-                      {item.productName}
-                    </div>
-                    <div className="text-[10px] text-slate-400 mt-0.5">
-                      {item.warehouseCode} · {item.reason}
-                    </div>
-                  </div>
-                  <div 
-                    className="font-bold text-[13.5px] font-mono whitespace-nowrap"
-                    style={{ color: isPositive ? '#166534' : '#991b1b' }}
-                  >
-                    {isPositive ? `+${item.qty}` : item.qty}
-                  </div>
+          {/* Form */}
+          <form onSubmit={handleFormSubmit} className="p-5 flex-1 overflow-y-auto max-h-[580px] scrollbar-hide">
+            
+            {/* PRODUCT CARD BOX */}
+            <div className="bg-slate-50/70 border border-slate-100 rounded-2xl p-4 mb-4 shadow-3xs">
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Active SKU Context</span>
+              <div className="text-[13.5px] font-black text-slate-800 leading-snug mt-1">
+                {currentProduct.name}
+              </div>
+              <div className="flex items-center gap-1.5 mt-1">
+                <span className="text-[9px] font-bold font-mono bg-slate-100 border border-slate-200/50 text-slate-500 px-1.5 py-0.5 rounded uppercase tracking-wider">
+                  {currentProduct.sku}
+                </span>
+                <span className="text-[9px] font-bold text-slate-400 uppercase">
+                  · {currentWarehouse.code}
+                </span>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-3 mt-4 pt-3.5 border-t border-slate-100">
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Current stock</span>
+                  <span className={`text-[14px] font-black ${currentQty <= reorderPoint ? 'text-rose-600' : 'text-slate-800'}`}>
+                    {currentQty.toLocaleString()} units
+                  </span>
                 </div>
-              );
-            })}
+                <div className="flex flex-col gap-0.5 border-l border-slate-100 pl-3">
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Safety Runway</span>
+                  <span className="text-[14px] font-black text-slate-700">
+                    {reorderPoint.toLocaleString()} units
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* ADJUSTMENT DIRECTION */}
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-2">Adjustment Action</span>
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              
+              {/* Increase Option */}
+              <div 
+                onClick={() => setAdjustType('ADD')}
+                className={`rounded-2xl p-3.5 text-center cursor-pointer border-2 transition-all duration-200 flex flex-col items-center gap-1 hover:border-emerald-300 hover:bg-emerald-50/20 ${
+                  adjustType === 'ADD' 
+                    ? 'border-emerald-500 bg-emerald-50/40 shadow-sm shadow-emerald-50' 
+                    : 'border-slate-100 bg-white'
+                }`}
+              >
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-black transition-all ${
+                  adjustType === 'ADD' ? 'bg-emerald-500 text-white shadow-xs' : 'bg-slate-100 text-slate-400'
+                }`}>
+                  ↑
+                </div>
+                <span className={`text-[11px] font-black tracking-wide ${adjustType === 'ADD' ? 'text-emerald-700' : 'text-slate-500'}`}>
+                  Increase stock
+                </span>
+                <span className="text-[9px] font-semibold text-slate-400 leading-none">
+                  Add positive audit quantity
+                </span>
+              </div>
+
+              {/* Decrease Option */}
+              <div 
+                onClick={() => setAdjustType('SUBTRACT')}
+                className={`rounded-2xl p-3.5 text-center cursor-pointer border-2 transition-all duration-200 flex flex-col items-center gap-1 hover:border-rose-300 hover:bg-rose-50/20 ${
+                  adjustType === 'SUBTRACT' 
+                    ? 'border-rose-500 bg-rose-50/40 shadow-sm shadow-rose-50' 
+                    : 'border-slate-100 bg-white'
+                }`}
+              >
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-black transition-all ${
+                  adjustType === 'SUBTRACT' ? 'bg-rose-500 text-white shadow-xs' : 'bg-slate-100 text-slate-400'
+                }`}>
+                  ↓
+                </div>
+                <span className={`text-[11px] font-black tracking-wide ${adjustType === 'SUBTRACT' ? 'text-rose-700' : 'text-slate-500'}`}>
+                  Decrease stock
+                </span>
+                <span className="text-[9px] font-semibold text-slate-400 leading-none">
+                  Remove damaged/expired units
+                </span>
+              </div>
+
+            </div>
+
+            {/* Dynamic Product/Warehouse Selectors (if initialized empty) */}
+            {!selectedItem && (
+              <div className="flex flex-col gap-3 mb-4">
+                
+                {/* Searchable Product Combobox */}
+                <div className="relative">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1.5">
+                    Product <span className="text-[9px] font-medium text-slate-400 font-mono">(Type to search)</span>
+                  </label>
+                  
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="Search product name or SKU..."
+                      value={productSearch}
+                      onChange={(e) => {
+                        setProductSearch(e.target.value);
+                        setIsDropdownOpen(true);
+                      }}
+                      onFocus={() => setIsDropdownOpen(true)}
+                      className="w-full bg-white border border-slate-200 rounded-xl pl-3 pr-8 py-2 text-xs font-bold outline-none text-slate-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-100 transition-all shadow-3xs"
+                    />
+                    <div className="absolute right-3 top-2.5 text-slate-400 pointer-events-none">
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                    </div>
+                  </div>
+
+                  {isDropdownOpen && (
+                    <>
+                      {/* Click outside backdrop */}
+                      <div className="fixed inset-0 z-40 bg-transparent" onClick={handleDropdownClose} />
+                      
+                      <div className="absolute z-50 left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white border border-slate-100 rounded-xl shadow-lg divide-y divide-slate-50/60 scrollbar-thin">
+                        {filteredProducts.length === 0 ? (
+                          <div className="px-3.5 py-3 text-[11px] font-semibold text-slate-400 text-center">
+                            No products match search term
+                          </div>
+                        ) : (
+                          filteredProducts.map(p => (
+                            <div
+                              key={p.id}
+                              onClick={() => {
+                                setProductId(p.id);
+                                setProductSearch(p.name);
+                                setIsDropdownOpen(false);
+                              }}
+                              className={`px-3.5 py-2.5 cursor-pointer flex justify-between items-center transition-colors text-xs ${
+                                productId.toString() === p.id.toString()
+                                  ? 'bg-indigo-50/70 text-indigo-700 font-bold'
+                                  : 'text-slate-700 hover:bg-slate-50'
+                              }`}
+                            >
+                              <span className="truncate max-w-[220px]">{p.name}</span>
+                              <span className="text-[9px] font-mono font-bold bg-slate-100 border border-slate-200/50 text-slate-500 px-1.5 py-0.5 rounded tracking-wide uppercase">
+                                {p.sku}
+                              </span>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1.5">Warehouse Node</label>
+                  <select 
+                    value={warehouseId}
+                    onChange={(e) => setWarehouseId(e.target.value)}
+                    className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-bold outline-none text-slate-700 cursor-pointer focus:border-indigo-500 shadow-3xs"
+                  >
+                    {allowedWarehouses.map(w => (
+                      <option key={w.id} value={w.id}>{w.code || `WH-${w.id}`} — {w.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            )}
+
+            {/* QUANTITY INPUT */}
+            <div className="mb-4">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1.5">Quantity to Adjust</label>
+              <div className="flex gap-2 items-center">
+                <button 
+                  type="button"
+                  onClick={decrementQty}
+                  className="w-9 h-9 border border-slate-200 rounded-xl bg-white cursor-pointer font-black text-sm flex items-center justify-center text-slate-500 hover:bg-slate-50 active:scale-95 transition-all shadow-3xs"
+                >
+                  −
+                </button>
+                <input 
+                  type="number" 
+                  value={quantity}
+                  onChange={(e) => setQuantity(Math.max(1, Number(e.target.value) || 0))}
+                  className="flex-1 border border-slate-200 rounded-xl py-2 text-sm font-black outline-none text-slate-800 text-center focus:border-indigo-500 shadow-3xs"
+                />
+                <button 
+                  type="button"
+                  onClick={incrementQty}
+                  className="w-9 h-9 border border-slate-200 rounded-xl bg-white cursor-pointer font-black text-sm flex items-center justify-center text-slate-500 hover:bg-slate-50 active:scale-95 transition-all shadow-3xs"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            {/* REASON DROP-DOWN */}
+            <div className="mb-4">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1.5">Adjustment Reason</label>
+              <select 
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-bold outline-none text-slate-700 cursor-pointer focus:border-indigo-500 shadow-3xs"
+              >
+                <option value="Stock count discrepancy">Stock discrepancy</option>
+                <option value="Damaged goods">Damaged goods</option>
+                <option value="Expired stock">Expired stock</option>
+                <option value="System correction">System correction</option>
+                <option value="Manual correction">Manual correction</option>
+                <option value="Other">Other (Specify details)</option>
+              </select>
+            </div>
+
+            {reason === 'Other' && (
+              <div className="mb-4 animate-slide-in">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1.5">Specify Custom Details</label>
+                <input
+                  type="text"
+                  value={customReason}
+                  onChange={(e) => setCustomReason(e.target.value)}
+                  placeholder="Specify notes or transaction details..."
+                  className="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold outline-none text-slate-700 focus:border-indigo-500 shadow-3xs"
+                  required
+                />
+              </div>
+            )}
+
+            {/* TRANSACTION PREVIEW IMPACT */}
+            <div className="bg-slate-50/90 rounded-2xl p-4 border border-slate-100 border-dashed mt-5 shadow-3xs">
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Adjustment Impact Preview</span>
+              <div className="flex justify-between items-center mt-3">
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[10px] text-slate-400 font-semibold">Ledger Stockout Buffer</span>
+                  <span className={`text-xl font-black ${isHealthy ? 'text-emerald-600' : 'text-rose-600 animate-pulse'}`}>
+                    {newQty.toLocaleString()} units
+                  </span>
+                </div>
+                <div className="text-right flex flex-col gap-0.5">
+                  <span className="text-[9px] font-mono text-slate-400 tracking-wider">
+                    {currentQty} {adjustType === 'ADD' ? '+' : '−'} {qtyChange}
+                  </span>
+                  <span className={`text-[10px] font-bold ${adjustType === 'ADD' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                    {adjustType === 'ADD' ? 'Stock Added' : 'Stock Removed'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* SAFETY BANNER WARNING */}
+            {!isHealthy ? (
+              <div className="flex items-start gap-2 bg-rose-50 border border-rose-100 rounded-xl p-3 text-[10px] text-rose-700 font-semibold mt-3 shadow-2xs shadow-rose-50">
+                <span className="text-[12px] shrink-0 mt-0.5">⚠️</span>
+                <span>
+                  <strong>Safety Threshold Alert:</strong> Balance will fall below the safety target ({reorderPoint} units). An automated reorder suggestion will be raised.
+                </span>
+              </div>
+            ) : (
+              <div className="flex items-start gap-2 bg-emerald-50 border border-emerald-100 rounded-xl p-3 text-[10px] text-emerald-700 font-semibold mt-3 shadow-2xs shadow-emerald-50">
+                <span className="text-[12px] shrink-0 mt-0.5">✓</span>
+                <span>
+                  <strong>Healthy Stock Buffer:</strong> Proposed balance meets or exceeds the warehouse safety target.
+                </span>
+              </div>
+            )}
+
+            {/* FORM BUTTONS */}
+            <div className="flex gap-2.5 mt-5 pt-4 border-t border-slate-100">
+              <button 
+                type="button"
+                onClick={onClose}
+                className="flex-1 border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 rounded-xl py-2.5 text-xs font-black tracking-wide uppercase transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit"
+                disabled={submitting}
+                className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white border-none rounded-xl py-2.5 text-xs font-black tracking-wide uppercase shadow-sm shadow-indigo-100 transition-colors disabled:opacity-50 cursor-pointer"
+              >
+                {submitting ? 'Applying...' : 'Apply adjustment →'}
+              </button>
+            </div>
+          </form>
+        </div>
+
+        {/* Right Column: Audit Ledger Feed */}
+        <div className="w-full md:w-1/2 p-5 bg-slate-50/40 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200/80 mb-3">
+              <div className="flex flex-col gap-0.5">
+                <h3 className="font-black text-xs text-slate-800 uppercase tracking-wider">
+                  Live Audit Ledger
+                </h3>
+                <p className="text-[9px] text-slate-400 font-semibold uppercase tracking-wider">Real-time Stock logs</p>
+              </div>
+              <button 
+                onClick={onClose} 
+                className="text-slate-400 hover:text-slate-650 bg-transparent border-none cursor-pointer p-0.5 hidden md:flex items-center justify-center transition-colors"
+              >
+                <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="flex flex-col flex-1 divide-y divide-slate-100 overflow-y-auto max-h-[460px] scrollbar-hide pr-1">
+              {recentAdjustments.length === 0 ? (
+                <div className="py-12 text-center flex flex-col items-center justify-center">
+                  <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-2">
+                    📊
+                  </div>
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">
+                    No recent adjustments
+                  </span>
+                </div>
+              ) : (
+                recentAdjustments.map((item) => {
+                  const isPositive = item.qty > 0;
+                  return (
+                    <div key={item.id} className="flex justify-between items-center py-3.5 hover:bg-slate-50/60 px-2.5 -mx-2.5 rounded-xl transition-all duration-150 group">
+                      <div className="flex flex-col gap-0.5">
+                        <div className="font-bold text-[12.5px] text-slate-800 group-hover:text-indigo-600 transition-colors leading-tight">
+                          {item.productName}
+                        </div>
+                        <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">
+                          {item.warehouseCode} · {item.reason}
+                        </div>
+                      </div>
+                      
+                      <span className={`font-mono text-xs font-black px-2.5 py-1 rounded-lg border uppercase tracking-wider whitespace-nowrap shadow-2xs ${
+                        isPositive 
+                          ? 'bg-emerald-50 border-emerald-100 text-emerald-600' 
+                          : 'bg-rose-50 border-rose-100 text-rose-600'
+                      }`}>
+                        {isPositive ? `+${item.qty}` : item.qty}
+                      </span>
+                    </div>
+                  );
+                })
+              )}
+            </div>
           </div>
 
-          {/* Bottom branding pill */}
-          <div className="mt-4 pt-3.5 border-t border-slate-100 flex items-center justify-between text-[9.5px] text-slate-400">
-            <span>VeloSync Adjustment Ledger</span>
-            <span className="flex items-center gap-1">
+          {/* Ledger bottom footer info */}
+          <div className="mt-4 pt-3.5 border-t border-slate-200/80 flex items-center justify-between text-[9px] text-slate-400 font-bold uppercase tracking-wider">
+            <span>VeloSync Audit Ledger</span>
+            <span className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              Live Sync
+              Live Synced
             </span>
           </div>
         </div>
+
       </div>
     </div>
   );

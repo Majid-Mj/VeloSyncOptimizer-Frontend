@@ -57,7 +57,7 @@ const StockMovementsPage = () => {
     try {
       const [whRes, prodRes] = await Promise.all([
         warehouseApi.getAll(),
-        productApi.getAll({ pageSize: 100 })
+        productApi.getAll({ pageSize: 250 }) // Larger limit to capture all filter values
       ]);
       if (whRes.isSuccess) setWarehouses(whRes.data || []);
       setProducts(prodRes?.data?.items || prodRes?.data || []);
@@ -120,27 +120,27 @@ const StockMovementsPage = () => {
 
   if (loading && movements.length === 0) {
     return (
-      <div className="p-4 md:p-6 max-w-[1600px] mx-auto min-h-[calc(100vh-4rem)] flex flex-col gap-5">
+      <div className="p-4 md:p-6 max-w-[1600px] mx-auto min-h-[calc(100vh-4rem)] flex flex-col gap-6">
         {/* Header Shimmer */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-pulse">
-          <div className="space-y-2.5">
-            <div className="h-7 w-52 bg-gray-200 rounded-xl"></div>
-            <div className="h-3 w-80 bg-gray-100 rounded-lg"></div>
+          <div className="space-y-3">
+            <div className="h-8 w-64 bg-slate-200/80 rounded-2xl"></div>
+            <div className="h-3.5 w-96 bg-slate-100 rounded-xl"></div>
           </div>
         </div>
 
         {/* Stats Shimmer */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="bg-gray-100/70 border border-gray-100 rounded-2xl h-20"></div>
+            <div key={i} className="bg-slate-50/70 border border-slate-100 rounded-3xl h-24"></div>
           ))}
         </div>
 
         {/* Toolbar Shimmer */}
-        <div className="bg-white rounded-xl p-3.5 border border-gray-100 shadow-sm h-14 w-full animate-pulse"></div>
+        <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs h-20 w-full animate-pulse"></div>
 
         {/* Table Shimmer */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm h-[380px] w-full animate-pulse"></div>
+        <div className="bg-white rounded-3xl border border-slate-100 shadow-xs h-[420px] w-full animate-pulse"></div>
       </div>
     );
   }
@@ -148,12 +148,12 @@ const StockMovementsPage = () => {
   if (error) {
     return (
       <div className="p-4 md:p-6 max-w-[1600px] mx-auto min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center gap-4 text-center">
-        <div className="w-14 h-14 rounded-full bg-red-50 text-red-500 flex items-center justify-center text-lg font-bold">⚠️</div>
-        <h3 className="text-base font-bold text-gray-800">Audit Ledger Connection Failed</h3>
-        <p className="text-xs font-semibold text-gray-400 max-w-sm leading-normal">{error}</p>
+        <div className="w-16 h-16 rounded-full bg-rose-50 border border-rose-100 text-rose-500 flex items-center justify-center text-xl font-bold animate-bounce shadow-sm">⚠️</div>
+        <h3 className="text-base font-black text-slate-800 uppercase tracking-wide">Audit Ledger Connection Failed</h3>
+        <p className="text-xs font-semibold text-slate-400 max-w-sm leading-normal">{error}</p>
         <button
           onClick={fetchMovements}
-          className="px-4.5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition-all border-none cursor-pointer"
+          className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs rounded-xl shadow-md shadow-indigo-100 transition-all border-none cursor-pointer"
         >
           Try Again
         </button>
@@ -166,17 +166,18 @@ const StockMovementsPage = () => {
     : null;
 
   return (
-    <div className="p-4 md:p-6 max-w-[1600px] mx-auto min-h-[calc(100vh-4rem)] flex flex-col gap-5 relative">
+    <div className="p-4 md:p-6 max-w-[1600px] mx-auto min-h-[calc(100vh-4rem)] flex flex-col gap-6 relative">
+      
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2.5 tracking-tight">
+          <h1 className="text-2xl font-black text-slate-800 flex items-center gap-2.5 tracking-tight uppercase">
             Stock Movements
-            <span className="text-[12px] bg-blue-50 text-blue-600 font-semibold px-2 py-0.5 rounded-full border border-blue-100">
+            <span className="text-[10px] font-black bg-indigo-50 border border-indigo-100/60 text-indigo-600 px-2.5 py-1 rounded-full uppercase tracking-wider">
               {totalCount} events logged
             </span>
           </h1>
-          <p className="text-[11px] font-bold text-gray-400 mt-0.5 tracking-wide uppercase">
+          <p className="text-[10px] font-bold text-slate-400 mt-1 tracking-wider uppercase leading-none">
             {assignedWarehouse
               ? `Live Inventory Ledger Trail for ${assignedWarehouse.name} (${assignedWarehouse.code})`
               : 'Live Inventory Ledger Trail — Receivals, Shipments, Transfers & Adjustments'
@@ -186,7 +187,7 @@ const StockMovementsPage = () => {
         {canTransfer && (
           <button
             onClick={() => navigate('/dashboard/stock-movement/transfer')}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-[12px] rounded-xl shadow-md shadow-blue-100 hover:shadow-lg hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-1.5 self-start sm:self-auto border-none cursor-pointer"
+            className="px-4.5 py-2.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-black text-[11.5px] uppercase tracking-wider rounded-xl shadow-lg shadow-indigo-100 hover:shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2 self-start sm:self-auto border-none cursor-pointer"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
@@ -215,9 +216,10 @@ const StockMovementsPage = () => {
       {/* Movements Table grid */}
       <div className="relative">
         {loading && (
-          <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] z-10 flex items-center justify-center rounded-2xl">
-            <div className="flex items-center gap-2 px-4 py-2 bg-white/95 shadow-md border border-gray-100 rounded-xl text-xs font-bold text-gray-600 animate-pulse">
-              🔄 Synchronizing Audit Logs...
+          <div className="absolute inset-0 bg-white/60 backdrop-blur-xs z-10 flex items-center justify-center rounded-3xl">
+            <div className="flex items-center gap-2.5 px-4.5 py-3.5 bg-white/95 shadow-xl border border-slate-100 rounded-2xl text-xs font-black text-slate-700 animate-pulse">
+              <span className="w-2 h-2 rounded-full bg-indigo-500 animate-ping"></span>
+              Synchronizing Ledger Trail...
             </div>
           </div>
         )}
@@ -226,17 +228,17 @@ const StockMovementsPage = () => {
 
       {/* Pagination Controls Footer */}
       {totalPages > 1 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-1.5 border-t border-gray-50 bg-transparent px-2">
-          <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wide">
-            Showing page <span className="text-gray-700 font-extrabold">{pageNumber}</span> of <span className="text-gray-700 font-extrabold">{totalPages}</span> — {totalCount.toLocaleString()} total entries
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-100 bg-transparent px-2">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
+            Showing page <span className="text-slate-800 font-extrabold">{pageNumber}</span> of <span className="text-slate-800 font-extrabold">{totalPages}</span> — {totalCount.toLocaleString()} total logged events
           </p>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             {/* Prev Button */}
             <button
               onClick={() => handlePageChange(pageNumber - 1)}
               disabled={pageNumber === 1}
-              className="p-1.5 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 text-gray-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer flex items-center justify-center"
+              className="w-8.5 h-8.5 border border-slate-200 rounded-xl bg-white hover:bg-slate-50 text-slate-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer flex items-center justify-center shadow-3xs"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -254,9 +256,9 @@ const StockMovementsPage = () => {
                   <button
                     key={pageIdx}
                     onClick={() => handlePageChange(pageIdx)}
-                    className={`px-3 py-1.5 text-xs font-extrabold rounded-lg border transition-all cursor-pointer ${isCurrent
-                      ? 'bg-blue-600 border-blue-600 text-white shadow-sm'
-                      : 'bg-white border-gray-200 text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                    className={`w-8.5 h-8.5 text-xs font-black rounded-xl border transition-all cursor-pointer flex items-center justify-center shadow-3xs ${isCurrent
+                      ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm shadow-indigo-100 scale-105'
+                      : 'bg-white border-slate-200 text-slate-500 hover:text-slate-800 hover:bg-slate-50'
                       }`}
                   >
                     {pageIdx}
@@ -265,7 +267,7 @@ const StockMovementsPage = () => {
               }
 
               if (pageIdx === 2 || pageIdx === totalPages - 1) {
-                return <span key={pageIdx} className="text-gray-300 text-xs px-1 font-bold">...</span>;
+                return <span key={pageIdx} className="text-slate-300 text-xs px-1.5 font-bold">...</span>;
               }
 
               return null;
@@ -275,7 +277,7 @@ const StockMovementsPage = () => {
             <button
               onClick={() => handlePageChange(pageNumber + 1)}
               disabled={pageNumber === totalPages}
-              className="p-1.5 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 text-gray-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer flex items-center justify-center"
+              className="w-8.5 h-8.5 border border-slate-200 rounded-xl bg-white hover:bg-slate-50 text-slate-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer flex items-center justify-center shadow-3xs"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -285,12 +287,10 @@ const StockMovementsPage = () => {
         </div>
       )}
 
-
-
       {/* ── Toast Alerts ── */}
       {toast.show && (
         <div
-          className={`fixed bottom-5 right-5 z-50 flex items-center gap-2 px-4.5 py-3 rounded-2xl shadow-lg border text-xs font-bold text-white transition-all duration-300 animate-slide-up ${toast.type === 'error' ? 'bg-red-500 border-red-400' : 'bg-green-500 border-green-400'
+          className={`fixed bottom-5 right-5 z-50 flex items-center gap-2 px-4.5 py-3 rounded-2xl shadow-lg border text-xs font-bold text-white transition-all duration-300 animate-slide-up ${toast.type === 'error' ? 'bg-rose-500 border-rose-400' : 'bg-green-500 border-green-400'
             }`}
         >
           {toast.type === 'error' ? '⚠️' : '✅'} {toast.msg}

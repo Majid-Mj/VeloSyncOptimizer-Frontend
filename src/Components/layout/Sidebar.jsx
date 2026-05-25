@@ -9,7 +9,7 @@ const NAV_SECTIONS = [
         items: [
             {
                 key: 'dashboard',
-                label: 'Dashboard',
+                label: 'Dashboard Hub',
                 path: '/dashboard',
                 icon: (
                     <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -35,7 +35,6 @@ const NAV_SECTIONS = [
                     </svg>
                 ),
             },
-
             {
                 key: 'stock-movement',
                 label: 'Stock movement',
@@ -64,7 +63,7 @@ const NAV_SECTIONS = [
         items: [
             {
                 key: 'reorder-suggestions',
-                label: 'Reorder suggestions',
+                label: 'Reorder Engine',
                 path: '/dashboard/reorder-suggestions',
                 badge: 4,
                 icon: (
@@ -88,7 +87,7 @@ const NAV_SECTIONS = [
             },
             {
                 key: 'suppliers',
-                label: 'Suppliers',
+                label: 'Suppliers list',
                 path: '/dashboard/suppliers',
                 icon: (
                     <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -104,7 +103,7 @@ const NAV_SECTIONS = [
         items: [
             {
                 key: 'reports',
-                label: 'Reports',
+                label: 'Reports & Logs',
                 path: '/dashboard/reports',
                 icon: (
                     <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -128,7 +127,7 @@ const getRoleLabel = (role) => {
 const getInitials = (user) => {
     const f = user?.firstName?.[0] ?? '';
     const l = user?.lastName?.[0] ?? '';
-    return (f + l).toUpperCase() || 'AM';
+    return (f + l).toUpperCase() || 'VS';
 };
 
 const Sidebar = ({ isOpen, onClose }) => {
@@ -147,43 +146,42 @@ const Sidebar = ({ isOpen, onClose }) => {
 
     return (
         <aside className={`
-          fixed inset-y-0 left-0 z-30 lg:static lg:z-auto
-          w-[240px] min-w-[240px] h-screen bg-[#16213E] flex flex-col 
-          transition-transform duration-300 ease-in-out scrollbar-none overflow-y-auto
+          fixed inset-y-0 left-0 z-50 lg:static lg:z-auto
+          w-[240px] min-w-[240px] h-screen bg-[#0f172a] border-r border-slate-800/80 flex flex-col 
+          transition-transform duration-300 ease-in-out scrollbar-none overflow-y-auto shadow-xl
           ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}>
 
-            {/* ── Brand ── */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
+            {/* ── Brand / Header ── */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800/60 flex-shrink-0">
                 <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center shrink-0">
-                        <svg className="w-[16px] h-[16px]" viewBox="0 0 16 16" fill="none" stroke="white" strokeWidth="1.8">
-                            <rect x="1" y="7" width="14" height="8" rx="1" />
-                            <path d="M4 7V5a4 4 0 018 0v2" />
-                            <line x1="8" y1="10" x2="8" y2="13" />
+                    <div className="w-8.5 h-8.5 bg-indigo-500/10 border border-indigo-500/30 rounded-xl flex items-center justify-center shrink-0">
+                        <svg className="w-[18px] h-[18px] text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                            <rect x="2" y="2" width="20" height="20" rx="3" />
+                            <path d="M12 2v20M2 12h20" />
                         </svg>
                     </div>
                     <div>
-                        <div className="text-white text-[14px] font-semibold leading-tight tracking-tight">VeloSync</div>
-                        <div className="text-white/40 text-[9px] font-medium mt-0.5">Inventory Optimizer</div>
+                        <div className="text-white text-[13px] font-black leading-tight tracking-wider uppercase">VeloSync</div>
+                        <div className="text-indigo-400/60 text-[9px] font-bold mt-0.5 uppercase tracking-widest">Inventory Opt</div>
                     </div>
                 </div>
                 {/* Mobile dismiss button */}
                 <button 
                   onClick={onClose}
-                  className="lg:hidden p-1.5 bg-transparent border-none text-white/45 hover:text-white cursor-pointer active:scale-95 transition-all text-xl leading-none"
+                  className="lg:hidden p-1 bg-transparent border-none text-slate-400 hover:text-white cursor-pointer active:scale-95 transition-all text-xl leading-none"
                 >
                   &times;
                 </button>
             </div>
 
-            {/* ── Navigation ── */}
-            <nav className="flex-1 py-2 overflow-y-auto">
+            {/* ── Navigation List ── */}
+            <nav className="flex-1 py-3 overflow-y-auto">
                 {NAV_SECTIONS.map((section) => (
-                    <div key={section.label} className="mb-0.5">
+                    <div key={section.label} className="mb-2">
 
                         {/* Section label */}
-                        <p className="text-[9px] font-bold tracking-[0.05em] text-white/30 uppercase px-5 pt-3 pb-1">
+                        <p className="text-[9px] font-black tracking-widest text-slate-500 uppercase px-5 pt-3 pb-1">
                             {section.label}
                         </p>
 
@@ -198,29 +196,31 @@ const Sidebar = ({ isOpen, onClose }) => {
                                         if (onClose) onClose();
                                     }}
                                     className={`
-                    relative w-full flex items-center gap-2.5 px-5 py-2.5
-                    text-[12px] text-left border-none cursor-pointer
-                    transition-all duration-150
-                    ${active
-                                             ? 'bg-[#4285F4]/20 text-white font-semibold'
-                                             : 'bg-transparent text-white/50 font-medium hover:bg-white/[0.06] hover:text-white/85'
+                                        relative w-full flex items-center gap-3 px-5 py-2.5
+                                        text-[12px] text-left border-none cursor-pointer
+                                        transition-all duration-150 group
+                                        ${active
+                                             ? 'bg-indigo-600/15 text-white font-black'
+                                             : 'bg-transparent text-slate-400 font-bold hover:bg-slate-800/40 hover:text-slate-100 hover:translate-x-0.5'
                                          }
-                  `}
+                                    `}
                                 >
                                     {/* Active indicator bar */}
                                     {active && (
-                                        <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#4285F4] rounded-r-sm" />
+                                        <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-indigo-500 rounded-r-md" />
                                     )}
 
                                     {/* Icon */}
-                                    <span className="flex items-center shrink-0 scale-90">{item.icon}</span>
+                                    <span className={`flex items-center shrink-0 scale-90 ${
+                                        active ? 'text-indigo-400' : 'text-slate-500 group-hover:text-slate-300'
+                                    }`}>{item.icon}</span>
 
                                     {/* Label */}
                                     <span className="flex-1 truncate">{item.label}</span>
 
                                     {/* Badge */}
                                     {item.badge && (
-                                        <span className="bg-red-600 text-white text-[9px] font-semibold px-1.5 py-0.5 rounded-full min-w-[16px] text-center leading-none">
+                                        <span className="bg-rose-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full min-w-[15px] text-center leading-none">
                                             {item.badge}
                                         </span>
                                     )}
@@ -232,8 +232,8 @@ const Sidebar = ({ isOpen, onClose }) => {
 
                 {/* ── Admin Specific Navigation ── */}
                 {user?.role === 'Admin' && (
-                    <div className="mb-0.5 animate-fade-in">
-                        <p className="text-[9px] font-bold tracking-[0.05em] text-white/30 uppercase px-5 pt-3 pb-1">
+                    <div className="mb-2 animate-fade-in">
+                        <p className="text-[9px] font-black tracking-widest text-slate-500 uppercase px-5 pt-3 pb-1">
                             ADMINISTRATION
                         </p>
                         <button
@@ -242,19 +242,21 @@ const Sidebar = ({ isOpen, onClose }) => {
                                 if (onClose) onClose();
                             }}
                             className={`
-                                relative w-full flex items-center gap-2.5 px-5 py-2.5
+                                relative w-full flex items-center gap-3 px-5 py-2.5
                                 text-[12px] text-left border-none cursor-pointer
-                                transition-all duration-150
+                                transition-all duration-150 group
                                 ${isActive('/dashboard/user-approvals')
-                                    ? 'bg-[#4285F4]/20 text-white font-semibold'
-                                    : 'bg-transparent text-white/50 font-medium hover:bg-white/[0.06] hover:text-white/85'
+                                    ? 'bg-indigo-600/15 text-white font-black'
+                                    : 'bg-transparent text-slate-400 font-bold hover:bg-slate-800/40 hover:text-slate-100 hover:translate-x-0.5'
                                 }
                             `}
                         >
                             {isActive('/dashboard/user-approvals') && (
-                                <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#4285F4] rounded-r-sm" />
+                                <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-indigo-500 rounded-r-md" />
                             )}
-                            <span className="flex items-center shrink-0 scale-90">
+                            <span className={`flex items-center shrink-0 scale-90 ${
+                                isActive('/dashboard/user-approvals') ? 'text-indigo-400' : 'text-slate-500 group-hover:text-slate-300'
+                            }`}>
                                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
                                     <circle cx="9" cy="7" r="4" />
@@ -269,18 +271,18 @@ const Sidebar = ({ isOpen, onClose }) => {
             </nav>
 
             {/* ── User Footer ── */}
-            <div className="border-t border-white/[0.06] px-5 py-4">
+            <div className="border-t border-slate-800/60 px-5 py-4 bg-slate-950/20 flex-shrink-0">
                 <div className="flex items-center gap-2.5 mb-2.5">
-                    {/* Avatar */}
-                    <div className="w-[30px] h-[30px] rounded-full bg-[#4285F4] text-white text-[11px] font-semibold flex items-center justify-center shrink-0">
+                    {/* Avatar with gradient */}
+                    <div className="w-[32px] h-[32px] rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white text-[11px] font-black flex items-center justify-center shrink-0 shadow-md shadow-indigo-500/10 select-none">
                         {getInitials(user)}
                     </div>
                     {/* Info */}
                     <div className="overflow-hidden">
-                        <div className="text-white text-[12px] font-semibold truncate">
+                        <div className="text-white text-[11.5px] font-black truncate uppercase leading-none">
                             {user?.firstName} {user?.lastName}
                         </div>
-                        <div className="text-white/40 text-[10px] font-medium mt-0.5 truncate">
+                        <div className="text-slate-400 text-[9.5px] font-bold mt-1.5 truncate uppercase tracking-wider leading-none">
                             {getRoleLabel(user?.role)}
                         </div>
                     </div>
@@ -289,7 +291,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                 {/* Sign out */}
                 <button
                     onClick={handleLogout}
-                    className="text-white/35 text-[11px] bg-transparent border-none cursor-pointer p-0 hover:text-white/70 transition-colors duration-150"
+                    className="text-slate-500 text-[10px] font-black uppercase tracking-wider bg-transparent border-none cursor-pointer p-0 hover:text-indigo-400 transition-colors duration-150"
                 >
                     Sign out →
                 </button>

@@ -10,7 +10,7 @@ const UserApprovalPage = () => {
   
   // Modal state
   const [selectedUser, setSelectedUser] = useState(null);
-  const [selectedRole, setSelectedRole] = useState('WarehouseManager');
+  const [selectedRole, setSelectedRole] = useState('2');
   const [selectedWarehouseId, setSelectedWarehouseId] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -56,8 +56,7 @@ const UserApprovalPage = () => {
 
   const openApprovalModal = (user) => {
     setSelectedUser(user);
-    // Default to registering user's role if it fits our mapped options, else WarehouseManager
-    const initialRole = user.roleName === 'ProcurementOfficer' ? 'ProcurementOfficer' : 'WarehouseManager';
+    const initialRole = user.roleName === 'ProcurementManager' ? '3' : '2';
     setSelectedRole(initialRole);
     
     // Default to the first available warehouse if exists
@@ -79,7 +78,7 @@ const UserApprovalPage = () => {
     e.preventDefault();
     if (!selectedUser) return;
 
-    const isWhManager = selectedRole === 'WarehouseManager';
+    const isWhManager = selectedRole === '2';
     if (isWhManager && !selectedWarehouseId) {
       showToast('Please select a warehouse for the Warehouse Manager.', 'error');
       return;
@@ -87,7 +86,7 @@ const UserApprovalPage = () => {
 
     const payload = {
       userId: selectedUser.id,
-      role: selectedRole,
+      role: parseInt(selectedRole),
       warehouseId: isWhManager ? Number(selectedWarehouseId) : null
     };
 
@@ -219,7 +218,7 @@ const UserApprovalPage = () => {
                     <td className="px-6 py-4.5 whitespace-nowrap text-gray-600 font-semibold">{u.email}</td>
                     <td className="px-6 py-4.5 whitespace-nowrap">
                       <span className="font-semibold text-gray-700 bg-gray-100 px-2 py-1 rounded-lg">
-                        {u.roleName === 'ProcurementOfficer' ? 'Procurement Officer' : 'Warehouse Manager'}
+                        {u.roleName === 'ProcurementManager' ? 'Procurement Manager' : 'Warehouse Manager'}
                       </span>
                     </td>
                     <td className="px-6 py-4.5 whitespace-nowrap text-gray-400 font-bold">{formatDate(u.createdAt)}</td>
@@ -285,8 +284,8 @@ const UserApprovalPage = () => {
                     onChange={(e) => setSelectedRole(e.target.value)}
                     className="w-full px-3 py-2 bg-gray-50 border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-100 rounded-xl text-xs outline-none font-semibold text-gray-700 appearance-none cursor-pointer"
                   >
-                    <option value="WarehouseManager">Warehouse Manager</option>
-                    <option value="ProcurementOfficer">Procurement Officer</option>
+                    <option value="2">Warehouse Manager</option>
+                    <option value="3">Procurement Manager</option>
                   </select>
                   <svg className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <path d="m6 9 6 6 6-6" />
@@ -295,7 +294,7 @@ const UserApprovalPage = () => {
               </div>
 
               {/* Conditional Warehouse Selection Dropdown */}
-              {selectedRole === 'WarehouseManager' && (
+              {selectedRole === '2' && (
                 <div className="animate-fade-in">
                   <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5" htmlFor="warehouse-select">
                     Assign Operational Warehouse

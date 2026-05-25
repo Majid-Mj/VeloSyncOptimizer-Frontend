@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 const TransferForm = ({
   isManager,
@@ -32,198 +32,311 @@ const TransferForm = ({
   destMeetsRP,
   onCancel
 }) => {
+  // Searchable Product states
+  const [productSearch, setProductSearch] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const activeProduct = products.find(p => p.id.toString() === selectedProductId.toString());
+
+  // Synchronize search input on mount and changes
+  useEffect(() => {
+    if (activeProduct) {
+      setProductSearch(activeProduct.name);
+    }
+  }, [selectedProductId, products]);
+
+  const handleDropdownClose = () => {
+    setIsDropdownOpen(false);
+    if (activeProduct) {
+      setProductSearch(activeProduct.name);
+    }
+  };
+
+  const filteredProducts = products.filter(p => {
+    const term = (productSearch || '').toLowerCase();
+    return (
+      (p.name || '').toLowerCase().includes(term) ||
+      (p.sku || '').toLowerCase().includes(term)
+    );
+  });
+
   return (
-    <div className="bg-white border border-slate-200 rounded-xl shadow-sm flex flex-col h-full min-h-0 overflow-hidden">
-      <div className="px-3.5 py-2 border-b border-slate-100 flex items-center gap-1.5 bg-gradient-to-r from-white to-slate-50/50 flex-shrink-0">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#3b82f6" strokeWidth="2">
-          <path d="M3 8h10M9 4l4 4-4 4" />
-        </svg>
-        <div className="text-[10.5px] font-extrabold text-slate-700 uppercase tracking-wider">Transfer details</div>
+    <div className="bg-white/80 backdrop-blur-md border border-slate-100 shadow-xs rounded-2xl flex flex-col h-full overflow-hidden">
+      
+      {/* Form Header */}
+      <div className="px-5 py-3.5 border-b border-slate-100 flex items-center gap-2 bg-slate-50/40 flex-shrink-0">
+        <div className="w-6 h-6 rounded-lg bg-indigo-50 border border-indigo-200/50 flex items-center justify-center">
+          <svg className="w-3.5 h-3.5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+          </svg>
+        </div>
+        <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider">
+          Stock Transfer Details
+        </h3>
       </div>
-      <form onSubmit={handleSubmit} className="flex flex-col h-full min-h-0">
-        <div className="p-3.5 flex-1 overflow-y-hidden min-h-0">
-          {/* Product dropdown */}
-          <div className="flex flex-col gap-0.5 mb-1.5">
-            <label className="text-[8.5px] font-extrabold text-slate-400 uppercase tracking-wider">Product</label>
-            <select 
-              className="w-full bg-slate-50 text-slate-700 text-[11.5px] font-bold px-2.5 py-1 rounded-md border border-slate-200 outline-none focus:border-blue-500 focus:bg-white transition-all appearance-none cursor-pointer pr-8 bg-[url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 fill=%22none%22 viewBox=%220 0 24 24%22 stroke=%22%2364748b%22 stroke-width=%222.5%22%3E%3Cpath stroke-linecap=%22round%22 stroke-linejoin=%22round%22 d=%22M19 9l-7 7-7-7%22 /%3E%3C/svg%3E')] bg-no-repeat bg-[position:right_10px_center] bg-[size:12px]"
-              value={selectedProductId}
-              onChange={(e) => setSelectedProductId(e.target.value)}
-              required
-            >
-              {products.map(p => {
-                const stock = getProductStockInWarehouse(p.id, sourceWarehouseId);
-                return (
-                  <option key={p.id} value={p.id}>
-                    {p.name} ({sourceWh?.code || 'Source'}: {stock} units)
-                  </option>
-                );
-              })}
-            </select>
-          </div>
 
-          {/* Source warehouse selection */}
-          <div className="flex flex-col gap-0.5 mb-1.5">
-            <label className="text-[8.5px] font-extrabold text-slate-400 uppercase tracking-wider">
-              Source warehouse {isManager && ' (Locked to your assigned warehouse)'}
+      <form onSubmit={handleSubmit} className="flex flex-col h-full min-h-[10px] overflow-hidden">
+        <div className="p-4.5 flex-1 flex flex-col gap-3.5 overflow-y-auto">
+          
+          {/* Searchable Product Selector */}
+          <div className="relative">
+            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">
+              Product <span className="text-[8.5px] font-medium text-slate-400 font-mono">(Type to search)</span>
             </label>
-            <select 
-              className="w-full bg-slate-50 text-slate-700 text-[11.5px] font-bold px-2.5 py-1 rounded-md border border-slate-200 outline-none focus:border-blue-500 focus:bg-white transition-all appearance-none cursor-pointer pr-8 bg-[url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 fill=%22none%22 viewBox=%220 0 24 24%22 stroke=%22%2364748b%22 stroke-width=%222.5%22%3E%3Cpath stroke-linecap=%22round%22 stroke-linejoin=%22round%22 d=%22M19 9l-7 7-7-7%22 /%3E%3C/svg%3E')] bg-no-repeat bg-[position:right_10px_center] bg-[size:12px] disabled:opacity-75 disabled:cursor-not-allowed"
-              value={sourceWarehouseId}
-              onChange={(e) => setSourceWarehouseId(e.target.value)}
-              required
-              disabled={isManager}
-            >
-              {warehouses.map(w => {
-                const stock = getProductStockInWarehouse(selectedProductId, w.id);
-                return (
-                  <option key={w.id} value={w.id}>
-                    {w.code} — {w.city || w.name} (Stock: {stock})
-                  </option>
-                );
-              })}
-            </select>
-          </div>
-
-          {/* Swap direction button */}
-          {!isManager && (
-            <div 
-              className="flex items-center justify-center w-5.5 h-5.5 rounded-full bg-blue-50 border border-blue-100 text-blue-600 hover:bg-blue-100 hover:scale-105 active:scale-95 transition-all self-center cursor-pointer -my-2.5 z-10 shadow-sm mx-auto font-bold border-none"
-              onClick={handleSwap} 
-              title="Swap Source/Destination"
-            >
-              <span className="text-xs font-extrabold">⇄</span>
-            </div>
-          )}
-
-          {/* Destination warehouse selection */}
-          <div className="flex flex-col gap-0.5 mb-1.5">
-            <label className="text-[8.5px] font-extrabold text-slate-400 uppercase tracking-wider">Destination warehouse</label>
-            <select 
-              className="w-full bg-slate-50 text-slate-700 text-[11.5px] font-bold px-2.5 py-1 rounded-md border border-slate-200 outline-none focus:border-blue-500 focus:bg-white transition-all appearance-none cursor-pointer pr-8 bg-[url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 fill=%22none%22 viewBox=%220 0 24 24%22 stroke=%22%2364748b%22 stroke-width=%222.5%22%3E%3Cpath stroke-linecap=%22round%22 stroke-linejoin=%22round%22 d=%22M19 9l-7 7-7-7%22 /%3E%3C/svg%3E')] bg-no-repeat bg-[position:right_10px_center] bg-[size:12px]"
-              value={destWarehouseId}
-              onChange={(e) => setDestWarehouseId(e.target.value)}
-              required
-            >
-              {warehouses.map(w => {
-                const stock = getProductStockInWarehouse(selectedProductId, w.id);
-                return (
-                  <option key={w.id} value={w.id}>
-                    {w.code} — {w.city || w.name} (Stock: {stock})
-                  </option>
-                );
-              })}
-            </select>
-          </div>
-
-          {/* Quantity to transfer */}
-          <div className="flex flex-col gap-0.5 mb-1.5">
-            <label className="text-[8.5px] font-extrabold text-slate-400 uppercase tracking-wider">Quantity to transfer</label>
-            <div className="flex items-center bg-slate-50 border border-slate-200 rounded-md overflow-hidden">
-              <button type="button" className="w-7 h-7 flex items-center justify-center text-xs font-extrabold text-slate-500 hover:bg-slate-200 transition-colors border-none bg-transparent cursor-pointer" onClick={() => handleQuantityAdjust(-10)}>−</button>
-              <input 
-                className="w-full bg-transparent text-center text-[11.5px] font-bold px-2.5 py-1 outline-none border-none" 
-                type="number" 
-                value={quantity} 
-                onChange={(e) => setQuantity(e.target.value)}
-                style={{ textAlign: 'center', fontSize: '15px', fontWeight: '700' }}
-                required
-                min="1"
+            
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search product..."
+                value={productSearch}
+                onChange={(e) => {
+                  setProductSearch(e.target.value);
+                  setIsDropdownOpen(true);
+                }}
+                onFocus={() => {
+                  setIsDropdownOpen(true);
+                }}
+                className="w-full bg-slate-50/70 text-xs font-bold text-slate-700 pl-3 pr-8.5 py-2.5 rounded-xl border border-slate-200/60 focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-100 outline-none transition-all shadow-3xs h-9.5"
               />
-              <button type="button" className="w-7 h-7 flex items-center justify-center text-xs font-extrabold text-slate-500 hover:bg-slate-200 transition-colors border-none bg-transparent cursor-pointer" onClick={() => handleQuantityAdjust(10)}>+</button>
-            </div>
-          </div>
-
-          {/* Notes field */}
-          <div className="flex flex-col gap-0.5 mb-1.5">
-            <label className="text-[8.5px] font-extrabold text-slate-400 uppercase tracking-wider">Notes</label>
-            <textarea 
-              className="w-full bg-slate-50 text-slate-700 text-[11.5px] font-bold px-2.5 py-1 rounded-md border border-slate-200 outline-none focus:border-blue-500 focus:bg-white transition-all resize-none" 
-              rows="2" 
-              placeholder="e.g. Rebalancing overstocked warehouse..."
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-            ></textarea>
-          </div>
-
-          {/* TRANSFER PREVIEW SECTION */}
-          <div className="grid grid-cols-2 gap-2 mt-1.5">
-            <div className="border border-slate-200 rounded-md p-1.5 bg-slate-50/50">
-              <div className="text-[8px] font-extrabold text-slate-400 uppercase tracking-wider mb-0.5">Source after transfer</div>
-              <div className="text-xs font-black" style={{ color: '#991b1b' }}>
-                -{qtyToMove}
-              </div>
-              <div className="text-[8.5px] font-extrabold text-slate-500 leading-tight">
-                {sourceWh?.code || 'WH-KL-01'} · {sourceStockNow} → {sourceStockAfter} units
-              </div>
-              <div 
-                style={{ 
-                  marginTop: '4px', 
-                  fontSize: '8px', 
-                  color: sourceBelowRP ? '#991b1b' : '#166534', 
-                  background: sourceBelowRP ? '#fee2e2' : '#dcfce7', 
-                  borderRadius: '4px', 
-                  padding: '2px 4px',
-                  fontWeight: 800,
-                  display: 'inline-block'
-                }}
-              >
-                {sourceBelowRP ? '⚠ Will go below reorder point' : '✓ Safe reorder levels'}
+              <div className="absolute right-3 top-2.5 text-slate-400 pointer-events-none">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
               </div>
             </div>
 
-            <div className="border border-slate-200 rounded-md p-1.5 bg-slate-50/50">
-              <div className="text-[8px] font-extrabold text-slate-400 uppercase tracking-wider mb-0.5">Destination after transfer</div>
-              <div className="text-xs font-black" style={{ color: '#166534' }}>
-                +{qtyToMove}
+            {isDropdownOpen && (
+              <>
+                <div className="fixed inset-0 z-40 bg-transparent" onClick={handleDropdownClose} />
+                <div className="absolute z-50 left-0 right-0 mt-1 max-h-40 overflow-y-auto bg-white border border-slate-100 rounded-xl shadow-lg divide-y divide-slate-50/60 scrollbar-thin">
+                  {filteredProducts.length === 0 ? (
+                    <div className="px-3.5 py-2 text-[10px] font-semibold text-slate-400 text-center">
+                      No products found
+                    </div>
+                  ) : (
+                    filteredProducts.map(p => {
+                      const stock = getProductStockInWarehouse(p.id, sourceWarehouseId);
+                      return (
+                        <div
+                          key={p.id}
+                          onClick={() => {
+                            setSelectedProductId(p.id.toString());
+                            setProductSearch(p.name);
+                            setIsDropdownOpen(false);
+                          }}
+                          className={`px-3.5 py-2.5 cursor-pointer flex justify-between items-center transition-colors text-xs ${
+                            selectedProductId.toString() === p.id.toString()
+                              ? 'bg-indigo-50/70 text-indigo-700 font-bold'
+                              : 'text-slate-700 hover:bg-slate-50'
+                          }`}
+                        >
+                          <div className="truncate max-w-[190px]">
+                            <span className="block truncate font-bold">{p.name}</span>
+                            <span className="text-[8.5px] font-semibold text-slate-400">SKU: {p.sku}</span>
+                          </div>
+                          <span className={`text-[9px] font-black px-1.5 py-0.5 rounded border ${
+                            stock === 0
+                              ? 'bg-rose-50 border-rose-100 text-rose-600'
+                              : 'bg-indigo-50 border-indigo-100 text-indigo-600'
+                          }`}>
+                            {stock} in source
+                          </span>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* COMPACT SIDE-BY-SIDE WAREHOUSE FLOW */}
+          <div className="flex items-center gap-2">
+            
+            {/* Source Select */}
+            <div className="flex-1 min-w-0">
+              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">
+                Source
+              </label>
+              <div className="relative">
+                <select
+                  className="w-full bg-slate-50/70 text-xs font-bold text-slate-700 pl-3 pr-7 py-2 rounded-xl border border-slate-200/60 focus:border-indigo-500 focus:bg-white outline-none appearance-none cursor-pointer transition-all shadow-3xs h-9.5 disabled:opacity-70"
+                  value={sourceWarehouseId}
+                  onChange={(e) => setSourceWarehouseId(e.target.value)}
+                  required
+                  disabled={isManager}
+                >
+                  {warehouses.map(w => {
+                    const stock = getProductStockInWarehouse(selectedProductId, w.id);
+                    return (
+                      <option key={w.id} value={w.id}>
+                        {w.code} ({stock} u)
+                      </option>
+                    );
+                  })}
+                </select>
+                <div className="absolute right-2.5 top-3 text-slate-400 pointer-events-none">
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
               </div>
-              <div className="text-[8.5px] font-extrabold text-slate-500 leading-tight">
-                {destWh?.code || 'WH-JB-03'} · {destStockNow} → {destStockAfter} units
+            </div>
+
+            {/* Compact Swap Button */}
+            {!isManager && (
+              <div className="pt-5 flex-shrink-0">
+                <button
+                  type="button"
+                  onClick={handleSwap}
+                  className="w-8 h-8 rounded-lg bg-white border border-slate-150 text-indigo-500 hover:bg-slate-50 active:scale-95 transition-all shadow-3xs flex items-center justify-center font-bold border-none cursor-pointer"
+                  title="Swap Warehouses"
+                >
+                  ⇄
+                </button>
               </div>
-              <div 
-                style={{ 
-                  marginTop: '4px', 
-                  fontSize: '8px', 
-                  color: destMeetsRP ? '#166534' : '#991b1b', 
-                  background: destMeetsRP ? '#dcfce7' : '#fee2e2', 
-                  borderRadius: '4px', 
-                  padding: '2px 4px',
-                  fontWeight: 800,
-                  display: 'inline-block'
-                }}
-              >
-                {destMeetsRP ? '✓ Will meet reorder point' : '⚠ Below safety buffer'}
+            )}
+
+            {/* Destination Select */}
+            <div className="flex-1 min-w-0">
+              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">
+                Destination
+              </label>
+              <div className="relative">
+                <select
+                  className="w-full bg-slate-50/70 text-xs font-bold text-slate-700 pl-3 pr-7 py-2 rounded-xl border border-slate-200/60 focus:border-indigo-500 focus:bg-white outline-none appearance-none cursor-pointer transition-all shadow-3xs h-9.5"
+                  value={destWarehouseId}
+                  onChange={(e) => setDestWarehouseId(e.target.value)}
+                  required
+                >
+                  {warehouses.map(w => {
+                    const stock = getProductStockInWarehouse(selectedProductId, w.id);
+                    return (
+                      <option key={w.id} value={w.id}>
+                        {w.code} ({stock} u)
+                      </option>
+                    );
+                  })}
+                </select>
+                <div className="absolute right-2.5 top-3 text-slate-400 pointer-events-none">
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          {/* COMPACT SIDE-BY-SIDE QUANTITY & NOTES */}
+          <div className="grid grid-cols-3 gap-3">
+            
+            {/* Quantity */}
+            <div className="col-span-1">
+              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">Qty</label>
+              <div className="flex items-center bg-slate-50/70 border border-slate-200/60 rounded-xl overflow-hidden shadow-3xs h-9.5">
+                <button 
+                  type="button" 
+                  className="w-8 h-full flex items-center justify-center text-sm font-black text-slate-500 hover:bg-slate-200/40 transition-colors border-none bg-transparent cursor-pointer" 
+                  onClick={() => handleQuantityAdjust(-10)}
+                >
+                  −
+                </button>
+                <input
+                  className="w-full bg-transparent text-center text-xs font-black outline-none border-none text-slate-800"
+                  type="number"
+                  value={quantity}
+                  onChange={(e) => setQuantity(e.target.value)}
+                  required
+                  min="1"
+                />
+                <button 
+                  type="button" 
+                  className="w-8 h-full flex items-center justify-center text-sm font-black text-slate-500 hover:bg-slate-200/40 transition-colors border-none bg-transparent cursor-pointer" 
+                  onClick={() => handleQuantityAdjust(10)}
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            {/* Notes */}
+            <div className="col-span-2">
+              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">Notes</label>
+              <input
+                type="text"
+                placeholder="Reference context..."
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                className="w-full bg-slate-50/70 text-xs font-bold text-slate-700 px-3 py-2 rounded-xl border border-slate-200/60 outline-none focus:border-indigo-500 focus:bg-white transition-all shadow-3xs h-9.5"
+              />
+            </div>
+
+          </div>
+
+          {/* COMPACT TRANSFER IMPACT BADGES */}
+          <div className="grid grid-cols-2 gap-3 mt-0.5">
+            <div className={`border rounded-xl p-3 transition-colors ${
+              sourceBelowRP ? 'border-rose-100 bg-rose-50/10' : 'border-slate-100'
+            }`}>
+              <div className="text-[8.5px] font-black text-slate-400 uppercase mb-0.5">Source Impact</div>
+              <div className="text-xs font-black text-rose-600 flex items-center justify-between">
+                <span>-{qtyToMove} units</span>
+                <span className={`text-[8px] font-black px-1.5 rounded ${
+                  sourceBelowRP ? 'bg-rose-50 text-rose-600' : 'bg-slate-50 text-slate-500'
+                }`}>
+                  {sourceBelowRP ? '⚠️ Below Safety' : '✓ Safe'}
+                </span>
+              </div>
+              <div className="text-[9.5px] font-bold text-slate-400 mt-1">
+                {sourceWh?.code || 'SRC'} : {sourceStockNow} ➔ {sourceStockAfter}
+              </div>
+            </div>
+
+            <div className={`border rounded-xl p-3 transition-colors ${
+              destMeetsRP ? 'border-emerald-100 bg-emerald-50/10' : 'border-slate-100'
+            }`}>
+              <div className="text-[8.5px] font-black text-slate-400 uppercase mb-0.5">Dest Impact</div>
+              <div className="text-xs font-black text-emerald-600 flex items-center justify-between">
+                <span>+{qtyToMove} units</span>
+                <span className={`text-[8px] font-black px-1.5 rounded ${
+                  destMeetsRP ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-50 text-slate-500'
+                }`}>
+                  {destMeetsRP ? '✓ Meets Buffer' : '⚠️ Low'}
+                </span>
+              </div>
+              <div className="text-[9.5px] font-bold text-slate-400 mt-1">
+                {destWh?.code || 'DST'} : {destStockNow} ➔ {destStockAfter}
               </div>
             </div>
           </div>
 
-          {/* SignalR broadcast banner */}
-          <div 
-            className="border rounded-md p-1.5 text-[9px] mt-1.5 flex items-center gap-1.5 font-bold"
-            style={{ 
-              background: '#eff6ff', 
-              borderColor: '#bfdbfe', 
-              color: '#1e40af'
-            }}
-          >
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-blue-600"></span>
+          {/* Broadcast Banner */}
+          <div className="border border-indigo-50/60 rounded-xl px-3 py-2 bg-indigo-50/30 text-[9.5px] font-bold text-indigo-700 flex items-center gap-2">
+            <span className="relative flex h-1.5 w-1.5 shrink-0">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-indigo-600"></span>
             </span>
-            Both warehouse dashboards will update live via SignalR after transfer
+            <span>Warehouse boards synchronize live via SignalR.</span>
           </div>
+
         </div>
 
         {/* Form Footer */}
-        <div className="px-3.5 py-1.5 border-t border-slate-100 bg-slate-50/50 flex justify-end gap-2 flex-shrink-0">
-          <button type="button" className="px-3 py-1 bg-white hover:bg-slate-50 text-slate-600 font-bold text-[11px] rounded-md border border-slate-200 transition-all cursor-pointer" onClick={onCancel}>Cancel</button>
-          <button 
-            type="submit" 
-            className="px-3 py-1 text-white font-bold text-[11px] rounded-md shadow-md transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed" 
-            style={{ background: '#1e40af' }} 
+        <div className="px-5 py-3.5 border-t border-slate-100 bg-slate-50/40 flex gap-3 flex-shrink-0">
+          <button
+            type="button"
+            className="flex-1 px-4 py-2.5 bg-white hover:bg-slate-50 text-slate-500 border border-slate-200/80 font-black text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer text-center"
+            onClick={onCancel}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="flex-1 px-4 py-2.5 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-md transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-center bg-indigo-600 hover:bg-indigo-700 shadow-indigo-100"
             disabled={submitting}
           >
-            {submitting ? 'Confirming...' : 'Confirm transfer →'}
+            {submitting ? 'Confirming...' : 'Confirm Transfer →'}
           </button>
         </div>
       </form>

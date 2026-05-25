@@ -69,6 +69,7 @@ const StockLevelsPage = () => {
       : (preselected ? preselected.toString() : 'ALL')
   );
   const [statusFilter, setStatusFilter] = useState('ALL');
+  const [categoryFilter, setCategoryFilter] = useState('ALL');
   const [sortBy, setSortBy] = useState('NAME');
 
   // Lock or pre-select warehouse dynamically
@@ -125,6 +126,12 @@ const StockLevelsPage = () => {
   }, []);
 
 
+  // Unique categories extracted from current stock levels
+  const categories = useMemo(() => {
+    const list = stockLevels.map(x => x.categoryName).filter(Boolean);
+    return ['ALL', ...Array.from(new Set(list))];
+  }, [stockLevels]);
+
   // Search, Filter, and Sort logic
   const processedStock = useMemo(() => {
     return stockLevels
@@ -146,7 +153,11 @@ const StockLevelsPage = () => {
           (statusFilter === 'LOW_STOCK' && (item.stockStatus === 'LOW_STOCK' || currentAvailable <= item.reorderPoint)) ||
           (statusFilter === 'IN_STOCK' && item.quantityOnHand > 0 && currentAvailable > item.reorderPoint);
 
-        return matchesSearch && matchesWarehouse && matchesStatus;
+        const matchesCategory = 
+          categoryFilter === 'ALL' || 
+          (item.categoryName && item.categoryName.toLowerCase() === categoryFilter.toLowerCase());
+
+        return matchesSearch && matchesWarehouse && matchesStatus && matchesCategory;
       })
       .sort((a, b) => {
         if (sortBy === 'NAME') return a.productName.localeCompare(b.productName);
@@ -155,7 +166,7 @@ const StockLevelsPage = () => {
         if (sortBy === 'AVAIL_ASC') return a.quantityAvailable - b.quantityAvailable;
         return 0;
       });
-  }, [stockLevels, searchQuery, warehouseFilter, statusFilter, sortBy]);
+  }, [stockLevels, searchQuery, warehouseFilter, statusFilter, categoryFilter, sortBy]);
 
   // Adjust Stock API Handler
   const handleAdjustSubmit = async (payload) => {
@@ -254,25 +265,25 @@ const StockLevelsPage = () => {
       {/* ── Page Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2.5 tracking-tight">
-            Stock Levels
-            <span className="text-[12px] bg-blue-50 text-blue-600 font-semibold px-2 py-0.5 rounded-full border border-blue-100">
+          <h1 className="text-2xl font-black text-slate-800 flex items-center gap-2.5 tracking-tight">
+            Stock Levels Balance
+            <span className="text-[10px] bg-indigo-50 border border-indigo-100 text-indigo-600 font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
               {processedStock.length} items
             </span>
           </h1>
-          <p className="text-[11px] font-bold text-gray-400 mt-0.5 tracking-wide uppercase">
-            Real-time Inventory quantities, Allocations & Safety thresholds
+          <p className="text-[10px] font-black text-slate-400 mt-1 tracking-wider uppercase">
+            Real-time inventory quantities, allocations & safety thresholds
           </p>
         </div>
         {(userRole === 'WarehouseManager') && (
           <button
             onClick={() => triggerAdjust(null)}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md shadow-blue-100 hover:shadow-lg hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-1.5 self-start sm:self-auto border-none cursor-pointer"
+            className="px-4.5 py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white font-bold text-xs rounded-xl shadow-md shadow-indigo-200 hover:shadow-lg hover:shadow-indigo-300 hover:scale-[1.02] active:scale-98 transition-all duration-200 flex items-center gap-2 self-start sm:self-auto border-none cursor-pointer"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
             </svg>
-            Initialize Stock level
+            Initialize Stock Level
           </button>
         )}
       </div>
@@ -288,6 +299,9 @@ const StockLevelsPage = () => {
         setWarehouseFilter={setWarehouseFilter}
         statusFilter={statusFilter}
         setStatusFilter={setStatusFilter}
+        categoryFilter={categoryFilter}
+        setCategoryFilter={setCategoryFilter}
+        categories={categories}
         sortBy={sortBy}
         setSortBy={setSortBy}
         warehouses={warehouses}
@@ -308,6 +322,7 @@ const StockLevelsPage = () => {
         selectedItem={selectedItem}
         products={products}
         warehouses={warehouses}
+        stockLevels={stockLevels}
         onSubmit={handleAdjustSubmit}
       />
 

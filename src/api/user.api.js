@@ -8,7 +8,15 @@ export const userApi = {
 
   approveUser: async (payload) => {
     // payload: { userId, role, warehouseId }
-    const response = await apiClient.put('/users/approve', payload);
+    const formData = new FormData();
+    formData.append('userId', payload.userId);
+    formData.append('role', payload.role);
+    if (payload.warehouseId) {
+      formData.append('warehouseId', payload.warehouseId);
+    }
+    const response = await apiClient.put('/users/approve', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
     return response.data;
   },
 

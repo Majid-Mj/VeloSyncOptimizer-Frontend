@@ -1,45 +1,146 @@
 import React from 'react';
 
 const StatCard = ({ icon, label, value, trend, trendType = 'up', color = 'blue' }) => {
-  const isNeutral = trendType === 'neutral';
-  const isDown = trendType === 'down';
   const isUp = trendType === 'up';
+  const isDown = trendType === 'down';
 
-  // Soft, color-coded shaded backgrounds for each card's icon pill
-  const iconClasses = {
-    blue: 'bg-blue-50 text-blue-600',
-    green: 'bg-green-50 text-green-600',
-    amber: 'bg-amber-50 text-amber-600',
-    red: 'bg-red-50 text-red-600',
-    gray: 'bg-gray-50 text-gray-500'
+  // Beautiful background matching shades, glowing shadows, and thematic borders
+  const styleConfigs = {
+    blue: {
+      cardBg: 'bg-gradient-to-br from-white to-indigo-50/40 hover:to-indigo-50/80',
+      border: 'border-slate-100 hover:border-indigo-300/60',
+      iconBg: 'bg-indigo-500 text-white shadow-sm shadow-indigo-200',
+      glow: 'hover:shadow-[0_10px_20px_-8px_rgba(79,70,229,0.15)]',
+      sparkColor: '#4F46E5',
+      sparkGradient: 'url(#blueGrad)',
+      bgGrad: 'from-indigo-500/5 to-transparent',
+    },
+    green: {
+      cardBg: 'bg-gradient-to-br from-white to-emerald-50/40 hover:to-emerald-50/80',
+      border: 'border-slate-100 hover:border-emerald-300/60',
+      iconBg: 'bg-emerald-500 text-white shadow-sm shadow-emerald-200',
+      glow: 'hover:shadow-[0_10px_20px_-8px_rgba(16,185,129,0.15)]',
+      sparkColor: '#0D9488',
+      sparkGradient: 'url(#greenGrad)',
+      bgGrad: 'from-teal-500/5 to-transparent',
+    },
+    amber: {
+      cardBg: 'bg-gradient-to-br from-white to-amber-50/45 hover:to-amber-50/80',
+      border: 'border-slate-100 hover:border-amber-300/60',
+      iconBg: 'bg-amber-500 text-white shadow-sm shadow-amber-200',
+      glow: 'hover:shadow-[0_10px_20px_-8px_rgba(245,158,11,0.15)]',
+      sparkColor: '#D97706',
+      sparkGradient: 'url(#amberGrad)',
+      bgGrad: 'from-amber-500/5 to-transparent',
+    },
+    red: {
+      cardBg: 'bg-gradient-to-br from-white to-rose-50/40 hover:to-rose-50/80',
+      border: 'border-slate-100 hover:border-rose-300/60',
+      iconBg: 'bg-rose-500 text-white shadow-sm shadow-rose-200',
+      glow: 'hover:shadow-[0_10px_20px_-8px_rgba(225,29,72,0.15)]',
+      sparkColor: '#E11D48',
+      sparkGradient: 'url(#redGrad)',
+      bgGrad: 'from-rose-500/5 to-transparent',
+    }
+  };
+
+  const currentStyle = styleConfigs[color] || styleConfigs.blue;
+
+  // Generate unique procedural sparkline shapes for high visual interest
+  const getSparklinePath = () => {
+    if (color === 'blue') return 'M 0 12 Q 15 5, 30 20 T 60 8 T 90 15 T 120 5';
+    if (color === 'green') return 'M 0 20 Q 15 12, 30 5 T 60 10 T 90 8 T 120 2';
+    if (color === 'amber') return 'M 0 15 Q 15 15, 30 14 T 60 18 T 90 12 T 120 14';
+    return 'M 0 8 Q 15 20, 30 12 T 60 25 T 90 5 T 120 8';
   };
 
   const trendClasses = {
-    up: 'bg-green-50 text-green-600',
-    down: 'bg-red-50 text-red-600',
-    neutral: 'bg-gray-50 text-gray-400'
+    up: 'bg-emerald-100/80 text-emerald-800 border-emerald-200',
+    down: 'bg-rose-100/80 text-rose-800 border-rose-200',
+    neutral: 'bg-slate-100 text-slate-700 border-slate-200'
   };
 
   return (
-    <div className="bg-gradient-to-br from-white to-[#f8fafc] hover:to-[#f1f5f9] rounded-2xl p-4 shadow-sm border border-gray-100/90 flex flex-col gap-3.5 hover:shadow-md transition-all duration-300 cursor-default group">
-      <div className="flex items-center justify-between">
-        {/* Color-coded shaded background icon pill */}
-        <div className={`w-9.5 h-9.5 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 duration-300 ${iconClasses[color]}`}>
-          <div className="scale-105">{icon}</div>
+    <div className={`relative rounded-3xl p-4 border shadow-[0_4px_16px_-4px_rgba(148,163,184,0.06)] flex flex-col justify-between overflow-hidden transition-all duration-300 hover:-translate-y-1 ${currentStyle.cardBg} ${currentStyle.border} ${currentStyle.glow} group cursor-pointer`}>
+      
+      {/* Decorative colored background gradient pulse */}
+      <div className={`absolute inset-0 bg-gradient-to-tr ${currentStyle.bgGrad} pointer-events-none opacity-40`} />
+
+      {/* Concise header block - smaller padding and heights */}
+      <div className="relative z-10 flex items-center justify-between">
+        {/* Compact Thematic Icon Container */}
+        <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 ${currentStyle.iconBg}`}>
+          {React.cloneElement(icon, { className: 'w-4 h-4' })}
         </div>
 
-        {/* Trend tag with light background and colored text */}
+        {/* Compact Trend Tag */}
         {trend && (
-          <div className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold ${trendClasses[trendType]}`}>
-            <span className="text-[9px]">{isUp ? '▲' : isDown ? '▼' : '—'}</span>
+          <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-[9.5px] font-black border leading-none shadow-sm transition-all duration-300 ${trendClasses[trendType]}`}>
+            <span className="text-[7.5px]">{isUp ? '▲' : isDown ? '▼' : '■'}</span>
             <span>{trend}</span>
           </div>
         )}
       </div>
 
-      <div>
-        <div className="text-2xl font-bold text-gray-900 tracking-tight leading-none">{value}</div>
-        <div className="text-[11px] font-bold text-gray-400 mt-1.5 uppercase tracking-wide">{label}</div>
+      {/* Concise metrics block - height reduced from mt-6 to mt-3.5 */}
+      <div className="relative z-10 mt-3.5 flex items-end justify-between">
+        <div>
+          <span className="text-2xl font-black text-slate-900 tracking-tight leading-none">
+            {value}
+          </span>
+          <h4 className="text-[10px] font-extrabold text-slate-400 mt-2 uppercase tracking-wider leading-none">
+            {label}
+          </h4>
+        </div>
+
+        {/* Compact SVG Sparkline overlay (height reduced to 25px) */}
+        <div className="w-[100px] h-[25px] opacity-80 group-hover:opacity-100 transition-opacity duration-300 shrink-0">
+          <svg viewBox="0 0 120 25" className="w-full h-full overflow-visible">
+            <defs>
+              <linearGradient id="blueGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#4F46E5" stopOpacity="0.45" />
+                <stop offset="100%" stopColor="#4F46E5" stopOpacity="0.0" />
+              </linearGradient>
+              <linearGradient id="greenGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#0D9488" stopOpacity="0.45" />
+                <stop offset="100%" stopColor="#0D9488" stopOpacity="0.0" />
+              </linearGradient>
+              <linearGradient id="amberGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#D97706" stopOpacity="0.45" />
+                <stop offset="100%" stopColor="#D97706" stopOpacity="0.0" />
+              </linearGradient>
+              <linearGradient id="redGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#E11D48" stopOpacity="0.45" />
+                <stop offset="100%" stopColor="#E11D48" stopOpacity="0.0" />
+              </linearGradient>
+            </defs>
+
+            {/* Sparkline Area Shading */}
+            <path
+              d={`${getSparklinePath()} L 120 25 L 0 25 Z`}
+              fill={currentStyle.sparkGradient}
+            />
+
+            {/* Sparkline Stroke */}
+            <path
+              d={getSparklinePath()}
+              fill="none"
+              stroke={currentStyle.sparkColor}
+              strokeWidth="2.0"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            
+            {/* Pulsing indicator dot */}
+            <circle
+              cx="120"
+              cy={color === 'blue' ? 5 : color === 'green' ? 2 : color === 'amber' ? 14 : 8}
+              r="3.0"
+              fill={currentStyle.sparkColor}
+              className="animate-pulse"
+            />
+          </svg>
+        </div>
       </div>
     </div>
   );

@@ -8,71 +8,103 @@ const WarehouseComparison = ({
   destStockNow,
   sourceCapacity,
   destCapacity,
-  srcCapStyle,
-  dstCapStyle
+  sourceTotalStock,
+  sourceMaxCapacity,
+  destTotalStock,
+  destMaxCapacity
 }) => {
+  // Mini HSL style configurations
+  const getMiniTheme = (pct) => {
+    if (pct > 80) return {
+      border: 'border-rose-100',
+      bg: 'bg-rose-50/15',
+      badge: 'text-rose-600 bg-rose-50 border-rose-100/50',
+      bar: 'bg-rose-500',
+      status: 'Near Limit'
+    };
+    if (pct >= 50) return {
+      border: 'border-amber-100',
+      bg: 'bg-amber-50/15',
+      badge: 'text-amber-600 bg-amber-50 border-amber-100/50',
+      bar: 'bg-amber-500',
+      status: 'Moderate'
+    };
+    return {
+      border: 'border-emerald-100',
+      bg: 'bg-emerald-50/15',
+      badge: 'text-emerald-600 bg-emerald-50 border-emerald-100/50',
+      bar: 'bg-emerald-500',
+      status: 'Healthy Storage'
+    };
+  };
+
+  const srcTheme = getMiniTheme(sourceCapacity);
+  const dstTheme = getMiniTheme(destCapacity);
+
   return (
-    <div className="flex items-center gap-3 w-[916px] mb-3 flex-shrink-0">
+    <div className="flex flex-col md:flex-row items-center gap-3 w-full mb-3 flex-shrink-0">
+      
       {/* Source Warehouse Info */}
-      <div 
-        className="flex-1 border rounded-[10px] py-1.5 px-3 transition-all duration-300"
-        style={{ 
-          borderColor: srcCapStyle.borderHex || '#fca5a5', 
-          background: srcCapStyle.bgHex || '#fef2f2' 
-        }}
-      >
-        <div className="text-[8.5px] font-extrabold uppercase tracking-wider mb-0.5 flex justify-between items-center">
-          <span style={{ color: srcCapStyle.labelHex || '#991b1b' }}>Source warehouse</span>
-          <span className="text-slate-500">{sourceCapacity}% capacity · {srcCapStyle.status || 'Status'}</span>
+      <div className={`flex-1 w-full border rounded-2xl py-2.5 px-4 transition-all bg-white/75 backdrop-blur-md shadow-3xs flex items-center justify-between gap-4 ${srcTheme.border} ${srcTheme.bg}`}>
+        <div className="min-w-0">
+          <div className="flex items-center gap-1.5">
+            <span className="text-[9px] font-black text-slate-800 uppercase tracking-wider">Source: {sourceWh?.code || 'SRC'}</span>
+            <span className={`text-[8px] font-bold px-1 py-0.2 rounded border uppercase tracking-wider ${srcTheme.badge}`}>
+              {srcTheme.status}
+            </span>
+          </div>
+          <p className="text-[9.5px] font-semibold text-slate-400 mt-0.5 truncate">
+            {activeProductName} Available: <span className="font-extrabold text-slate-700">{sourceStockNow}</span> u
+          </p>
         </div>
-        <div className="text-sm font-extrabold text-slate-900">{sourceWh?.code || 'WH-KL-01'}</div>
-        <div className="text-[10px] font-semibold text-slate-500 mb-1">
-          {sourceWh?.city || 'Facility'} · {activeProductName}: <span className="font-extrabold text-slate-700">{sourceStockNow}</span> units
-        </div>
-        <div className="h-1 bg-slate-200/70 rounded-full overflow-hidden mb-0.5">
-          <div 
-            className="h-full rounded-full transition-all duration-500" 
-            style={{ 
-              width: `${sourceCapacity}%`, 
-              backgroundColor: srcCapStyle.barHex || '#ef4444' 
-            }}
-          ></div>
+        
+        {/* Compact Right Side Capacity progress */}
+        <div className="w-28 shrink-0">
+          <div className="flex justify-between text-[8px] font-bold text-slate-400 mb-0.5">
+            <span>Utilization</span>
+            <span>{sourceCapacity}%</span>
+          </div>
+          <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+            <div className={`h-full rounded-full ${srcTheme.bar}`} style={{ width: `${sourceCapacity}%` }}></div>
+          </div>
         </div>
       </div>
 
-      {/* Transfer Arrow */}
-      <div className="flex items-center justify-center w-7 h-7 rounded-full bg-white border border-slate-200 text-slate-400 flex-shrink-0 shadow-sm">
-        <svg className="w-3.5 h-3.5 stroke-current stroke-[2.5] fill-none" viewBox="0 0 16 16">
-          <path d="M3 8h10M9 4l4 4-4 4" />
-        </svg>
+      {/* Mini Transfer Arrow */}
+      <div className="flex items-center justify-center shrink-0">
+        <div className="w-6.5 h-6.5 rounded-lg bg-indigo-50 border border-indigo-150 text-indigo-500 flex items-center justify-center shadow-3xs">
+          <svg className="w-3.5 h-3.5 stroke-current stroke-[2.5] fill-none" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+          </svg>
+        </div>
       </div>
 
       {/* Destination Warehouse Info */}
-      <div 
-        className="flex-1 border rounded-[10px] py-1.5 px-3 transition-all duration-300"
-        style={{ 
-          borderColor: dstCapStyle.borderHex || '#86efac', 
-          background: dstCapStyle.bgHex || '#f0fdf4' 
-        }}
-      >
-        <div className="text-[8.5px] font-extrabold uppercase tracking-wider mb-0.5 flex justify-between items-center">
-          <span style={{ color: dstCapStyle.labelHex || '#166534' }}>Destination warehouse</span>
-          <span className="text-slate-500">{destCapacity}% capacity · {dstCapStyle.status || 'Status'}</span>
+      <div className={`flex-1 w-full border rounded-2xl py-2.5 px-4 transition-all bg-white/75 backdrop-blur-md shadow-3xs flex items-center justify-between gap-4 ${dstTheme.border} ${dstTheme.bg}`}>
+        <div className="min-w-0">
+          <div className="flex items-center gap-1.5">
+            <span className="text-[9px] font-black text-slate-800 uppercase tracking-wider">Destination: {destWh?.code || 'DST'}</span>
+            <span className={`text-[8px] font-bold px-1 py-0.2 rounded border uppercase tracking-wider ${dstTheme.badge}`}>
+              {dstTheme.status}
+            </span>
+          </div>
+          <p className="text-[9.5px] font-semibold text-slate-400 mt-0.5 truncate">
+            {activeProductName} Available: <span className="font-extrabold text-slate-700">{destStockNow}</span> u
+          </p>
         </div>
-        <div className="text-sm font-extrabold text-slate-900">{destWh?.code || 'WH-JB-03'}</div>
-        <div className="text-[10px] font-semibold text-slate-500 mb-1">
-          {destWh?.city || 'Facility'} · {activeProductName}: <span className="font-extrabold text-slate-700">{destStockNow}</span> units
-        </div>
-        <div className="h-1 bg-slate-200/70 rounded-full overflow-hidden mb-0.5">
-          <div 
-            className="h-full rounded-full transition-all duration-500" 
-            style={{ 
-              width: `${destCapacity}%`, 
-              backgroundColor: dstCapStyle.barHex || '#22c55e' 
-            }}
-          ></div>
+
+        {/* Compact Right Side Capacity progress */}
+        <div className="w-28 shrink-0">
+          <div className="flex justify-between text-[8px] font-bold text-slate-400 mb-0.5">
+            <span>Utilization</span>
+            <span>{destCapacity}%</span>
+          </div>
+          <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+            <div className={`h-full rounded-full ${dstTheme.bar}`} style={{ width: `${destCapacity}%` }}></div>
+          </div>
         </div>
       </div>
+
     </div>
   );
 };
