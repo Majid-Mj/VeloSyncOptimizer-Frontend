@@ -312,7 +312,6 @@ const StockLevelsPage = () => {
         stockLevels={processedStock} 
         userRole={userRole}
         onAdjust={triggerAdjust}
-        onTransfer={triggerTransfer}
       />
 
       {/* ── Adjust Stock Modal Overlay ── */}

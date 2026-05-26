@@ -1,9 +1,8 @@
 import React from 'react';
 
-const StockLevelsTable = ({ stockLevels, userRole, onAdjust, onTransfer }) => {
+const StockLevelsTable = ({ stockLevels, userRole, onAdjust }) => {
   const canAdjust = userRole === 'WarehouseManager';
-  const canTransfer = userRole === 'Admin' || userRole === 'WarehouseManager';
-  const showActions = canAdjust || canTransfer;
+  const showActions = canAdjust;
 
   if (stockLevels.length === 0) {
     return (
@@ -215,18 +214,6 @@ const StockLevelsTable = ({ stockLevels, userRole, onAdjust, onTransfer }) => {
                               <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                             </svg>
                             Adjust
-                          </button>
-                        )}
-                        {canTransfer && (
-                          <button
-                            onClick={() => onTransfer(item)}
-                            title="Transfer stock between warehouses"
-                            className="text-sky-600 bg-sky-50/80 hover:bg-sky-600 hover:text-white border border-sky-100 hover:border-sky-600 transition-all duration-150 font-bold text-[10px] uppercase tracking-wider px-2.5 py-1.5 rounded-lg flex items-center gap-1 shadow-2xs cursor-pointer"
-                          >
-                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                            </svg>
-                            Transfer
                           </button>
                         )}
                       </div>

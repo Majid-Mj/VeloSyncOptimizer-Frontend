@@ -157,9 +157,9 @@ const ReOrderDashboardPage = () => {
   // Client-side Filtering and Sorting
   const filteredSuggestionsList = useMemo(() => {
     let result = suggestions.filter(item => {
-      const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                            item.sku.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                            item.code.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch = (item.name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) || 
+                            (item.sku?.toLowerCase() || '').includes(searchQuery.toLowerCase()) || 
+                            (item.Code?.toLowerCase() || '').includes(searchQuery.toLowerCase());
       
       const matchesSeverity = severityFilter === 'ALL' || item.Severity.toUpperCase() === severityFilter.toUpperCase();
       
