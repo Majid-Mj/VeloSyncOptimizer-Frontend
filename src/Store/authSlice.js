@@ -34,11 +34,16 @@ const authSlice = createSlice({
           // Extract role claim
           const roleClaim = claims["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || claims["role"];
           email = claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"] || claims["email"] || '';
+          const tokenWarehouseId = claims["WarehouseId"] || claims["warehouseId"];
           
           if (roleClaim === 'Administrator') {
             role = 'Admin';
           } else {
             role = roleClaim;
+          }
+          
+          if (tokenWarehouseId) {
+            data.warehouseId = Number(tokenWarehouseId);
           }
         } catch (e) {
           console.error("JWT parse error:", e);
@@ -54,6 +59,7 @@ const authSlice = createSlice({
 
       state.user = {
         ...data,
+        warehouseId: data?.warehouseId || data?.WarehouseId,
         role: role || 'Guest',
         email: email,
         firstName: email ? email.split('@')[0].replace(/^\w/, c => c.toUpperCase()) : 'System',

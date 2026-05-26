@@ -4,7 +4,9 @@ import purchaseOrderApi from '../../api/purchaseOrder.api';
 const PurchaseOrderDetailModal = ({
   isOpen,
   onClose,
-  purchaseOrderId
+  purchaseOrderId,
+  userRole,
+  onReceive
 }) => {
   const [po, setPo] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -90,7 +92,7 @@ const PurchaseOrderDetailModal = ({
                 </div>
                 <div>
                   <span className="block text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Grand Total</span>
-                  <span className="font-extrabold text-gray-800">${Number(po.totalAmount).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                  <span className="font-extrabold text-gray-800">₹{Number(po.totalAmount).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                 </div>
               </div>
 
@@ -121,35 +123,15 @@ const PurchaseOrderDetailModal = ({
                       : 0;
 
                     return (
-                      <div key={line.id} className="border border-gray-100 p-3.5 rounded-xl bg-white space-y-2.5 shadow-sm">
+                      <div key={line.id} className="border border-gray-100 p-3.5 rounded-xl bg-white shadow-sm">
                         <div className="flex justify-between items-start gap-2.5">
                           <div>
                             <p className="text-xs font-bold text-gray-800">📦 {line.productName}</p>
-                            <p className="text-[10px] font-bold text-gray-400 mt-0.5">Line Reference: #{line.id}</p>
+                            <p className="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-wider">Line Reference: #{line.id}</p>
                           </div>
                           <div className="text-right">
-                            <p className="text-xs font-extrabold text-gray-800">${Number(line.lineTotal).toLocaleString()}</p>
-                            <p className="text-[10px] text-gray-400 font-bold mt-0.5">{line.quantityOrdered} × ${Number(line.unitCost).toFixed(2)}</p>
-                          </div>
-                        </div>
-
-                        {/* Progress Bar for Delivery Intake */}
-                        <div className="space-y-1">
-                          <div className="flex justify-between text-[9px] font-bold text-gray-400 uppercase tracking-wider">
-                            <span>Delivery Progress ({progress}%)</span>
-                            <span>{line.quantityReceived} of {line.quantityOrdered} units received</span>
-                          </div>
-                          <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
-                            <div 
-                              className={`h-full rounded-full transition-all duration-300 ${
-                                progress === 100 
-                                  ? 'bg-emerald-500' 
-                                  : progress > 0 
-                                    ? 'bg-blue-500' 
-                                    : 'bg-gray-300'
-                              }`} 
-                              style={{ width: `${progress}%` }}
-                            />
+                            <p className="text-xs font-extrabold text-gray-800">₹{Number(line.lineTotal).toLocaleString()}</p>
+                            <p className="text-[10px] text-gray-400 font-bold mt-0.5">{line.quantityOrdered} × ₹{Number(line.unitCost).toFixed(2)}</p>
                           </div>
                         </div>
                       </div>
@@ -162,7 +144,15 @@ const PurchaseOrderDetailModal = ({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-gray-100 flex justify-end bg-gradient-to-r from-white to-[#fcfdfe] shrink-0">
+        <div className="p-4 border-t border-gray-100 flex justify-end gap-3 bg-gradient-to-r from-white to-[#fcfdfe] shrink-0">
+          {po && po.status === 'Approved' && userRole === 'WarehouseManager' && (
+            <button
+              onClick={() => onReceive(po)}
+              className="px-4.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold rounded-xl shadow-md shadow-emerald-100 transition-all border-none cursor-pointer"
+            >
+              📥 Receive Stock
+            </button>
+          )}
           <button
             onClick={onClose}
             className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-extrabold rounded-xl transition-all cursor-pointer border-none"

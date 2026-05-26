@@ -89,21 +89,35 @@ const PurchaseOrdersPage = () => {
     fetchAllData();
   }, []);
 
+  // Scope orders by role
+  const scopedOrders = useMemo(() => {
+    if (userRole === 'WarehouseManager') {
+      return orders.filter(po => 
+        po.warehouseId && 
+        user?.warehouseId && 
+        String(po.warehouseId) === String(user.warehouseId)
+      );
+    }
+    return orders;
+  }, [orders, userRole, user?.warehouseId]);
+
   // Filter & Search logic
   const filteredOrders = useMemo(() => {
-    return orders.filter(po => {
-      const matchesSearch = 
-        po.poNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        po.supplierName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        po.warehouseName.toLowerCase().includes(searchQuery.toLowerCase());
+    return scopedOrders
+      .filter(po => {
+        const matchesSearch =
+          po.poNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          po.supplierName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          po.warehouseName.toLowerCase().includes(searchQuery.toLowerCase());
 
-      const matchesStatus = 
-        statusFilter === 'ALL' || 
-        po.status === statusFilter;
+        const matchesStatus =
+          statusFilter === 'ALL' ||
+          po.status === statusFilter;
 
-      return matchesSearch && matchesStatus;
-    });
-  }, [orders, searchQuery, statusFilter]);
+        return matchesSearch && matchesStatus;
+      })
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  }, [scopedOrders, searchQuery, statusFilter]);
 
   // Approve Requisition Handler
   const handleApprove = async (id) => {
@@ -193,7 +207,7 @@ const PurchaseOrdersPage = () => {
           </div>
           <div className="h-9 w-36 bg-gray-200 rounded-xl"></div>
         </div>
-        
+
         {/* Stats skeleton */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">
           {[...Array(4)].map((_, i) => (
@@ -216,7 +230,7 @@ const PurchaseOrdersPage = () => {
         <div className="w-14 h-14 rounded-full bg-red-50 text-red-500 flex items-center justify-center text-lg font-bold">⚠️</div>
         <h3 className="text-base font-bold text-gray-800">Connection Failed</h3>
         <p className="text-xs font-semibold text-gray-400 max-w-sm leading-normal">{error}</p>
-        <button 
+        <button
           onClick={fetchAllData}
           className="px-4.5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition-all border-none cursor-pointer"
         >
@@ -228,7 +242,7 @@ const PurchaseOrdersPage = () => {
 
   return (
     <div className="p-4 md:p-6 max-w-[1600px] mx-auto min-h-[calc(100vh-4rem)] flex flex-col gap-5 relative">
-      
+
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -237,6 +251,12 @@ const PurchaseOrdersPage = () => {
             <span className="text-[12px] bg-blue-50 text-blue-600 font-semibold px-2 py-0.5 rounded-full border border-blue-100">
               {filteredOrders.length} records
             </span>
+            {userRole === 'WarehouseManager' && (
+              <span className="text-[10px] bg-emerald-50 text-emerald-600 font-black px-2.5 py-0.5 rounded-full border border-emerald-100 uppercase tracking-wider flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                Warehouse Intake Mode
+              </span>
+            )}
           </h1>
           <p className="text-[11px] font-bold text-gray-400 mt-0.5 tracking-wide uppercase">
             Procurement Requisitions, Approvals, Status tracking & Warehouse Delivery Receipts
@@ -245,10 +265,10 @@ const PurchaseOrdersPage = () => {
       </div>
 
       {/* KPI Stats Panel */}
-      <PurchaseOrdersStats orders={orders} />
+      <PurchaseOrdersStats orders={scopedOrders} userRole={userRole} />
 
       {/* Toolbar Search & Status Pills */}
-      <PurchaseOrdersToolbar 
+      <PurchaseOrdersToolbar
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         statusFilter={statusFilter}
@@ -258,7 +278,7 @@ const PurchaseOrdersPage = () => {
       />
 
       {/* Data Table */}
-      <PurchaseOrdersTable 
+      <PurchaseOrdersTable
         orders={filteredOrders}
         userRole={userRole}
         onApprove={handleApprove}
@@ -268,7 +288,7 @@ const PurchaseOrdersPage = () => {
       />
 
       {/* Create / Generate Requisition Modal */}
-      <GeneratePurchaseOrderModal 
+      <GeneratePurchaseOrderModal
         isOpen={createOpen}
         onClose={() => setCreateOpen(false)}
         suppliers={suppliers}
@@ -278,7 +298,7 @@ const PurchaseOrdersPage = () => {
       />
 
       {/* Intake Receive Modal */}
-      <ReceivePurchaseOrderModal 
+      <ReceivePurchaseOrderModal
         isOpen={receiveOpen}
         onClose={() => setReceiveOpen(false)}
         selectedPO={selectedPO}
@@ -286,18 +306,22 @@ const PurchaseOrdersPage = () => {
       />
 
       {/* Detailed PO Requisition File Modal */}
-      <PurchaseOrderDetailModal 
+      <PurchaseOrderDetailModal
         isOpen={detailOpen}
         onClose={() => setDetailOpen(false)}
         purchaseOrderId={detailPoId}
+        userRole={userRole}
+        onReceive={(po) => {
+          setDetailOpen(false);
+          triggerReceive(po);
+        }}
       />
 
       {/* Toast Alert overlay */}
       {toast.show && (
-        <div 
-          className={`fixed bottom-5 right-5 z-50 flex items-center gap-2 px-4.5 py-3 rounded-2xl shadow-lg border text-xs font-bold text-white transition-all duration-300 animate-slide-up ${
-            toast.type === 'error' ? 'bg-red-500 border-red-400' : 'bg-green-500 border-green-400'
-          }`}
+        <div
+          className={`fixed bottom-5 right-5 z-50 flex items-center gap-2 px-4.5 py-3 rounded-2xl shadow-lg border text-xs font-bold text-white transition-all duration-300 animate-slide-up ${toast.type === 'error' ? 'bg-red-500 border-red-400' : 'bg-green-500 border-green-400'
+            }`}
         >
           {toast.type === 'error' ? '⚠️' : '✅'} {toast.msg}
         </div>

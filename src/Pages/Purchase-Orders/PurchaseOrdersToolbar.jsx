@@ -8,13 +8,18 @@ const PurchaseOrdersToolbar = ({
   userRole,
   onOpenCreate
 }) => {
-  const statusTabs = [
-    { key: 'ALL', label: 'All Orders' },
-    { key: 'Draft', label: '🛠️ Drafts' },
-    { key: 'Approved', label: '📦 Approved' },
-    { key: 'Received', label: '✅ Received' },
-    { key: 'Cancelled', label: '❌ Cancelled' }
-  ];
+  const statusTabs = userRole === 'WarehouseManager'
+    ? [
+        { key: 'ALL', label: 'All Orders' },
+        { key: 'Received', label: '✅ Received' }
+      ]
+    : [
+        { key: 'ALL', label: 'All Orders' },
+        { key: 'Draft', label: '🛠️ Drafts' },
+        { key: 'Approved', label: '📦 Approved' },
+        { key: 'Received', label: '✅ Received' },
+        { key: 'Cancelled', label: '❌ Cancelled' }
+      ];
 
   return (
     <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm flex flex-col gap-4">

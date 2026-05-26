@@ -222,7 +222,7 @@ const GeneratePurchaseOrderModal = ({
 
                   {/* Unit Cost */}
                   <div className="w-full sm:w-28">
-                    <label className="block text-[8px] font-bold text-gray-400 uppercase tracking-wider mb-1">Unit Cost ($)</label>
+                    <label className="block text-[8px] font-bold text-gray-400 uppercase tracking-wider mb-1">Unit Cost (₹)</label>
                     <input
                       type="number"
                       step="0.01"
@@ -236,7 +236,7 @@ const GeneratePurchaseOrderModal = ({
 
                   {/* Subtotal Display */}
                   <div className="w-full sm:w-24 text-right pr-2 pb-2 text-xs font-extrabold text-gray-500">
-                    ${(line.quantityOrdered * line.unitCost).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    ₹{(line.quantityOrdered * line.unitCost).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
 
                   {/* Remove line */}
@@ -259,7 +259,7 @@ const GeneratePurchaseOrderModal = ({
           <div className="border-t border-gray-100 pt-4 flex justify-between items-center shrink-0">
             <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Estimated Total Committed Cost:</span>
             <span className="text-lg font-black text-gray-800">
-              ${grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              ₹{grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
           </div>
 
