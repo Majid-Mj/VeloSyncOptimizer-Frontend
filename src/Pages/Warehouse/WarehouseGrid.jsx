@@ -21,11 +21,11 @@ const WarehouseGrid = ({ filteredWarehouses, isAdmin, onDelete }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
       {filteredWarehouses.map((wh) => (
-        <WarehouseCard 
-          key={wh.id} 
-          wh={wh} 
-          isAdmin={isAdmin} 
-          onDelete={onDelete} 
+        <WarehouseCard
+          key={wh.id}
+          wh={wh}
+          isAdmin={isAdmin}
+          onDelete={onDelete}
         />
       ))}
     </div>

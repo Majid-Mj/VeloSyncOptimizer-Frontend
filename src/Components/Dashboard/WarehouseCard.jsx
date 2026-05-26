@@ -1,26 +1,141 @@
 import React from 'react';
 
 const WarehouseCard = ({ id, location, skus, capacity, color = 'blue' }) => {
-  const colorMap = {
-    blue: 'bg-[#10b981]',
-    green: 'bg-[#10b981]',
-    red: 'bg-[#ef4444]',
-    amber: 'bg-[#f97316]'
+  // Shaded parameters matching the capacity color
+  const styleConfig = {
+    blue: {
+      cardBg: 'bg-gradient-to-br from-white to-indigo-50/20 hover:to-indigo-50/50',
+      accent: 'text-indigo-600',
+      track: '#E2E8F0',
+      fill: '#4F46E5',
+      status: 'bg-indigo-500 shadow-[0_0_8px_rgba(79,70,229,0.5)]',
+      border: 'border-slate-100 hover:border-indigo-200',
+      label: 'Optimal Utilization'
+    },
+    green: {
+      cardBg: 'bg-gradient-to-br from-white to-emerald-50/25 hover:to-emerald-50/50',
+      accent: 'text-emerald-600',
+      track: '#E2E8F0',
+      fill: '#10B981',
+      status: 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]',
+      border: 'border-slate-100 hover:border-emerald-200',
+      label: 'Healthy Space'
+    },
+    red: {
+      cardBg: 'bg-gradient-to-br from-white to-rose-50/20 hover:to-rose-50/50',
+      accent: 'text-rose-600',
+      track: '#FEE2E2',
+      fill: '#EF4444',
+      status: 'bg-rose-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]',
+      border: 'border-slate-100 hover:border-rose-300',
+      label: 'Critical Overflow Risk'
+    },
+    amber: {
+      cardBg: 'bg-gradient-to-br from-white to-amber-50/25 hover:to-amber-50/50',
+      accent: 'text-amber-600',
+      track: '#FEF3C7',
+      fill: '#F59E0B',
+      status: 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]',
+      border: 'border-slate-100 hover:border-amber-300',
+      label: 'Near Capacity Warning'
+    }
   };
 
+  const currentStyle = styleConfig[color] || styleConfig.blue;
+
+  const getMockTelemetry = () => {
+    if (id.includes('KL')) return { temp: '22.4°C', humi: '55%', activeSensors: '14/14' };
+    if (id.includes('PG')) return { temp: '23.1°C', humi: '61%', activeSensors: '12/12' };
+    if (id.includes('JB')) return { temp: '21.8°C', humi: '58%', activeSensors: '18/18' };
+    if (id.includes('KK')) return { temp: '24.2°C', humi: '67%', activeSensors: '8/10' };
+    return { temp: '22.0°C', humi: '50%', activeSensors: '6/6' };
+  };
+
+  const tele = getMockTelemetry();
+
+  // SVG Circle stroke computations
+  const radius = 22;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference - (capacity / 100) * circumference;
+
   return (
-    <div className="bg-white rounded-2xl p-4 border border-gray-100 min-w-[200px] w-[200px] shrink-0 flex flex-col gap-1.5 shadow-sm">
-      <div className="flex items-center gap-2 mb-0.5">
-        {/* Soft light green dot */}
-        <div className="w-[6px] h-[6px] rounded-full bg-[#86efac]"></div>
-        <div className="text-[12.5px] font-extrabold text-gray-800 tracking-tight leading-none">{id}</div>
-      </div>
-      <div className="text-[10.5px] text-gray-400 font-medium tracking-wide leading-none">{location} · {skus} SKUs</div>
+    <div className={`rounded-3xl p-4 border shrink-0 flex flex-col gap-3.5 shadow-[0_4px_12px_-4px_rgba(148,163,184,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-lg group cursor-pointer relative overflow-hidden ${currentStyle.cardBg} ${currentStyle.border}`}>
       
-      <div className="w-full bg-[#f3f4f6] h-[5px] rounded-full overflow-hidden mt-2.5">
-        <div className={`h-full ${colorMap[color]} transition-all duration-500`} style={{ width: `${capacity}%` }}></div>
+      {/* Visual background deck gloss */}
+      <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-slate-500/5 to-transparent rounded-full pointer-events-none" />
+
+      {/* Header telemetry and connection indicator */}
+      <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+        <div className="flex items-center gap-2">
+          {/* Signal active heartbeat dot */}
+          <span className={`w-1.5 h-1.5 rounded-full ${currentStyle.status}`}></span>
+          <span className="text-[12.5px] font-black text-slate-800 tracking-tight leading-none">
+            {id}
+          </span>
+        </div>
+        
+        {/* Sensor network indicator */}
+        <span className="text-[9px] font-extrabold text-slate-400 bg-slate-50 border border-slate-200/50 px-2 py-0.5 rounded-lg">
+          Telemetry Link
+        </span>
       </div>
-      <div className="text-[10px] font-bold text-gray-500 mt-1 leading-none">{capacity}% capacity</div>
+
+      {/* Main layout with values & beautiful radial SVG indicator */}
+      <div className="flex items-center justify-between gap-2.5">
+        <div className="flex-1 min-w-0">
+          <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wide">LOCATION</span>
+          <h5 className="text-[13px] font-extrabold text-slate-700 truncate mt-0.5 leading-tight">{location}</h5>
+          
+          <div className="mt-2.5 flex flex-col gap-0.5">
+            <span className="text-[10.5px] font-black text-slate-800 leading-none">{skus} SKUs</span>
+            <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wide mt-1">Stocked Items</span>
+          </div>
+        </div>
+
+        {/* Circular Progress Gauge */}
+        <div className="relative w-14 h-14 shrink-0 flex items-center justify-center">
+          <svg className="w-full h-full -rotate-90">
+            {/* Background Track */}
+            <circle
+              cx="28"
+              cy="28"
+              r={radius}
+              fill="transparent"
+              stroke={currentStyle.track}
+              strokeWidth="4.5"
+            />
+            {/* Filled Arc */}
+            <circle
+              cx="28"
+              cy="28"
+              r={radius}
+              fill="transparent"
+              stroke={currentStyle.fill}
+              strokeWidth="4.5"
+              strokeDasharray={circumference}
+              strokeDashoffset={strokeDashoffset}
+              strokeLinecap="round"
+              className="transition-all duration-700 ease-out"
+            />
+          </svg>
+          {/* Center text count */}
+          <div className="absolute text-[10.5px] font-black text-slate-800">
+            {capacity}%
+          </div>
+        </div>
+      </div>
+
+      {/* Environmental & Telemetry Stats footer */}
+      <div className="grid grid-cols-2 gap-2 mt-1 pt-2.5 border-t border-slate-100 text-[10px] font-black text-slate-600">
+        <div className="flex items-center gap-1.5">
+          <span className="text-slate-400 text-xs">🌡</span>
+          <span>{tele.temp}</span>
+        </div>
+        <div className="flex items-center gap-1.5 justify-end">
+          <span className="text-slate-400 text-xs">💧</span>
+          <span>{tele.humi}</span>
+        </div>
+      </div>
     </div>
   );
 };
