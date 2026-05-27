@@ -70,6 +70,7 @@ const ReOrderDashboardPage = () => {
             CreatedAt: s.createdAt || new Date().toISOString()
           }));
           setSuggestions(mapped);
+          window.dispatchEvent(new CustomEvent('reorder-suggestions-updated'));
         } else {
           setSuggestions([]);
         }
@@ -127,12 +128,15 @@ const ReOrderDashboardPage = () => {
       const res = await reorderApi.markActioned(id);
       if (res && res.isSuccess) {
         setSuggestions(prev => prev.filter(s => s.id !== id));
+        window.dispatchEvent(new CustomEvent('reorder-suggestions-updated'));
       } else {
         setSuggestions(prev => prev.filter(s => s.id !== id));
+        window.dispatchEvent(new CustomEvent('reorder-suggestions-updated'));
       }
     } catch (err) {
       console.error(err);
       setSuggestions(prev => prev.filter(s => s.id !== id));
+      window.dispatchEvent(new CustomEvent('reorder-suggestions-updated'));
     } finally {
       setActioningId(null);
     }

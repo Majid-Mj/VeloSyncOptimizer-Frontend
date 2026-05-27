@@ -304,7 +304,7 @@ const WarehousePage = () => {
 
   return (
     <div className="p-4 md:p-6 max-w-[1200px] mx-auto min-h-[calc(100vh-4rem)] flex flex-col gap-5 relative">
-      
+
       {/* ── Page Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 flex-shrink-0">
         <div>
@@ -369,7 +369,7 @@ const WarehousePage = () => {
       {selectedWarehouseForManager && (
         <div className="fixed inset-0 z-50 overflow-hidden flex items-center justify-center">
           {/* Dim Overlay Backdrop with Frosted Blur */}
-          <div 
+          <div
             onClick={() => setSelectedWarehouseForManager(null)}
             className="absolute inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity duration-300"
           ></div>
@@ -383,7 +383,7 @@ const WarehousePage = () => {
                   {selectedWarehouseForManager.name} ({selectedWarehouseForManager.id})
                 </p>
               </div>
-              <button 
+              <button
                 onClick={() => setSelectedWarehouseForManager(null)}
                 className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-50 rounded-xl transition-all border-none bg-transparent cursor-pointer"
               >
@@ -454,11 +454,10 @@ const WarehousePage = () => {
 
       {/* ── Toast Alerts ── */}
       {toast.show && (
-        <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4.5 py-3 rounded-2xl shadow-xl border animate-slide-in text-xs font-bold ${
-          toast.type === 'success' 
-            ? 'bg-emerald-500 border-emerald-400 text-white shadow-lg' 
+        <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4.5 py-3 rounded-2xl shadow-xl border animate-slide-in text-xs font-bold ${toast.type === 'success'
+            ? 'bg-emerald-500 border-emerald-400 text-white shadow-lg'
             : 'bg-rose-50 border-rose-400 text-white shadow-lg'
-        }`}>
+          }`}>
           <span>{toast.type === 'success' ? '✓' : '⚠️'}</span>
           <span>{toast.msg}</span>
         </div>

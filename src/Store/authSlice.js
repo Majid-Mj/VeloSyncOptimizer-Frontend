@@ -57,13 +57,32 @@ const authSlice = createSlice({
         else if (data.roleId === 3) role = 'ProcurementOfficer';
       }
 
+      let fName = 'System';
+      let lName = 'User';
+      if (email) {
+        const localPart = email.split('@')[0].toLowerCase();
+        if (localPart === 'majid') {
+          fName = 'Majid';
+          lName = 'Mj';
+        } else {
+          const parts = localPart.split('.');
+          if (parts.length >= 2) {
+            fName = parts[0].replace(/^\w/, c => c.toUpperCase());
+            lName = parts[1].replace(/^\w/, c => c.toUpperCase());
+          } else {
+            fName = localPart.replace(/^\w/, c => c.toUpperCase());
+            lName = 'User';
+          }
+        }
+      }
+
       state.user = {
         ...data,
         warehouseId: data?.warehouseId || data?.WarehouseId,
         role: role || 'Guest',
         email: email,
-        firstName: email ? email.split('@')[0].replace(/^\w/, c => c.toUpperCase()) : 'System',
-        lastName: 'User'
+        firstName: fName,
+        lastName: lName
       };
       state.isAuthenticated = true;
       state.loading = false;

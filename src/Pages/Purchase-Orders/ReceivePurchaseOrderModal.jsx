@@ -20,7 +20,7 @@ const ReceivePurchaseOrderModal = ({
         try {
           const data = await purchaseOrderApi.getById(selectedPO.id);
           setPoDetails(data);
-          
+
           // Map hydrated PO Lines to receive intake model
           const initialLines = data.lines.map(line => ({
             lineId: line.id,
@@ -48,7 +48,7 @@ const ReceivePurchaseOrderModal = ({
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Safety guard
     if (!isStockConfirmed) {
       alert('You must confirm and check the stock intake verification box before proceeding.');

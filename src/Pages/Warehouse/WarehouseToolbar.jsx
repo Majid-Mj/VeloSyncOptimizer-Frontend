@@ -35,8 +35,8 @@ const WarehouseToolbar = ({
           <button
             onClick={() => setStatusFilter('ALL')}
             className={`px-3.5 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-lg border-none cursor-pointer transition-all ${statusFilter === 'ALL'
-                ? 'bg-white text-indigo-700 shadow-3xs font-extrabold'
-                : 'bg-transparent text-slate-400 hover:text-slate-600'
+              ? 'bg-white text-indigo-700 shadow-3xs font-extrabold'
+              : 'bg-transparent text-slate-400 hover:text-slate-600'
               }`}
           >
             All
@@ -44,8 +44,8 @@ const WarehouseToolbar = ({
           <button
             onClick={() => setStatusFilter('HIGH_CAPACITY')}
             className={`px-3.5 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-lg border-none cursor-pointer transition-all ${statusFilter === 'HIGH_CAPACITY'
-                ? 'bg-white text-rose-600 shadow-3xs font-extrabold'
-                : 'bg-transparent text-slate-400 hover:text-rose-500'
+              ? 'bg-white text-rose-600 shadow-3xs font-extrabold'
+              : 'bg-transparent text-slate-400 hover:text-rose-500'
               }`}
           >
             High Cap (&gt;80%)
@@ -53,8 +53,8 @@ const WarehouseToolbar = ({
           <button
             onClick={() => setStatusFilter('FULL')}
             className={`px-3.5 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-lg border-none cursor-pointer transition-all ${statusFilter === 'FULL'
-                ? 'bg-white text-slate-800 shadow-3xs font-extrabold'
-                : 'bg-transparent text-slate-400 hover:text-slate-600'
+              ? 'bg-white text-slate-800 shadow-3xs font-extrabold'
+              : 'bg-transparent text-slate-400 hover:text-slate-600'
               }`}
           >
             Near limit

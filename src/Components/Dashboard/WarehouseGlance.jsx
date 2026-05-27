@@ -51,9 +51,10 @@ const WarehouseGlance = () => {
         const response = await warehouseApi.getAll();
         if (response && response.isSuccess && response.data && response.data.length > 0) {
           const mapped = response.data.map(w => {
-            const nameHash = w.name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-            const capPct = (nameHash % 66) + 30; // 30% to 95%
-            const skusCount = (nameHash % 700) + 150; // 150 to 850
+            const totalCap = w.totalCapacity || 0;
+            const totalStock = w.totalStockOnHand || 0;
+            const capPct = totalCap > 0 ? Math.min(Math.round((totalStock / totalCap) * 100), 100) : 0;
+            const skusCount = w.totalProductCount || 0;
             
             let color = 'green';
             if (capPct >= 90) color = 'red';

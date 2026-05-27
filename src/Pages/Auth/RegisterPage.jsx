@@ -78,7 +78,7 @@ const RegisterPage = () => {
         <div className="left">
           <div className="logo">
             <div className="logo-icon">
-              <svg viewBox="0 0 16 16"><rect x="1" y="7" width="14" height="8" rx="1"/><path d="M4 7V5a4 4 0 018 0v2"/><line x1="8" y1="10" x2="8" y2="13"/></svg>
+              <svg viewBox="0 0 16 16"><rect x="1" y="7" width="14" height="8" rx="1" /><path d="M4 7V5a4 4 0 018 0v2" /><line x1="8" y1="10" x2="8" y2="13" /></svg>
             </div>
             <div>
               <div className="logo-text">VeloSync</div>
@@ -106,7 +106,7 @@ const RegisterPage = () => {
         <div className="right">
           <div className="form-title">Create your account</div>
           <div className="form-sub">
-            Already have an account? 
+            Already have an account?
             <button className="switch-link" onClick={() => navigate('/login')}> Sign in →</button>
           </div>
 
@@ -133,10 +133,10 @@ const RegisterPage = () => {
 
             <div className="form-group">
               <label className="form-label">Position / Role</label>
-              <select 
-                className="form-input" 
-                name="role" 
-                required 
+              <select
+                className="form-input"
+                name="role"
+                required
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
               >
@@ -149,18 +149,18 @@ const RegisterPage = () => {
             <div className="form-group">
               <label className="form-label">Password</label>
               <div className="input-wrap">
-                <input 
-                  className="form-input" 
-                  id="r-pwd" 
+                <input
+                  className="form-input"
+                  id="r-pwd"
                   name="password"
-                  type={showPwd ? "text" : "password"} 
-                  placeholder="Min 8 chars, include uppercase & symbol" 
+                  type={showPwd ? "text" : "password"}
+                  placeholder="Min 8 chars, include uppercase & symbol"
                   onInput={(e) => checkStrength(e.target.value)}
-                  required 
+                  required
                 />
                 <button className="eye-btn" type="button" onClick={() => setShowPwd(!showPwd)}>
                   <svg viewBox="0 0 24 24" style={{ opacity: showPwd ? 1 : 0.4 }}>
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
                   </svg>
                 </button>
               </div>
@@ -180,7 +180,7 @@ const RegisterPage = () => {
                 <input className="form-input" name="confirmPassword" type={showCPwd ? "text" : "password"} placeholder="Re-enter your password" required />
                 <button className="eye-btn" type="button" onClick={() => setShowCPwd(!showCPwd)}>
                   <svg viewBox="0 0 24 24" style={{ opacity: showCPwd ? 1 : 0.4 }}>
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
                   </svg>
                 </button>
               </div>

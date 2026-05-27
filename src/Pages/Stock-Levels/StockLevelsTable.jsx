@@ -35,7 +35,7 @@ const StockLevelsTable = ({ stockLevels, userRole, onAdjust }) => {
 
   return (
     <div className="bg-white/80 backdrop-blur-md rounded-2xl border border-slate-100/90 shadow-sm overflow-hidden transition-all duration-300">
-      
+
       {/* Table Header Section */}
       <div className="px-6 py-5 border-b border-slate-100/60 flex justify-between items-center bg-white/40">
         <div className="flex flex-col gap-0.5">
@@ -75,7 +75,7 @@ const StockLevelsTable = ({ stockLevels, userRole, onAdjust }) => {
             {stockLevels.map((item) => {
               const qty = item.quantityOnHand;
               const reorder = item.reorderPoint;
-              
+
               let statusColor = "green";
               let showWarning = false;
               if (qty === 0) {
@@ -85,15 +85,15 @@ const StockLevelsTable = ({ stockLevels, userRole, onAdjust }) => {
                 statusColor = "amber";
                 showWarning = true;
               }
-              
+
               const percentage = reorder > 0 ? Math.min(100, (qty / reorder) * 100) : (qty > 0 ? 100 : 0);
-              
+
               const colorClasses = {
                 red: { text: "text-rose-600", dot: "bg-rose-500 shadow-[0_0_6px_rgba(244,63,94,0.4)]", bar: "bg-rose-500" },
                 amber: { text: "text-amber-500", dot: "bg-amber-500 shadow-[0_0_6px_rgba(245,158,11,0.4)]", bar: "bg-amber-500" },
                 green: { text: "text-emerald-500", dot: "bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.4)]", bar: "bg-emerald-500" }
               };
-              
+
               const colors = colorClasses[statusColor];
               const firstLetter = item.productName ? item.productName.charAt(0).toUpperCase() : 'P';
               const gradient = getAvatarGradient(item.productName);

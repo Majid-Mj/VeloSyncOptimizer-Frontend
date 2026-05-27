@@ -6,8 +6,8 @@ const LiveAlerts = () => {
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeSeverity, setActiveSeverity] = useState('ALL');
-  const [expandedAlert, setExpandedAlert] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [detailModalAlert, setDetailModalAlert] = useState(null);
 
   // Fetch alerts from backend
   const fetchLiveAlerts = async (isManual = false) => {
@@ -22,33 +22,57 @@ const LiveAlerts = () => {
           if (sev === 'MEDIUM') sev = 'MED';
           if (sev === 'CRITICAL') sev = 'HIGH';
           
-          // Generate high-fidelity realistic logistics metrics dynamically from DB alert parameters
+          const qty = alert.quantityOnHand ?? 0;
+          const threshold = alert.reorderPoint ?? 0;
+          
           let demand = '14 units/day';
-          let stock = '42 units';
-          let runway = '8 days remaining';
-
           if (sev === 'HIGH' || alert.alertType?.toLowerCase().includes('stockout')) {
             demand = '32 units/day';
-            stock = alert.message?.includes('4 units') ? '4 units' : '0 units';
-            runway = 'Critical (< 24h)';
           } else if (sev === 'MED' || alert.alertType?.toLowerCase().includes('low')) {
             demand = '18 units/day';
-            stock = '28 units';
-            runway = '3 days remaining';
           } else {
             demand = '8 units/day';
-            stock = '142 units';
-            runway = '12 days remaining';
           }
           
+          let runway = '';
+          if (qty === 0) {
+            runway = 'Critical (Stockout)';
+          } else if (qty >= threshold) {
+            runway = 'Healthy (Stock Restored)';
+          } else {
+            const days = Math.round(qty / (parseInt(demand) || 1));
+            runway = `${days <= 0 ? 1 : days} days remaining`;
+          }
+
+          let customSub = alert.message || 'Product quantity below safety levels.';
+          if (alert.message) {
+            const productName = alert.message.split(' at ')[0].split(' in ')[0].split(' is ')[0];
+            if (qty === 0) {
+              customSub = `${productName} is fully out of stock at ${alert.warehouseName || 'warehouse'}.`;
+            } else if (qty < threshold) {
+              customSub = `${productName} stock running low at ${alert.warehouseName || 'warehouse'}. Current stock: ${qty} units (Threshold: ${threshold}).`;
+            } else {
+              customSub = `${productName} stock has recovered. Current stock: ${qty} units.`;
+            }
+          }
+          
+          let liveSev = sev;
+          if (qty >= threshold) {
+            liveSev = 'LOW';
+          } else if (qty === 0) {
+            liveSev = 'HIGH';
+          } else {
+            liveSev = 'MED';
+          }
+
           return {
             id: alert.id,
-            severity: sev,
-            title: alert.alertType || 'Stock Depletion Warning',
-            sub: alert.message || 'Product quantity below safety levels.',
+            severity: liveSev,
+            title: qty === 0 ? 'Stockout' : qty < threshold ? 'Low Stock Warning' : 'Stock Restored',
+            sub: customSub,
             location: alert.warehouseName || 'Assigned Warehouse',
             demandSpeed: demand,
-            currentStock: stock,
+            currentStock: `${qty} units`,
             runway: runway,
             createdAt: new Date(alert.createdAt).toLocaleString('en-US', {
               month: 'short',
@@ -105,7 +129,6 @@ const LiveAlerts = () => {
     alert(`Backend action dispatched: [${actionName}] for alert ID ${alertId}`);
     if (actionName === 'Snooze' || actionName === 'Reorder') {
       setAlerts(prev => prev.filter(a => a.id !== alertId));
-      if (expandedAlert === alertId) setExpandedAlert(null);
     }
   };
 
@@ -122,10 +145,6 @@ const LiveAlerts = () => {
       {/* Header Panel */}
       <div className="flex items-center justify-between pb-3.5 border-b border-slate-100 shrink-0">
         <div className="flex items-center gap-2.5">
-          <span className="relative flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
-          </span>
           <div>
             <h3 className="text-[14px] font-extrabold text-slate-800 tracking-tight leading-none">Live Telemetry Alert Feed</h3>
             <p className="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-wide">Secure Database Stream</p>
@@ -136,9 +155,9 @@ const LiveAlerts = () => {
         <button
           onClick={handleRefresh}
           disabled={refreshing}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black border transition-all duration-300 ${refreshing ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed' : 'bg-indigo-50 text-indigo-700 border-indigo-200/60 hover:bg-indigo-100 hover:text-indigo-800 active:scale-95 cursor-pointer'}`}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black border transition-all duration-300 ${refreshing ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed' : 'bg-black text-white border-black hover:bg-zinc-900 active:scale-95 cursor-pointer'}`}
         >
-          <span className={`w-2 h-2 rounded-full border-2 border-indigo-600 border-t-transparent ${refreshing ? 'animate-spin' : ''}`}></span>
+          <span className={`w-2 h-2 rounded-full border-2 border-white border-t-transparent ${refreshing ? 'animate-spin' : ''}`}></span>
           {refreshing ? 'Syncing...' : 'Sync Database'}
         </button>
       </div>
@@ -164,7 +183,7 @@ const LiveAlerts = () => {
             <button
               key={sev}
               onClick={() => setActiveSeverity(sev)}
-              className={`px-3 py-1.5 rounded-xl text-[9px] font-black tracking-wide uppercase transition-all duration-200 border cursor-pointer ${activeSeverity === sev ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm' : 'bg-transparent text-slate-500 border-slate-200/80 hover:text-slate-700 hover:bg-slate-100/50'}`}
+              className={`px-3 py-1.5 rounded-xl text-[9px] font-black tracking-wide uppercase transition-all duration-200 border cursor-pointer ${activeSeverity === sev ? 'bg-black text-white border-black shadow-sm' : 'bg-transparent text-slate-500 border-slate-200/80 hover:text-slate-700 hover:bg-slate-100/50'}`}
             >
               {sev === 'HIGH' ? 'CRITICAL' : sev}
             </button>
@@ -182,7 +201,6 @@ const LiveAlerts = () => {
           </div>
         ) : filteredAlerts.length > 0 ? (
           filteredAlerts.map((alert) => {
-            const isExpanded = expandedAlert === alert.id;
             // High visibility shaded alerts background colors
             const alertCardShades = {
               HIGH: 'bg-rose-50/70 hover:bg-rose-50 border-rose-100 hover:border-rose-300/60',
@@ -198,8 +216,8 @@ const LiveAlerts = () => {
             return (
               <div 
                 key={alert.id} 
-                className={`border rounded-2xl p-3.5 transition-all duration-300 flex flex-col gap-3 cursor-pointer ${cardHighlight}`}
-                onClick={() => setExpandedAlert(isExpanded ? null : alert.id)}
+                className={`border rounded-2xl p-3.5 transition-all duration-300 flex flex-col gap-3.5 cursor-pointer hover:scale-[1.01] ${cardHighlight}`}
+                onClick={() => setDetailModalAlert(alert)}
               >
                 {/* Alert Primary Summary Row */}
                 <div className="flex items-center justify-between gap-3.5">
@@ -219,60 +237,23 @@ const LiveAlerts = () => {
                     </p>
                   </div>
 
-                  <span className={`text-slate-400 text-[10px] font-bold transition-transform duration-300 leading-none shrink-0 ${isExpanded ? 'rotate-180 text-indigo-500' : ''}`}>
-                    ▼
-                  </span>
-                </div>
-
-                {/* Expandable Logistics Diagnostic Panel */}
-                {isExpanded && (
-                  <div 
-                    className="border-t border-dashed border-slate-200/80 pt-3 flex flex-col gap-3 animate-fade-in"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <div className="grid grid-cols-2 gap-2 text-[10.5px]">
-                      <div className="flex flex-col">
-                        <span className="font-extrabold text-slate-400 uppercase text-[9px] tracking-wide">Facility Location</span>
-                        <span className="font-extrabold text-slate-800 mt-0.5 truncate">{alert.location}</span>
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="font-extrabold text-slate-400 uppercase text-[9px] tracking-wide">Daily Demand Velocity</span>
-                        <span className="font-extrabold text-slate-800 mt-0.5">{alert.demandSpeed}</span>
-                      </div>
-                      <div className="flex flex-col mt-1">
-                        <span className="font-extrabold text-slate-400 uppercase text-[9px] tracking-wide">Current Stock</span>
-                        <span className="font-extrabold text-slate-800 mt-0.5">{alert.currentStock}</span>
-                      </div>
-                      <div className="flex flex-col mt-1">
-                        <span className="font-extrabold text-slate-400 uppercase text-[9px] tracking-wide">Runway safety limit</span>
-                        <span className={`mt-0.5 ${runwayColors[alert.severity] || 'text-slate-700'}`}>{alert.runway}</span>
-                      </div>
-                    </div>
-
-                    {/* Operational Actions */}
-                    <div className="flex items-center gap-2 mt-1.5 border-t border-slate-100 pt-3">
-                      <button
-                        onClick={() => handleAction(alert.id, 'Reorder')}
-                        className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black py-2 px-2.5 rounded-xl shadow-md shadow-indigo-200 active:scale-95 transition-all border-none cursor-pointer"
-                      >
-                        ⚡ Reorder Now
-                      </button>
-                      <button
-                        onClick={() => handleAction(alert.id, 'Snooze')}
-                        className="bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-[10px] font-black py-2 px-2.5 rounded-xl active:scale-95 transition-all cursor-pointer"
-                      >
-                        Snooze 24h
-                      </button>
-                      <button
-                        onClick={() => handleAction(alert.id, 'Audit')}
-                        className="w-8 h-8 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold flex items-center justify-center transition-all cursor-pointer"
-                        title="Flag for Warehouse Audit"
-                      >
-                        👁️
-                      </button>
-                    </div>
+                  <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+                    {/* Close/Dismiss Icon */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setAlerts(prev => prev.filter(a => a.id !== alert.id));
+                      }}
+                      className="p-1.5 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded-lg transition-all border-none bg-transparent cursor-pointer flex items-center justify-center"
+                      title="Dismiss Alert"
+                    >
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                      </svg>
+                    </button>
                   </div>
-                )}
+                </div>
               </div>
             );
           })
@@ -284,6 +265,86 @@ const LiveAlerts = () => {
           </div>
         )}
       </div>
+
+      {/* ── Glassmorphic Detail Modal ── */}
+      {detailModalAlert && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/45 backdrop-blur-xs" onClick={() => setDetailModalAlert(null)}></div>
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden z-50 transform transition-all border border-slate-100 flex flex-col p-6 gap-5 animate-fade-in select-none animate-in fade-in zoom-in-95 duration-200">
+            
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${sevDotClasses[detailModalAlert.severity] || 'bg-slate-500'}`}></span>
+                <h3 className="text-[14px] font-extrabold text-slate-800 tracking-tight leading-none">
+                  Telemetry Alert Details
+                </h3>
+              </div>
+              <button 
+                onClick={() => setDetailModalAlert(null)}
+                className="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-all border-none bg-transparent cursor-pointer text-base font-bold flex items-center justify-center w-6 h-6"
+              >
+                &times;
+              </button>
+            </div>
+
+            {/* Severity Card info */}
+            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100/50 flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <span className={`text-[8.5px] font-black px-2 py-0.5 rounded-lg text-center tracking-wide leading-none ${sevClasses[detailModalAlert.severity] || 'bg-slate-100 text-slate-700'}`}>
+                  {detailModalAlert.severity === 'HIGH' ? 'CRITICAL' : detailModalAlert.severity}
+                </span>
+                <span className="text-[9.5px] font-bold text-slate-400">{detailModalAlert.createdAt}</span>
+              </div>
+              <h4 className="text-[13px] font-black text-slate-800 mt-1 leading-tight">{detailModalAlert.title}</h4>
+              <p className="text-[11px] font-bold text-slate-500 leading-normal">{detailModalAlert.sub}</p>
+            </div>
+
+            {/* Diagnostic stats list */}
+            <div className="grid grid-cols-2 gap-3 text-[10.5px]">
+              <div className="p-3 bg-slate-50/50 border border-slate-100/60 rounded-xl flex flex-col">
+                <span className="font-extrabold text-slate-400 uppercase text-[8px] tracking-wider">Facility Location</span>
+                <span className="font-extrabold text-slate-800 mt-1 truncate">{detailModalAlert.location}</span>
+              </div>
+              <div className="p-3 bg-slate-50/50 border border-slate-100/60 rounded-xl flex flex-col">
+                <span className="font-extrabold text-slate-400 uppercase text-[8px] tracking-wider">Daily Demand Velocity</span>
+                <span className="font-extrabold text-slate-800 mt-1">{detailModalAlert.demandSpeed}</span>
+              </div>
+              <div className="p-3 bg-slate-50/50 border border-slate-100/60 rounded-xl flex flex-col">
+                <span className="font-extrabold text-slate-400 uppercase text-[8px] tracking-wider">Current Stock</span>
+                <span className="font-extrabold text-slate-800 mt-1">{detailModalAlert.currentStock}</span>
+              </div>
+              <div className="p-3 bg-slate-50/50 border border-slate-100/60 rounded-xl flex flex-col">
+                <span className="font-extrabold text-slate-400 uppercase text-[8px] tracking-wider">Runway safety limit</span>
+                <span className={`mt-1 font-black ${runwayColors[detailModalAlert.severity] || 'text-slate-700'}`}>{detailModalAlert.runway}</span>
+              </div>
+            </div>
+
+            {/* Footer buttons */}
+            <div className="flex items-center gap-3 border-t border-slate-100 pt-4 mt-2">
+              <button
+                onClick={() => {
+                  handleAction(detailModalAlert.id, 'Reorder');
+                  setDetailModalAlert(null);
+                }}
+                className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-black py-2.5 px-3 rounded-xl shadow-md shadow-indigo-200 active:scale-95 transition-all border-none cursor-pointer text-center"
+              >
+                ⚡ Reorder Now
+              </button>
+              <button
+                onClick={() => {
+                  handleAction(detailModalAlert.id, 'Snooze');
+                  setDetailModalAlert(null);
+                }}
+                className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-black py-2.5 px-4 rounded-xl active:scale-95 transition-all border-none cursor-pointer"
+              >
+                Snooze 24h
+              </button>
+            </div>
+            
+          </div>
+        </div>
+      )}
     </div>
   );
 };

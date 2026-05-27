@@ -15,11 +15,11 @@ const PurchaseOrderDetailModal = ({
   useEffect(() => {
     const fetchDetails = async () => {
       if (!isOpen || !purchaseOrderId) return;
-      
+
       setLoading(true);
       setError(null);
       setPo(null);
-      
+
       try {
         const response = await purchaseOrderApi.getById(purchaseOrderId);
         setPo(response);
@@ -43,7 +43,7 @@ const PurchaseOrderDetailModal = ({
 
       {/* Modal Box */}
       <div className="bg-white rounded-2xl border border-gray-150 shadow-xl max-w-2xl w-full mx-4 z-10 overflow-hidden animate-scale-up max-h-[85vh] flex flex-col">
-        
+
         {/* Header */}
         <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-white to-[#fcfdfe] shrink-0">
           <h3 className="text-base font-bold text-gray-800 flex items-center gap-1.5">
@@ -118,7 +118,7 @@ const PurchaseOrderDetailModal = ({
                 <h4 className="text-xs font-extrabold text-gray-700 uppercase tracking-wider">Material Line Items</h4>
                 <div className="space-y-2">
                   {po.lines?.map((line) => {
-                    const progress = line.quantityOrdered > 0 
+                    const progress = line.quantityOrdered > 0
                       ? Math.min(100, Math.round((line.quantityReceived / line.quantityOrdered) * 100))
                       : 0;
 

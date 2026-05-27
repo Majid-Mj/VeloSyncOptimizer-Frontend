@@ -23,7 +23,7 @@ const StockLevelsPage = () => {
   const [stockLevels, setStockLevels] = useState([]);
   const [warehouses, setWarehouses] = useState([]);
   const [products, setProducts] = useState([]);
-  
+
   // Loading & Error states
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -64,8 +64,8 @@ const StockLevelsPage = () => {
   // Filters & Sorting state
   const [searchQuery, setSearchQuery] = useState('');
   const [warehouseFilter, setWarehouseFilter] = useState(
-    isManager && managerWarehouseId 
-      ? managerWarehouseId.toString() 
+    isManager && managerWarehouseId
+      ? managerWarehouseId.toString()
       : (preselected ? preselected.toString() : 'ALL')
   );
   const [statusFilter, setStatusFilter] = useState('ALL');
@@ -136,25 +136,25 @@ const StockLevelsPage = () => {
   const processedStock = useMemo(() => {
     return stockLevels
       .filter((item) => {
-        const matchesSearch = 
+        const matchesSearch =
           item.productName.toLowerCase().includes(searchQuery.toLowerCase()) ||
           item.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
           item.warehouseName.toLowerCase().includes(searchQuery.toLowerCase()) ||
           item.warehouseCode.toLowerCase().includes(searchQuery.toLowerCase());
 
-        const matchesWarehouse = 
-          warehouseFilter === 'ALL' || 
+        const matchesWarehouse =
+          warehouseFilter === 'ALL' ||
           item.warehouseId === Number(warehouseFilter);
 
         const currentAvailable = item.quantityOnHand - item.quantityReserved;
-        const matchesStatus = 
+        const matchesStatus =
           statusFilter === 'ALL' ||
           (statusFilter === 'OUT_OF_STOCK' && item.quantityOnHand <= 0) ||
           (statusFilter === 'LOW_STOCK' && (item.stockStatus === 'LOW_STOCK' || currentAvailable <= item.reorderPoint)) ||
           (statusFilter === 'IN_STOCK' && item.quantityOnHand > 0 && currentAvailable > item.reorderPoint);
 
-        const matchesCategory = 
-          categoryFilter === 'ALL' || 
+        const matchesCategory =
+          categoryFilter === 'ALL' ||
           (item.categoryName && item.categoryName.toLowerCase() === categoryFilter.toLowerCase());
 
         return matchesSearch && matchesWarehouse && matchesStatus && matchesCategory;
@@ -221,7 +221,7 @@ const StockLevelsPage = () => {
           </div>
           <div className="h-9 w-36 bg-gray-200 rounded-xl"></div>
         </div>
-        
+
         {/* Shimmering Stats Skeleton */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">
           {[...Array(4)].map((_, i) => (
@@ -250,7 +250,7 @@ const StockLevelsPage = () => {
         <div className="w-14 h-14 rounded-full bg-red-50 text-red-500 flex items-center justify-center text-lg font-bold">⚠️</div>
         <h3 className="text-base font-bold text-gray-800">Connection Failed</h3>
         <p className="text-xs font-semibold text-gray-400 max-w-sm leading-normal">{error}</p>
-        <button 
+        <button
           onClick={fetchData}
           className="px-4.5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition-all border-none cursor-pointer"
         >
@@ -278,7 +278,7 @@ const StockLevelsPage = () => {
         {(userRole === 'WarehouseManager') && (
           <button
             onClick={() => triggerAdjust(null)}
-            className="px-4.5 py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white font-bold text-xs rounded-xl shadow-md shadow-indigo-200 hover:shadow-lg hover:shadow-indigo-300 hover:scale-[1.02] active:scale-98 transition-all duration-200 flex items-center gap-2 self-start sm:self-auto border-none cursor-pointer"
+            className="px-4.5 py-2.5 bg-black hover:bg-zinc-900 text-white font-bold text-xs rounded-xl transition-all duration-200 flex items-center gap-2 self-start sm:self-auto border-none cursor-pointer"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -292,7 +292,7 @@ const StockLevelsPage = () => {
       <StockLevelsStats stats={stats} />
 
       {/* ── Toolbar Search & Filters ── */}
-      <StockLevelsToolbar 
+      <StockLevelsToolbar
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         warehouseFilter={warehouseFilter}
@@ -308,14 +308,14 @@ const StockLevelsPage = () => {
       />
 
       {/* ── Stock Balance Table ── */}
-      <StockLevelsTable 
-        stockLevels={processedStock} 
+      <StockLevelsTable
+        stockLevels={processedStock}
         userRole={userRole}
         onAdjust={triggerAdjust}
       />
 
       {/* ── Adjust Stock Modal Overlay ── */}
-      <AdjustStockModal 
+      <AdjustStockModal
         isOpen={adjustOpen}
         onClose={() => setAdjustOpen(false)}
         selectedItem={selectedItem}
@@ -326,7 +326,7 @@ const StockLevelsPage = () => {
       />
 
       {/* ── Transfer Stock Modal Overlay ── */}
-      <TransferStockModal 
+      <TransferStockModal
         isOpen={transferOpen}
         onClose={() => setTransferOpen(false)}
         selectedItem={selectedItem}
@@ -336,10 +336,9 @@ const StockLevelsPage = () => {
 
       {/* ── Toast Alerts ── */}
       {toast.show && (
-        <div 
-          className={`fixed bottom-5 right-5 z-50 flex items-center gap-2 px-4.5 py-3 rounded-2xl shadow-lg border text-xs font-bold text-white transition-all duration-300 animate-slide-up ${
-            toast.type === 'error' ? 'bg-red-500 border-red-400' : 'bg-green-500 border-green-400'
-          }`}
+        <div
+          className={`fixed bottom-5 right-5 z-50 flex items-center gap-2 px-4.5 py-3 rounded-2xl shadow-lg border text-xs font-bold text-white transition-all duration-300 animate-slide-up ${toast.type === 'error' ? 'bg-red-500 border-red-400' : 'bg-green-500 border-green-400'
+            }`}
         >
           {toast.type === 'error' ? '⚠️' : '✅'} {toast.msg}
         </div>

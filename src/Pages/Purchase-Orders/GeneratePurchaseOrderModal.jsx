@@ -27,7 +27,7 @@ const GeneratePurchaseOrderModal = ({
     if (isOpen) {
       setSupplierId(suppliers[0]?.id || '');
       setWarehouseId(allowedWarehouses[0]?.id || '');
-      
+
       // Default expected date: 7 days from today
       const weekFromNow = new Date();
       weekFromNow.setDate(weekFromNow.getDate() + 7);
@@ -51,7 +51,7 @@ const GeneratePurchaseOrderModal = ({
 
   const handleLineChange = (idx, field, value) => {
     const newLines = [...lines];
-    
+
     if (field === 'productId') {
       newLines[idx].productId = value;
       // Prefill standard product cost if available (from backend product list)

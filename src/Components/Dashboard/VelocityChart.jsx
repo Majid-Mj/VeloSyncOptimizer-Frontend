@@ -190,7 +190,7 @@ const VelocityChart = () => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
           <div>
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-indigo-500 animate-pulse shadow-[0_0_8px_rgba(79,70,229,0.4)]"></span>
+              <span className="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
               <h3 className="text-[15px] font-extrabold text-slate-800 tracking-tight">Stock Velocity & Runway Forecasting</h3>
             </div>
             <p className="text-[11px] font-bold text-slate-400 mt-1.5 flex items-center gap-1.5 uppercase tracking-wider">
@@ -206,13 +206,13 @@ const VelocityChart = () => {
           <div className="flex items-center p-1 bg-slate-100/80 border border-slate-200/50 rounded-2xl self-start sm:self-auto shadow-inner">
             <button
               onClick={() => setChartMode('velocity')}
-              className={`px-3 py-1.5 text-[10px] font-black rounded-xl transition-all duration-200 cursor-pointer border-none ${chartMode === 'velocity' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:text-slate-700 bg-transparent'}`}
+              className={`px-3 py-1.5 text-[10px] font-black rounded-xl transition-all duration-200 cursor-pointer border-none ${chartMode === 'velocity' ? 'bg-black text-white shadow-md' : 'text-slate-500 hover:text-slate-700 bg-transparent'}`}
             >
               VELOCITY
             </button>
             <button
               onClick={() => setChartMode('demand')}
-              className={`px-3 py-1.5 text-[10px] font-black rounded-xl transition-all duration-200 cursor-pointer border-none ${chartMode === 'demand' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:text-slate-700 bg-transparent'}`}
+              className={`px-3 py-1.5 text-[10px] font-black rounded-xl transition-all duration-200 cursor-pointer border-none ${chartMode === 'demand' ? 'bg-black text-white shadow-md' : 'text-slate-500 hover:text-slate-700 bg-transparent'}`}
             >
               RUNWAY FORECAST
             </button>
@@ -350,7 +350,7 @@ const VelocityChart = () => {
                     style={{ height: `${Math.max(pct, 5)}%` }}
                   >
                     {i === bars.length - 1 && (
-                      <div className="w-full h-1 bg-white/40 rounded-t-lg animate-pulse" />
+                      <div className="w-full h-1 bg-white/40 rounded-t-lg" />
                     )}
                   </div>
                 </div>
@@ -383,7 +383,7 @@ const VelocityChart = () => {
         <div className="bg-slate-50 border border-slate-200/50 p-3 rounded-2xl flex flex-col">
           <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wide">Avg Monthly</span>
           <span className="text-sm font-black text-indigo-600 mt-1 leading-none flex items-center gap-1.5">
-            {Math.round(avgVelocity * 30)} <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>
+            {Math.round(avgVelocity * 30)} <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
           </span>
         </div>
       </div>

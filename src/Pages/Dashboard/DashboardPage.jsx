@@ -12,18 +12,9 @@ const DashboardPage = () => {
   const { user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
 
-  const [localTime, setLocalTime] = useState(new Date().toLocaleTimeString());
   const [summary, setSummary] = useState(null);
   const [warehousesCount, setWarehousesCount] = useState(6);
   const [loading, setLoading] = useState(false);
-
-  // 1. Real-time local time tick
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setLocalTime(new Date().toLocaleTimeString());
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
 
   // 2. Fetch live metrics from real API endpoints
   useEffect(() => {
@@ -71,48 +62,6 @@ const DashboardPage = () => {
 
   return (
     <div className="p-4 md:p-6 lg:p-8 max-w-[1600px] mx-auto flex flex-col gap-6 select-none animate-fade-in">
-
-      {/* ── Dynamic Greeting & Live Telemetry Header ── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-5 md:p-6 shadow-lg border border-slate-800 relative overflow-hidden">
-        {/* Glow backdrop decorator */}
-        <div className="absolute right-0 bottom-0 w-80 h-80 bg-indigo-500/10 blur-[100px] rounded-full pointer-events-none" />
-        <div className="absolute left-1/3 top-0 w-40 h-40 bg-emerald-500/5 blur-[80px] rounded-full pointer-events-none" />
-
-        <div className="relative z-10">
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-xl md:text-2xl font-black text-white tracking-tight leading-none">
-              Welcome back, {user?.firstName || 'Commander'}
-            </h1>
-            <span className="px-2.5 py-0.5 rounded-lg text-[9px] font-black uppercase bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-              {getRoleLabel(user?.role)}
-            </span>
-          </div>
-          <p className="text-[11px] font-bold text-slate-400 mt-2 uppercase tracking-wider flex items-center gap-1.5">
-            <span>Logistics Control Dashboard</span>
-            <span className="text-slate-600">•</span>
-            <span className="text-emerald-400 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-ping"></span>
-              SignalR Connected
-            </span>
-          </p>
-        </div>
-
-        {/* Live sync statistics telemetry bar */}
-        <div className="relative z-10 grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-5 border-t border-slate-800 md:border-t-0 md:border-l md:border-slate-800 pt-3 md:pt-0 md:pl-6 text-white text-[11px] font-bold">
-          <div className="flex flex-col">
-            <span className="text-slate-500 text-[9px] uppercase tracking-wide">Local Console Time</span>
-            <span className="text-indigo-200 mt-1 font-mono text-[12px]">{localTime}</span>
-          </div>
-          <div className="flex flex-col">
-            <span className="text-slate-500 text-[9px] uppercase tracking-wide">Sync Telemetry Ping</span>
-            <span className="text-indigo-200 mt-1 font-mono text-[12px]">12ms <span className="text-emerald-400">Excellent</span></span>
-          </div>
-          <div className="hidden sm:flex flex-col">
-            <span className="text-slate-500 text-[9px] uppercase tracking-wide">Telemetry Health</span>
-            <span className="text-indigo-200 mt-1 font-mono text-[12px]">99.8% Online</span>
-          </div>
-        </div>
-      </div>
 
       {/* ── KPI Cards Grid ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -169,7 +118,7 @@ const DashboardPage = () => {
 
           {/* Header */}
           <div className="pb-3.5 border-b border-slate-50 flex items-center gap-2">
-            <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-ping"></div>
+            <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full"></div>
             <h3 className="text-[14px] font-extrabold text-slate-800 tracking-tight leading-none">
               Operations Control Panel
             </h3>

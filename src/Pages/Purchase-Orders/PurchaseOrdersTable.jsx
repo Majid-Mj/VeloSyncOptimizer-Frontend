@@ -27,11 +27,11 @@ const PurchaseOrdersTable = ({
     const created = new Date(dateStr);
     const now = new Date();
     // Zero out hours/minutes/seconds for date comparison
-    created.setHours(0,0,0,0);
-    now.setHours(0,0,0,0);
+    created.setHours(0, 0, 0, 0);
+    now.setHours(0, 0, 0, 0);
     const diffTime = now - created;
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays === 0) return 'Today';
     if (diffDays === 1) return 'Yesterday';
     if (diffDays < 0) return 'Scheduled';
@@ -185,7 +185,7 @@ const PurchaseOrdersTable = ({
                       {canApproveCancel && (
                         <button
                           onClick={() => onApprove(po.id)}
-                          className="px-3 py-1.5 text-[10px] font-black text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-xs shadow-indigo-100 transition-all border-none cursor-pointer flex items-center gap-1 hover:scale-102 active:scale-98"
+                          className="px-3 py-1.5 text-[10px] font-black text-white bg-black hover:bg-zinc-900 rounded-xl transition-all border-none cursor-pointer flex items-center gap-1 hover:scale-102 active:scale-98"
                         >
                           ✓ Approve
                         </button>
@@ -195,7 +195,7 @@ const PurchaseOrdersTable = ({
                       {canReceive && (
                         <button
                           onClick={() => onReceive(po)}
-                          className="px-3.5 py-1.5 text-[10px] font-black text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 rounded-xl shadow-sm shadow-emerald-100 transition-all border-none cursor-pointer flex items-center gap-1 hover:scale-102 active:scale-98"
+                          className="px-3.5 py-1.5 text-[10px] font-black text-white bg-black hover:bg-zinc-900 rounded-xl transition-all border-none cursor-pointer flex items-center gap-1 hover:scale-102 active:scale-98"
                         >
                           📥 Intake Stock
                         </button>

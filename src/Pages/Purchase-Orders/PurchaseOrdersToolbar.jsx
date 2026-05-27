@@ -10,16 +10,16 @@ const PurchaseOrdersToolbar = ({
 }) => {
   const statusTabs = userRole === 'WarehouseManager'
     ? [
-        { key: 'ALL', label: 'All Orders' },
-        { key: 'Received', label: '✅ Received' }
-      ]
+      { key: 'ALL', label: 'All Orders' },
+      { key: 'Received', label: '✅ Received' }
+    ]
     : [
-        { key: 'ALL', label: 'All Orders' },
-        { key: 'Draft', label: '🛠️ Drafts' },
-        { key: 'Approved', label: '📦 Approved' },
-        { key: 'Received', label: '✅ Received' },
-        { key: 'Cancelled', label: '❌ Cancelled' }
-      ];
+      { key: 'ALL', label: 'All Orders' },
+      { key: 'Draft', label: '🛠️ Drafts' },
+      { key: 'Approved', label: '📦 Approved' },
+      { key: 'Received', label: '✅ Received' },
+      { key: 'Cancelled', label: '❌ Cancelled' }
+    ];
 
   return (
     <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm flex flex-col gap-4">
@@ -61,11 +61,10 @@ const PurchaseOrdersToolbar = ({
             <button
               key={tab.key}
               onClick={() => setStatusFilter(tab.key)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-extrabold border transition-all cursor-pointer ${
-                isSelected
+              className={`px-3 py-1.5 rounded-xl text-xs font-extrabold border transition-all cursor-pointer ${isSelected
                   ? 'bg-blue-600 border-blue-600 text-white shadow-sm'
                   : 'bg-white border-gray-150 text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-              }`}
+                }`}
             >
               {tab.label}
             </button>

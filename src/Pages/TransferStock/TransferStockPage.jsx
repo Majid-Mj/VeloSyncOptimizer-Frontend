@@ -229,8 +229,8 @@ const TransferStockPage = () => {
   if (loading) {
     return (
       <div className="p-6 max-w-[1200px] mx-auto min-h-[calc(100vh-4rem)] flex items-center justify-center">
-        <div className="flex items-center gap-2.5 px-4.5 py-3.5 bg-white/95 shadow-xl border border-slate-100 rounded-2xl text-xs font-black text-slate-700 animate-pulse">
-          <span className="w-2 h-2 rounded-full bg-indigo-500 animate-ping"></span>
+        <div className="flex items-center gap-2.5 px-4.5 py-3.5 bg-white/95 shadow-xl border border-slate-100 rounded-2xl text-xs font-black text-slate-700">
+          <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
           Preparing stock transfer workspace...
         </div>
       </div>

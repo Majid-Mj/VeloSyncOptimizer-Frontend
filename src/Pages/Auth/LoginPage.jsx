@@ -53,7 +53,7 @@ const LoginPage = () => {
         <div className="left">
           <div className="logo">
             <div className="logo-icon">
-              <svg viewBox="0 0 16 16"><rect x="1" y="7" width="14" height="8" rx="1"/><path d="M4 7V5a4 4 0 018 0v2"/><line x1="8" y1="10" x2="8" y2="13"/></svg>
+              <svg viewBox="0 0 16 16"><rect x="1" y="7" width="14" height="8" rx="1" /><path d="M4 7V5a4 4 0 018 0v2" /><line x1="8" y1="10" x2="8" y2="13" /></svg>
             </div>
             <div>
               <div className="logo-text">VeloSync</div>
@@ -81,7 +81,7 @@ const LoginPage = () => {
         <div className="right">
           <div className="form-title">Sign in to VeloSync</div>
           <div className="form-sub">
-            Don't have an account? 
+            Don't have an account?
             <button className="switch-link" onClick={() => navigate('/register')}> Register →</button>
           </div>
 
@@ -94,17 +94,17 @@ const LoginPage = () => {
             <div className="form-group">
               <label className="form-label">Password</label>
               <div className="input-wrap">
-                <input 
-                  className="form-input" 
-                  id="l-pwd" 
+                <input
+                  className="form-input"
+                  id="l-pwd"
                   name="password"
-                  type={showPwd ? "text" : "password"} 
-                  placeholder="Your password" 
-                  required 
+                  type={showPwd ? "text" : "password"}
+                  placeholder="Your password"
+                  required
                 />
                 <button className="eye-btn" type="button" onClick={() => setShowPwd(!showPwd)}>
                   <svg viewBox="0 0 24 24" style={{ opacity: showPwd ? 1 : 0.4 }}>
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
                   </svg>
                 </button>
               </div>
@@ -123,20 +123,20 @@ const LoginPage = () => {
             </button>
 
             <div className="divider">or continue with</div>
-            
+
             <div className="social-row">
               <button type="button" className="social-btn">
                 <svg width="18" height="18" viewBox="0 0 18 18">
-                  <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
-                  <path d="M9 18c2.43 0 4.467-.806 5.956-2.184L12.048 13.558c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" fill="#34A853"/>
-                  <path d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.039l3.007-2.332z" fill="#FBBC05"/>
-                  <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z" fill="#EA4335"/>
+                  <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4" />
+                  <path d="M9 18c2.43 0 4.467-.806 5.956-2.184L12.048 13.558c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" fill="#34A853" />
+                  <path d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.039l3.007-2.332z" fill="#FBBC05" />
+                  <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z" fill="#EA4335" />
                 </svg>
                 Google
               </button>
               <button type="button" className="social-btn">
                 <svg width="18" height="18" viewBox="0 0 23 23">
-                  <path fill="#f3f3f3" d="M0 0h23v23H0z"/><path fill="#f35325" d="M1 1h10v10H1z"/><path fill="#81bc06" d="M12 1h10v10H12z"/><path fill="#05a6f0" d="M1 12h10v10H1z"/><path fill="#ffba08" d="M12 12h10v10H12z"/>
+                  <path fill="#f3f3f3" d="M0 0h23v23H0z" /><path fill="#f35325" d="M1 1h10v10H1z" /><path fill="#81bc06" d="M12 1h10v10H12z" /><path fill="#05a6f0" d="M1 12h10v10H1z" /><path fill="#ffba08" d="M12 12h10v10H12z" />
                 </svg>
                 Microsoft
               </button>
