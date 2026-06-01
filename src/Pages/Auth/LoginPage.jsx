@@ -11,7 +11,7 @@ const LoginPage = () => {
   const { loading: storeLoading } = useSelector((state) => state.auth);
 
   const [showPwd, setShowPwd] = useState(false);
-  const [toast, setToast] = useState({ show: true, msg: '', type: '' });
+  const [toast, setToast] = useState({ show: false, msg: '', type: '' });
 
   const showToast = (msg, type = '') => {
     setToast({ show: true, msg, type });
@@ -52,10 +52,10 @@ const LoginPage = () => {
         {/* LEFT PANEL */}
         <div className="left">
           <div className="logo">
-            <img 
-              src="/logo.png" 
-              alt="VeloSync" 
-              className="logo-img" 
+            <img
+              src="/logo.png"
+              alt="VeloSync"
+              className="logo-img"
             />
             <div>
               <div className="logo-text">VeloSync</div>
@@ -76,7 +76,7 @@ const LoginPage = () => {
               ))}
             </div>
           </div>
-          <div className="left-footer">© 2024 VeloSync Optimizer. All rights reserved.</div>
+          <div className="left-footer">© 2026 VeloSync Optimizer. All rights reserved.</div>
         </div>
 
         {/* RIGHT PANEL */}
@@ -135,12 +135,6 @@ const LoginPage = () => {
                   <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z" fill="#EA4335" />
                 </svg>
                 Google
-              </button>
-              <button type="button" className="social-btn">
-                <svg width="18" height="18" viewBox="0 0 23 23">
-                  <path fill="#f3f3f3" d="M0 0h23v23H0z" /><path fill="#f35325" d="M1 1h10v10H1z" /><path fill="#81bc06" d="M12 1h10v10H12z" /><path fill="#05a6f0" d="M1 12h10v10H1z" /><path fill="#ffba08" d="M12 12h10v10H12z" />
-                </svg>
-                Microsoft
               </button>
             </div>
 
