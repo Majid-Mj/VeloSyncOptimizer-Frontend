@@ -136,10 +136,10 @@ const VelocityChart = () => {
   const activeProductName = activeProduct?.name || 'Product';
 
   // Calculate real monthly averages based on rolling backend velocities
-  // If no data exists in database, use friendly non-zero defaults so chart is beautiful
-  const month3Daily = realVelocity ? Math.max(0, ((avg90 * 90) - (avg60 * 60)) / 30.0) : 38.5;
-  const month2Daily = realVelocity ? Math.max(0, ((avg60 * 60) - (avg30 * 30)) / 30.0) : 41.2;
-  const month1Daily = realVelocity ? avg30 : 45.8;
+  // If no data exists in database, all averages are 0 (no hardcoded/fake defaults)
+  const month3Daily = realVelocity ? Math.max(0, ((avg90 * 90) - (avg60 * 60)) / 30.0) : 0;
+  const month2Daily = realVelocity ? Math.max(0, ((avg60 * 60) - (avg30 * 30)) / 30.0) : 0;
+  const month1Daily = realVelocity ? avg30 : 0;
 
   // Let's create the 12 columns representing a rolling 12-week timeframe:
   const weekFactors = [
@@ -147,6 +147,9 @@ const VelocityChart = () => {
     0.95, 1.02, 0.97, 1.06,  // Weeks 5-8: Month 2 block (30-60 days ago)
     0.98, 1.04, 0.96, 1.02   // Weeks 9-12: Month 1 block (0-30 days ago)
   ];
+
+  // We will compute remaining stock projection week by week:
+  let projectedStock = stockOnHand;
 
   const bars = weekFactors.map((factor, i) => {
     let baseVelocity = month3Daily;
@@ -161,8 +164,15 @@ const VelocityChart = () => {
 
     const velocity = Math.round(baseVelocity * factor);
 
-    // Capacity runway represents relative remaining runway in percent:
-    const capacity = Math.min(Math.max(Math.round(40 + (factor * 35)), 20), 98);
+    // Dynamic runway projection:
+    // Decrement projected stock by this week's demand (velocity * 7 days)
+    const weekDemand = velocity * 7;
+    projectedStock = Math.max(0, projectedStock - weekDemand);
+
+    // Calculate capacity percent based on stockOnHand
+    const capacity = stockOnHand > 0 
+      ? Math.round((projectedStock / stockOnHand) * 100) 
+      : 0;
 
     return {
       label: `Wk ${i + 1}`,
@@ -176,11 +186,11 @@ const VelocityChart = () => {
   const maxVelocityVal = Math.max(...bars.map(b => b.velocity), 10);
 
   // Real stock runway calculation: QuantityOnHand / AvgDaily30
-  const runwayDays = avg30 > 0 ? Math.round(stockOnHand / avg30) : (realVelocity ? 0 : 24);
+  const runwayDays = avg30 > 0 ? Math.round(stockOnHand / avg30) : 0;
   const runwayMonths = (runwayDays / 30.0).toFixed(1);
   const runwayDisplay = runwayDays > 0
     ? (chartMode === 'velocity' ? `${runwayDays} Days` : `${runwayMonths} Mo`)
-    : (realVelocity ? "0 Days" : "24 Days");
+    : "0 Days";
 
   return (
     <div className="bg-gradient-to-br from-white to-slate-50/50 rounded-3xl p-5 md:p-6 shadow-[0_4px_16px_-4px_rgba(148,163,184,0.08)] border border-slate-100/90 flex-1 min-w-0 md:min-w-[550px] flex flex-col justify-between hover:shadow-xl transition-all duration-300 group animate-fade-in">

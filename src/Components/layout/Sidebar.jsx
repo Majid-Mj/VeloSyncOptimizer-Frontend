@@ -185,12 +185,11 @@ const Sidebar = ({ isOpen, onClose }) => {
             {/* ── Brand / Header ── */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800/60 flex-shrink-0">
                 <div className="flex items-center gap-2.5">
-                    <div className="w-8.5 h-8.5 bg-indigo-500/10 border border-indigo-500/30 rounded-xl flex items-center justify-center shrink-0">
-                        <svg className="w-[18px] h-[18px] text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                            <rect x="2" y="2" width="20" height="20" rx="3" />
-                            <path d="M12 2v20M2 12h20" />
-                        </svg>
-                    </div>
+                    <img 
+                        src="/logo.png" 
+                        alt="VeloSync" 
+                        className="w-8.5 h-8.5 object-contain shrink-0" 
+                    />
                     <div>
                         <div className="text-white text-[13px] font-black leading-tight tracking-wider uppercase">VeloSync</div>
                         <div className="text-indigo-400/60 text-[9px] font-bold mt-0.5 uppercase tracking-widest">Inventory Opt</div>

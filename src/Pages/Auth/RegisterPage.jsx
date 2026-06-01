@@ -77,9 +77,11 @@ const RegisterPage = () => {
         {/* LEFT PANEL */}
         <div className="left">
           <div className="logo">
-            <div className="logo-icon">
-              <svg viewBox="0 0 16 16"><rect x="1" y="7" width="14" height="8" rx="1" /><path d="M4 7V5a4 4 0 018 0v2" /><line x1="8" y1="10" x2="8" y2="13" /></svg>
-            </div>
+            <img 
+              src="/logo.png" 
+              alt="VeloSync" 
+              className="logo-img" 
+            />
             <div>
               <div className="logo-text">VeloSync</div>
               <div className="logo-sub">Inventory Optimizer</div>
