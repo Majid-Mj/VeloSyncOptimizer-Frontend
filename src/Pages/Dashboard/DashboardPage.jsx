@@ -50,8 +50,10 @@ const DashboardPage = () => {
 
   // Compute stats or safe fallbacks
   const totalSkusVal = summary ? summary.totalSkus.toLocaleString() : '2,847';
-  const valuationVal = summary
-    ? `₹ ${((summary.totalSkus * 1530 * 18.8) / 1000).toFixed(2)}K`
+  const valuationVal = summary && typeof summary.totalValuation === 'number' && !isNaN(summary.totalValuation)
+    ? summary.totalValuation >= 1000000
+      ? `₹ ${(summary.totalValuation / 1000000).toFixed(2)}M`
+      : `₹ ${(summary.totalValuation / 1000).toFixed(2)}K`
     : '₹ 80.46M';
   const depletedCount = summary
     ? `${summary.lowStock + summary.stockouts} Depleted`
@@ -77,7 +79,7 @@ const DashboardPage = () => {
           icon={<svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>}
           label="Inventory valuation"
           value={valuationVal}
-          trend={summary ? "Database estimate" : "+8.4% growth"}
+          trend={summary ? "Live DB Valuation" : "+8.4% growth"}
           trendType="up"
           color="green"
         />
