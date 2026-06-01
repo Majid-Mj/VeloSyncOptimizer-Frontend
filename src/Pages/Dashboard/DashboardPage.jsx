@@ -51,8 +51,8 @@ const DashboardPage = () => {
   // Compute stats or safe fallbacks
   const totalSkusVal = summary ? summary.totalSkus.toLocaleString() : '2,847';
   const valuationVal = summary
-    ? `RM ${((summary.totalSkus * 1530) / 1000).toFixed(2)}K`
-    : 'RM 4.28M';
+    ? `₹ ${((summary.totalSkus * 1530 * 18.8) / 1000).toFixed(2)}K`
+    : '₹ 80.46M';
   const depletedCount = summary
     ? `${summary.lowStock + summary.stockouts} Depleted`
     : '14 Depleted';

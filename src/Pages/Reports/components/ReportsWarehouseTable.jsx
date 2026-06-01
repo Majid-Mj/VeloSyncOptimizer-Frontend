@@ -5,9 +5,10 @@ const ReportsWarehouseTable = ({ performanceData = [], loading, onExportCSV }) =
   // Format currency/stock value dynamically
   const formatStockValue = (val) => {
     if (typeof val === 'number') {
-      return val >= 1000000
-        ? `RM ${(val / 1000000).toFixed(1)}M`
-        : `RM ${(val / 1000).toFixed(0)}K`;
+      const inrVal = val * 18.8; // Convert database RM base to INR
+      return inrVal >= 1000000
+        ? `₹ ${(inrVal / 1000000).toFixed(1)}M`
+        : `₹ ${(inrVal / 1000).toFixed(0)}K`;
     }
     return val;
   };
