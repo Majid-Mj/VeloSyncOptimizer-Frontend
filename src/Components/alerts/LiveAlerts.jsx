@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import alertsApi from '../../api/alerts.api';
 
 const LiveAlerts = () => {
+  const { user } = useSelector(state => state.auth);
+  const userRole = user?.role || '';
   const [alerts, setAlerts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -322,24 +325,24 @@ const LiveAlerts = () => {
 
             {/* Footer buttons */}
             <div className="flex items-center gap-3 border-t border-slate-100 pt-4 mt-2">
-              <button
-                onClick={() => {
-                  handleAction(detailModalAlert.id, 'Reorder');
-                  setDetailModalAlert(null);
-                }}
-                className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-black py-2.5 px-3 rounded-xl shadow-md shadow-indigo-200 active:scale-95 transition-all border-none cursor-pointer text-center"
-              >
-                ⚡ Reorder Now
-              </button>
-              <button
-                onClick={() => {
-                  handleAction(detailModalAlert.id, 'Snooze');
-                  setDetailModalAlert(null);
-                }}
-                className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-black py-2.5 px-4 rounded-xl active:scale-95 transition-all border-none cursor-pointer"
-              >
-                Snooze 24h
-              </button>
+              {(userRole === 'ProcurementOfficer' || userRole === 'Administrator') ? (
+                <button
+                  onClick={() => {
+                    handleAction(detailModalAlert.id, 'Reorder');
+                    setDetailModalAlert(null);
+                  }}
+                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-black py-2.5 px-3 rounded-xl shadow-md shadow-indigo-200 active:scale-95 transition-all border-none cursor-pointer text-center"
+                >
+                  ⚡ Reorder Now
+                </button>
+              ) : (
+                <button
+                  onClick={() => setDetailModalAlert(null)}
+                  className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-black py-2.5 px-4 rounded-xl active:scale-95 transition-all border-none cursor-pointer text-center"
+                >
+                  Close Details
+                </button>
+              )}
             </div>
             
           </div>
