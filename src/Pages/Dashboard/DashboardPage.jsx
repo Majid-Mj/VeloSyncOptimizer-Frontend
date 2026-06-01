@@ -50,10 +50,10 @@ const DashboardPage = () => {
 
   // Compute stats or safe fallbacks
   const totalSkusVal = summary ? summary.totalSkus.toLocaleString() : '2,847';
-  const valuationVal = summary && typeof summary.totalValuation === 'number' && !isNaN(summary.totalValuation)
-    ? summary.totalValuation >= 1000000
-      ? `₹ ${(summary.totalValuation / 1000000).toFixed(2)}M`
-      : `₹ ${(summary.totalValuation / 1000).toFixed(2)}K`
+  const valuationVal = summary && summary.totalValuation !== undefined && summary.totalValuation !== null
+    ? Number(summary.totalValuation) >= 1000000
+      ? `₹ ${(Number(summary.totalValuation) / 1000000).toFixed(2)}M`
+      : `₹ ${(Number(summary.totalValuation) / 1000).toFixed(2)}K`
     : '₹ 80.46M';
   const depletedCount = summary
     ? `${summary.lowStock + summary.stockouts} Depleted`
