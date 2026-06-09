@@ -62,7 +62,7 @@ const TransferForm = ({
 
   return (
     <div className="bg-white/80 backdrop-blur-md border border-slate-100 shadow-xs rounded-2xl flex flex-col h-full overflow-hidden">
-      
+
       {/* Form Header */}
       <div className="px-5 py-3.5 border-b border-slate-100 flex items-center gap-2 bg-slate-50/40 flex-shrink-0">
         <div className="w-6 h-6 rounded-lg bg-indigo-50 border border-indigo-200/50 flex items-center justify-center">
@@ -77,13 +77,13 @@ const TransferForm = ({
 
       <form onSubmit={handleSubmit} className="flex flex-col h-full min-h-[10px] overflow-hidden">
         <div className="p-4.5 flex-1 flex flex-col gap-3.5 overflow-y-auto">
-          
+
           {/* Searchable Product Selector */}
           <div className="relative">
             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">
               Product <span className="text-[8.5px] font-medium text-slate-400 font-mono">(Type to search)</span>
             </label>
-            
+
             <div className="relative">
               <input
                 type="text"
@@ -124,21 +124,19 @@ const TransferForm = ({
                             setProductSearch(p.name);
                             setIsDropdownOpen(false);
                           }}
-                          className={`px-3.5 py-2.5 cursor-pointer flex justify-between items-center transition-colors text-xs ${
-                            selectedProductId.toString() === p.id.toString()
+                          className={`px-3.5 py-2.5 cursor-pointer flex justify-between items-center transition-colors text-xs ${selectedProductId.toString() === p.id.toString()
                               ? 'bg-indigo-50/70 text-indigo-700 font-bold'
                               : 'text-slate-700 hover:bg-slate-50'
-                          }`}
+                            }`}
                         >
                           <div className="truncate max-w-[190px]">
                             <span className="block truncate font-bold">{p.name}</span>
                             <span className="text-[8.5px] font-semibold text-slate-400">SKU: {p.sku}</span>
                           </div>
-                          <span className={`text-[9px] font-black px-1.5 py-0.5 rounded border ${
-                            stock === 0
+                          <span className={`text-[9px] font-black px-1.5 py-0.5 rounded border ${stock === 0
                               ? 'bg-rose-50 border-rose-100 text-rose-600'
                               : 'bg-indigo-50 border-indigo-100 text-indigo-600'
-                          }`}>
+                            }`}>
                             {stock} in source
                           </span>
                         </div>
@@ -152,7 +150,7 @@ const TransferForm = ({
 
           {/* COMPACT SIDE-BY-SIDE WAREHOUSE FLOW */}
           <div className="flex items-center gap-2">
-            
+
             {/* Source Select */}
             <div className="flex-1 min-w-0">
               <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">
@@ -230,14 +228,14 @@ const TransferForm = ({
 
           {/* COMPACT SIDE-BY-SIDE QUANTITY & NOTES */}
           <div className="grid grid-cols-3 gap-3">
-            
+
             {/* Quantity */}
             <div className="col-span-1">
               <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">Qty</label>
               <div className="flex items-center bg-slate-50/70 border border-slate-200/60 rounded-xl overflow-hidden shadow-3xs h-9.5">
-                <button 
-                  type="button" 
-                  className="w-8 h-full flex items-center justify-center text-sm font-black text-slate-500 hover:bg-slate-200/40 transition-colors border-none bg-transparent cursor-pointer" 
+                <button
+                  type="button"
+                  className="w-8 h-full flex items-center justify-center text-sm font-black text-slate-500 hover:bg-slate-200/40 transition-colors border-none bg-transparent cursor-pointer"
                   onClick={() => handleQuantityAdjust(-10)}
                 >
                   −
@@ -250,9 +248,9 @@ const TransferForm = ({
                   required
                   min="1"
                 />
-                <button 
-                  type="button" 
-                  className="w-8 h-full flex items-center justify-center text-sm font-black text-slate-500 hover:bg-slate-200/40 transition-colors border-none bg-transparent cursor-pointer" 
+                <button
+                  type="button"
+                  className="w-8 h-full flex items-center justify-center text-sm font-black text-slate-500 hover:bg-slate-200/40 transition-colors border-none bg-transparent cursor-pointer"
                   onClick={() => handleQuantityAdjust(10)}
                 >
                   +
@@ -276,15 +274,13 @@ const TransferForm = ({
 
           {/* COMPACT TRANSFER IMPACT BADGES */}
           <div className="grid grid-cols-2 gap-3 mt-0.5">
-            <div className={`border rounded-xl p-3 transition-colors ${
-              sourceBelowRP ? 'border-rose-100 bg-rose-50/10' : 'border-slate-100'
-            }`}>
+            <div className={`border rounded-xl p-3 transition-colors ${sourceBelowRP ? 'border-rose-100 bg-rose-50/10' : 'border-slate-100'
+              }`}>
               <div className="text-[8.5px] font-black text-slate-400 uppercase mb-0.5">Source Impact</div>
               <div className="text-xs font-black text-rose-600 flex items-center justify-between">
                 <span>-{qtyToMove} units</span>
-                <span className={`text-[8px] font-black px-1.5 rounded ${
-                  sourceBelowRP ? 'bg-rose-50 text-rose-600' : 'bg-slate-50 text-slate-500'
-                }`}>
+                <span className={`text-[8px] font-black px-1.5 rounded ${sourceBelowRP ? 'bg-rose-50 text-rose-600' : 'bg-slate-50 text-slate-500'
+                  }`}>
                   {sourceBelowRP ? '⚠️ Below Safety' : '✓ Safe'}
                 </span>
               </div>
@@ -293,15 +289,13 @@ const TransferForm = ({
               </div>
             </div>
 
-            <div className={`border rounded-xl p-3 transition-colors ${
-              destMeetsRP ? 'border-emerald-100 bg-emerald-50/10' : 'border-slate-100'
-            }`}>
+            <div className={`border rounded-xl p-3 transition-colors ${destMeetsRP ? 'border-emerald-100 bg-emerald-50/10' : 'border-slate-100'
+              }`}>
               <div className="text-[8.5px] font-black text-slate-400 uppercase mb-0.5">Dest Impact</div>
               <div className="text-xs font-black text-emerald-600 flex items-center justify-between">
                 <span>+{qtyToMove} units</span>
-                <span className={`text-[8px] font-black px-1.5 rounded ${
-                  destMeetsRP ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-50 text-slate-500'
-                }`}>
+                <span className={`text-[8px] font-black px-1.5 rounded ${destMeetsRP ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-50 text-slate-500'
+                  }`}>
                   {destMeetsRP ? '✓ Meets Buffer' : '⚠️ Low'}
                 </span>
               </div>
@@ -313,10 +307,7 @@ const TransferForm = ({
 
           {/* Broadcast Banner */}
           <div className="border border-indigo-50/60 rounded-xl px-3 py-2 bg-indigo-50/30 text-[9.5px] font-bold text-indigo-700 flex items-center gap-2">
-            <span className="relative flex h-1.5 w-1.5 shrink-0">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-indigo-600"></span>
-            </span>
+            <span className="w-1.5 h-1.5 rounded-full bg-indigo-600"></span>
             <span>Warehouse boards synchronize live via SignalR.</span>
           </div>
 

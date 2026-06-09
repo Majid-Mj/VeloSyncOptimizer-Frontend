@@ -21,13 +21,25 @@ export const purchaseOrderApi = {
 
   // Approve a draft purchase order (restricted to ProcurementOfficer & Administrator roles)
   approve: async (id) => {
-    const response = await apiClient.post(`/purchaseorders/${id}/approve`);
+    const formData = new FormData();
+    formData.append('Status', 'Approved');
+    const response = await apiClient.patch(`/purchaseorders/${id}/status`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
     return response.data;
   },
 
   // Cancel an active purchase order (restricted to ProcurementOfficer & Administrator roles)
   cancel: async (id) => {
-    const response = await apiClient.post(`/purchaseorders/${id}/cancel`);
+    const formData = new FormData();
+    formData.append('Status', 'Cancelled');
+    const response = await apiClient.patch(`/purchaseorders/${id}/status`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
     return response.data;
   },
 

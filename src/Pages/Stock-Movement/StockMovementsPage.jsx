@@ -153,7 +153,7 @@ const StockMovementsPage = () => {
         <p className="text-xs font-semibold text-slate-400 max-w-sm leading-normal">{error}</p>
         <button
           onClick={fetchMovements}
-          className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs rounded-xl shadow-md shadow-indigo-100 transition-all border-none cursor-pointer"
+          className="px-5 py-2.5 bg-black hover:bg-zinc-900 text-white font-black text-xs rounded-xl shadow-md transition-all border-none cursor-pointer"
         >
           Try Again
         </button>
@@ -167,7 +167,7 @@ const StockMovementsPage = () => {
 
   return (
     <div className="p-4 md:p-6 max-w-[1600px] mx-auto min-h-[calc(100vh-4rem)] flex flex-col gap-6 relative">
-      
+
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -187,7 +187,7 @@ const StockMovementsPage = () => {
         {canTransfer && (
           <button
             onClick={() => navigate('/dashboard/stock-movement/transfer')}
-            className="px-4.5 py-2.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-black text-[11.5px] uppercase tracking-wider rounded-xl shadow-lg shadow-indigo-100 hover:shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2 self-start sm:self-auto border-none cursor-pointer"
+            className="px-4.5 py-2.5 bg-black hover:bg-zinc-900 text-white font-black text-[11.5px] uppercase tracking-wider rounded-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2 self-start sm:self-auto border-none cursor-pointer"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
@@ -217,8 +217,8 @@ const StockMovementsPage = () => {
       <div className="relative">
         {loading && (
           <div className="absolute inset-0 bg-white/60 backdrop-blur-xs z-10 flex items-center justify-center rounded-3xl">
-            <div className="flex items-center gap-2.5 px-4.5 py-3.5 bg-white/95 shadow-xl border border-slate-100 rounded-2xl text-xs font-black text-slate-700 animate-pulse">
-              <span className="w-2 h-2 rounded-full bg-indigo-500 animate-ping"></span>
+            <div className="flex items-center gap-2.5 px-4.5 py-3.5 bg-white/95 shadow-xl border border-slate-100 rounded-2xl text-xs font-black text-slate-700">
+              <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
               Synchronizing Ledger Trail...
             </div>
           </div>
@@ -257,7 +257,7 @@ const StockMovementsPage = () => {
                     key={pageIdx}
                     onClick={() => handlePageChange(pageIdx)}
                     className={`w-8.5 h-8.5 text-xs font-black rounded-xl border transition-all cursor-pointer flex items-center justify-center shadow-3xs ${isCurrent
-                      ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm shadow-indigo-100 scale-105'
+                      ? 'bg-black border-black text-white scale-105'
                       : 'bg-white border-slate-200 text-slate-500 hover:text-slate-800 hover:bg-slate-50'
                       }`}
                   >
@@ -288,14 +288,24 @@ const StockMovementsPage = () => {
       )}
 
       {/* ── Toast Alerts ── */}
-      {toast.show && (
-        <div
-          className={`fixed bottom-5 right-5 z-50 flex items-center gap-2 px-4.5 py-3 rounded-2xl shadow-lg border text-xs font-bold text-white transition-all duration-300 animate-slide-up ${toast.type === 'error' ? 'bg-rose-500 border-rose-400' : 'bg-green-500 border-green-400'
-            }`}
-        >
-          {toast.type === 'error' ? '⚠️' : '✅'} {toast.msg}
+      <div className={`toast-card ${toast.type} ${toast.show ? 'show' : ''}`}>
+        <div className="toast-icon-wrapper">
+          {toast.type === 'error' ? (
+            <svg className="toast-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          ) : (
+            <svg className="toast-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          )}
         </div>
-      )}
+        <div className="toast-content">
+          <div className="toast-title">{toast.type === 'error' ? 'Error' : 'Success'}</div>
+          <div className="toast-message">{toast.msg}</div>
+        </div>
+        <div className="toast-progress" />
+      </div>
     </div>
   );
 };

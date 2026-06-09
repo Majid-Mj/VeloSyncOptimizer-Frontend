@@ -46,14 +46,6 @@ const StatCard = ({ icon, label, value, trend, trendType = 'up', color = 'blue' 
 
   const currentStyle = styleConfigs[color] || styleConfigs.blue;
 
-  // Generate unique procedural sparkline shapes for high visual interest
-  const getSparklinePath = () => {
-    if (color === 'blue') return 'M 0 12 Q 15 5, 30 20 T 60 8 T 90 15 T 120 5';
-    if (color === 'green') return 'M 0 20 Q 15 12, 30 5 T 60 10 T 90 8 T 120 2';
-    if (color === 'amber') return 'M 0 15 Q 15 15, 30 14 T 60 18 T 90 12 T 120 14';
-    return 'M 0 8 Q 15 20, 30 12 T 60 25 T 90 5 T 120 8';
-  };
-
   const trendClasses = {
     up: 'bg-emerald-100/80 text-emerald-800 border-emerald-200',
     down: 'bg-rose-100/80 text-rose-800 border-rose-200',
@@ -93,54 +85,7 @@ const StatCard = ({ icon, label, value, trend, trendType = 'up', color = 'blue' 
           </h4>
         </div>
 
-        {/* Compact SVG Sparkline overlay (height reduced to 25px) */}
-        <div className="w-[100px] h-[25px] opacity-80 group-hover:opacity-100 transition-opacity duration-300 shrink-0">
-          <svg viewBox="0 0 120 25" className="w-full h-full overflow-visible">
-            <defs>
-              <linearGradient id="blueGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#4F46E5" stopOpacity="0.45" />
-                <stop offset="100%" stopColor="#4F46E5" stopOpacity="0.0" />
-              </linearGradient>
-              <linearGradient id="greenGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#0D9488" stopOpacity="0.45" />
-                <stop offset="100%" stopColor="#0D9488" stopOpacity="0.0" />
-              </linearGradient>
-              <linearGradient id="amberGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#D97706" stopOpacity="0.45" />
-                <stop offset="100%" stopColor="#D97706" stopOpacity="0.0" />
-              </linearGradient>
-              <linearGradient id="redGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#E11D48" stopOpacity="0.45" />
-                <stop offset="100%" stopColor="#E11D48" stopOpacity="0.0" />
-              </linearGradient>
-            </defs>
 
-            {/* Sparkline Area Shading */}
-            <path
-              d={`${getSparklinePath()} L 120 25 L 0 25 Z`}
-              fill={currentStyle.sparkGradient}
-            />
-
-            {/* Sparkline Stroke */}
-            <path
-              d={getSparklinePath()}
-              fill="none"
-              stroke={currentStyle.sparkColor}
-              strokeWidth="2.0"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            
-            {/* Pulsing indicator dot */}
-            <circle
-              cx="120"
-              cy={color === 'blue' ? 5 : color === 'green' ? 2 : color === 'amber' ? 14 : 8}
-              r="3.0"
-              fill={currentStyle.sparkColor}
-              className="animate-pulse"
-            />
-          </svg>
-        </div>
       </div>
     </div>
   );

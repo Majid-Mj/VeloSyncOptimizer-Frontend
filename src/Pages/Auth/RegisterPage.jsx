@@ -77,9 +77,11 @@ const RegisterPage = () => {
         {/* LEFT PANEL */}
         <div className="left">
           <div className="logo">
-            <div className="logo-icon">
-              <svg viewBox="0 0 16 16"><rect x="1" y="7" width="14" height="8" rx="1"/><path d="M4 7V5a4 4 0 018 0v2"/><line x1="8" y1="10" x2="8" y2="13"/></svg>
-            </div>
+            <img
+              src="/logo.png"
+              alt="VeloSync"
+              className="logo-img"
+            />
             <div>
               <div className="logo-text">VeloSync</div>
               <div className="logo-sub">Inventory Optimizer</div>
@@ -106,7 +108,7 @@ const RegisterPage = () => {
         <div className="right">
           <div className="form-title">Create your account</div>
           <div className="form-sub">
-            Already have an account? 
+            Already have an account?
             <button className="switch-link" onClick={() => navigate('/login')}> Sign in →</button>
           </div>
 
@@ -133,10 +135,10 @@ const RegisterPage = () => {
 
             <div className="form-group">
               <label className="form-label">Position / Role</label>
-              <select 
-                className="form-input" 
-                name="role" 
-                required 
+              <select
+                className="form-input"
+                name="role"
+                required
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
               >
@@ -149,18 +151,18 @@ const RegisterPage = () => {
             <div className="form-group">
               <label className="form-label">Password</label>
               <div className="input-wrap">
-                <input 
-                  className="form-input" 
-                  id="r-pwd" 
+                <input
+                  className="form-input"
+                  id="r-pwd"
                   name="password"
-                  type={showPwd ? "text" : "password"} 
-                  placeholder="Min 8 chars, include uppercase & symbol" 
+                  type={showPwd ? "text" : "password"}
+                  placeholder="Min 8 chars, include uppercase & symbol"
                   onInput={(e) => checkStrength(e.target.value)}
-                  required 
+                  required
                 />
                 <button className="eye-btn" type="button" onClick={() => setShowPwd(!showPwd)}>
                   <svg viewBox="0 0 24 24" style={{ opacity: showPwd ? 1 : 0.4 }}>
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
                   </svg>
                 </button>
               </div>
@@ -180,7 +182,7 @@ const RegisterPage = () => {
                 <input className="form-input" name="confirmPassword" type={showCPwd ? "text" : "password"} placeholder="Re-enter your password" required />
                 <button className="eye-btn" type="button" onClick={() => setShowCPwd(!showCPwd)}>
                   <svg viewBox="0 0 24 24" style={{ opacity: showCPwd ? 1 : 0.4 }}>
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
                   </svg>
                 </button>
               </div>
@@ -203,7 +205,24 @@ const RegisterPage = () => {
       </div>
 
       {/* TOAST */}
-      <div className={`toast ${toast.type} ${toast.show ? 'show' : ''}`}>{toast.msg}</div>
+      <div className={`toast-card ${toast.type} ${toast.show ? 'show' : ''}`}>
+        <div className="toast-icon-wrapper">
+          {toast.type === 'error' ? (
+            <svg className="toast-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          ) : (
+            <svg className="toast-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          )}
+        </div>
+        <div className="toast-content">
+          <div className="toast-title">{toast.type === 'error' ? 'Error' : 'Success'}</div>
+          <div className="toast-message">{toast.msg}</div>
+        </div>
+        <div className="toast-progress" />
+      </div>
     </div>
   );
 };

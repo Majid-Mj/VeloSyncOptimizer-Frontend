@@ -42,7 +42,7 @@ const WarehouseCard = ({ wh, isAdmin, onDelete, onEditManager }) => {
 
   return (
     <div className="bg-white/80 backdrop-blur-md rounded-2xl border border-slate-100/90 shadow-3xs hover:shadow-md hover:scale-[1.015] active:scale-[0.995] transition-all duration-300 flex flex-col overflow-hidden group">
-      
+
       {/* Header Info */}
       <div className="px-5 py-3.5 border-b border-slate-100/60 flex items-center justify-between bg-slate-55/30">
         <div className="flex items-center gap-2">
@@ -50,27 +50,25 @@ const WarehouseCard = ({ wh, isAdmin, onDelete, onEditManager }) => {
             {wh.id}
           </span>
           <div className="flex items-center gap-1.5">
-            <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${
-              wh.status === 'FULL' ? 'bg-rose-500' : 'bg-emerald-500'
-            }`}></span>
+            <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${wh.status === 'FULL' ? 'bg-rose-500' : 'bg-emerald-500'
+              }`}></span>
             <span className="text-[9.5px] font-black text-slate-400 tracking-wider uppercase">{wh.status}</span>
           </div>
         </div>
 
-        <span className={`text-[9.5px] font-black px-2 py-0.5 rounded-full border ${
-          wh.capacity >= 90 
-            ? 'bg-rose-50 text-rose-600 border-rose-100' 
-            : wh.capacity >= 75 
-              ? 'bg-amber-50 text-amber-600 border-amber-100' 
+        <span className={`text-[9.5px] font-black px-2 py-0.5 rounded-full border ${wh.capacity >= 90
+            ? 'bg-rose-50 text-rose-600 border-rose-100'
+            : wh.capacity >= 75
+              ? 'bg-amber-50 text-amber-600 border-amber-100'
               : 'bg-emerald-50 text-emerald-600 border-emerald-100'
-        }`}>
+          }`}>
           {wh.capacity}% Occupied
         </span>
       </div>
 
       {/* Main Body */}
       <div className="p-5 flex-1 flex flex-col justify-between gap-4">
-        
+
         {/* Title Details */}
         <div>
           <h3 className="text-[14px] font-black text-slate-800 tracking-tight leading-tight group-hover:text-indigo-600 transition-colors">
@@ -90,13 +88,12 @@ const WarehouseCard = ({ wh, isAdmin, onDelete, onEditManager }) => {
           </div>
           <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden relative border border-slate-200/20 shadow-3xs">
             <div
-              className={`absolute h-full rounded-full transition-all duration-700 ${
-                wh.color === 'red' 
-                  ? 'bg-gradient-to-r from-rose-500 to-red-600' 
-                  : wh.color === 'amber' 
-                    ? 'bg-gradient-to-r from-amber-500 to-orange-500' 
+              className={`absolute h-full rounded-full transition-all duration-700 ${wh.color === 'red'
+                  ? 'bg-gradient-to-r from-rose-500 to-red-600'
+                  : wh.color === 'amber'
+                    ? 'bg-gradient-to-r from-amber-500 to-orange-500'
                     : 'bg-gradient-to-r from-emerald-400 to-teal-500'
-              }`}
+                }`}
               style={{ width: `${wh.capacity}%` }}
             ></div>
           </div>
@@ -104,7 +101,7 @@ const WarehouseCard = ({ wh, isAdmin, onDelete, onEditManager }) => {
 
         {/* Dynamic spec indicators grid */}
         <div className="grid grid-cols-2 gap-x-4 gap-y-3 py-3 border-t border-b border-slate-100/80">
-          
+
           {/* Manager Block */}
           <div className="flex items-center gap-2">
             <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${managerGradient} text-white text-[10px] font-black flex items-center justify-center shrink-0 shadow-3xs select-none`}>
@@ -153,14 +150,14 @@ const WarehouseCard = ({ wh, isAdmin, onDelete, onEditManager }) => {
       {/* Footer controls */}
       <div className="px-5 py-3 bg-slate-55/40 border-t border-slate-100/60 flex items-center justify-between">
         {canManageStock ? (
-          <button 
+          <button
             onClick={handleManageStock}
             className="text-[11px] font-black text-indigo-600 hover:text-indigo-700 bg-transparent border-none cursor-pointer flex items-center gap-1 transition-all uppercase tracking-wider"
           >
             Manage Stock →
           </button>
         ) : (
-          <button 
+          <button
             disabled
             className="text-[10px] font-black text-slate-350 bg-transparent border-none cursor-not-allowed flex items-center gap-1 select-none uppercase tracking-wider"
             title="Manage stock restricted to assigned manager"

@@ -1,34 +1,34 @@
 import React from 'react';
 
-const WarehouseDrawer = ({ 
-  isOpen, 
-  onClose, 
-  newWh, 
-  setNewWh, 
-  onSubmit, 
-  managers 
+const WarehouseDrawer = ({
+  isOpen,
+  onClose,
+  newWh,
+  setNewWh,
+  onSubmit,
+  managers
 }) => {
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden flex justify-end">
-      
+
       {/* Dim Overlay Backdrop with Frosted Blur */}
-      <div 
+      <div
         onClick={onClose}
         className="absolute inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity duration-300"
       ></div>
 
       {/* Sliding Panel */}
       <div className="relative w-full max-w-md bg-white/95 backdrop-blur-md shadow-2xl border-l border-slate-100 flex flex-col h-full z-50 animate-slide-in-right">
-        
+
         {/* Panel Header */}
         <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/40 flex items-center justify-between flex-shrink-0">
           <div>
             <h3 className="text-sm font-black text-slate-800 uppercase tracking-wider">Create Warehouse</h3>
             <p className="text-[10px] font-bold text-slate-400 mt-0.5 tracking-wider uppercase">Add operational facility details</p>
           </div>
-          <button 
+          <button
             onClick={onClose}
             className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-50 rounded-xl transition-all border-none bg-transparent cursor-pointer"
           >
@@ -41,7 +41,7 @@ const WarehouseDrawer = ({
         {/* Input Fields Form */}
         <form onSubmit={onSubmit} className="flex-1 overflow-y-auto p-6 flex flex-col justify-between gap-6">
           <div className="space-y-4.5">
-            
+
             {/* ID Input */}
             <div>
               <label className="block text-[10px] font-black text-slate-450 uppercase tracking-widest mb-1.5">Warehouse Code</label>
@@ -50,7 +50,7 @@ const WarehouseDrawer = ({
                 required
                 placeholder="e.g. WH-KL-06"
                 value={newWh.id}
-                onChange={(e) => setNewWh({...newWh, id: e.target.value})}
+                onChange={(e) => setNewWh({ ...newWh, id: e.target.value })}
                 className="w-full px-3.5 py-2.5 bg-slate-50/70 border border-slate-200/50 focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-100 rounded-xl text-xs outline-none font-bold text-slate-700 transition-all shadow-3xs"
               />
             </div>
@@ -63,7 +63,7 @@ const WarehouseDrawer = ({
                 required
                 placeholder="e.g. Klang Valley Distribution Hub"
                 value={newWh.name}
-                onChange={(e) => setNewWh({...newWh, name: e.target.value})}
+                onChange={(e) => setNewWh({ ...newWh, name: e.target.value })}
                 className="w-full px-3.5 py-2.5 bg-slate-50/70 border border-slate-200/50 focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-100 rounded-xl text-xs outline-none font-bold text-slate-700 transition-all shadow-3xs"
               />
             </div>
@@ -76,7 +76,7 @@ const WarehouseDrawer = ({
                 required
                 placeholder="e.g. Selangor"
                 value={newWh.location}
-                onChange={(e) => setNewWh({...newWh, location: e.target.value})}
+                onChange={(e) => setNewWh({ ...newWh, location: e.target.value })}
                 className="w-full px-3.5 py-2.5 bg-slate-50/70 border border-slate-200/50 focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-100 rounded-xl text-xs outline-none font-bold text-slate-700 transition-all shadow-3xs"
               />
             </div>
@@ -88,7 +88,7 @@ const WarehouseDrawer = ({
                 type="text"
                 placeholder="e.g. 18,500 sq ft"
                 value={newWh.size}
-                onChange={(e) => setNewWh({...newWh, size: e.target.value})}
+                onChange={(e) => setNewWh({ ...newWh, size: e.target.value })}
                 className="w-full px-3.5 py-2.5 bg-slate-50/70 border border-slate-200/50 focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-100 rounded-xl text-xs outline-none font-bold text-slate-700 transition-all shadow-3xs"
               />
             </div>
@@ -100,7 +100,7 @@ const WarehouseDrawer = ({
                 type="number"
                 min="1"
                 value={newWh.staff}
-                onChange={(e) => setNewWh({...newWh, staff: e.target.value})}
+                onChange={(e) => setNewWh({ ...newWh, staff: e.target.value })}
                 className="w-full px-3.5 py-2.5 bg-slate-50/70 border border-slate-200/50 focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-100 rounded-xl text-xs outline-none font-bold text-slate-700 transition-all shadow-3xs"
               />
             </div>
@@ -116,7 +116,7 @@ const WarehouseDrawer = ({
                 min="0"
                 max="100"
                 value={newWh.capacity}
-                onChange={(e) => setNewWh({...newWh, capacity: e.target.value})}
+                onChange={(e) => setNewWh({ ...newWh, capacity: e.target.value })}
                 className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600 outline-none"
               />
             </div>
@@ -127,7 +127,7 @@ const WarehouseDrawer = ({
               <div className="relative">
                 <select
                   value={newWh.manager}
-                  onChange={(e) => setNewWh({...newWh, manager: e.target.value})}
+                  onChange={(e) => setNewWh({ ...newWh, manager: e.target.value })}
                   className="w-full px-3.5 py-2.5 bg-slate-50/70 border border-slate-200/50 focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-100 rounded-xl text-xs outline-none font-bold text-slate-700 appearance-none cursor-pointer transition-all shadow-3xs"
                 >
                   {managers.map(manager => (

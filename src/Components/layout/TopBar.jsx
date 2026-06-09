@@ -1,13 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import { useLocation } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { logout } from '../../Store/authSlice';
+import warehouseApi from '../../api/warehouse.api';
+import { authApi } from '../../api/auth.api';
 
 const TopBar = ({ onMenuClick }) => {
   const { user } = useSelector((state) => state.auth);
   const location = useLocation();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  // Dynamic clock state
+  // References
+  const dropdownRef = useRef(null);
+
+  // Dynamic states
   const [timeStr, setTimeStr] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [warehouseName, setWarehouseName] = useState('Loading facility...');
 
   useEffect(() => {
     const updateTime = () => {
@@ -23,6 +33,39 @@ const TopBar = ({ onMenuClick }) => {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    if (user?.warehouseId) {
+      warehouseApi.getAll().then((res) => {
+        if (res && res.isSuccess && res.data) {
+          const matched = res.data.find(w => Number(w.id) === Number(user.warehouseId));
+          if (matched) {
+            setWarehouseName(`${matched.name} (${matched.code})`);
+          } else {
+            setWarehouseName(`Warehouse ID: ${user.warehouseId}`);
+          }
+        }
+      }).catch((err) => {
+        console.error("Failed to load warehouse name:", err);
+        setWarehouseName(`Warehouse ID: ${user.warehouseId}`);
+      });
+    }
+  }, [user?.warehouseId]);
+
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    if (isDropdownOpen) {
+      document.addEventListener('mousedown', handleOutsideClick);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+    };
+  }, [isDropdownOpen]);
+
   const getInitials = (u) => {
     const f = u?.firstName?.[0] ?? '';
     const l = u?.lastName?.[0] ?? '';
@@ -36,6 +79,16 @@ const TopBar = ({ onMenuClick }) => {
       ProcurementManager: 'Procurement Manager',
     };
     return map[role] ?? 'User';
+  };
+
+  const handleLogout = async () => {
+    try {
+      await authApi.logout();
+    } catch (err) {
+      console.error("API logout call failed:", err);
+    }
+    dispatch(logout());
+    navigate('/login');
   };
 
   // Route mapping to stylized context title
@@ -57,10 +110,10 @@ const TopBar = ({ onMenuClick }) => {
 
   return (
     <header className="h-16 border-b border-slate-100 bg-white/80 backdrop-blur-md flex items-center justify-between px-4 md:px-8 sticky top-0 z-40 shadow-3xs">
-      
+
       {/* Breadcrumb & Context Label */}
       <div className="flex items-center gap-2">
-        <button 
+        <button
           onClick={onMenuClick}
           className="lg:hidden p-2 text-slate-400 hover:bg-slate-50 hover:text-slate-700 rounded-xl transition-all border-none bg-transparent cursor-pointer"
         >
@@ -70,11 +123,10 @@ const TopBar = ({ onMenuClick }) => {
             <line x1="4" y1="18" x2="20" y2="18" />
           </svg>
         </button>
-        
-        {/* Dynamic Context Badge */}
-        <div className="hidden sm:flex items-center gap-2">
-          <span className="text-base select-none">{currentContext.icon}</span>
-          <span className="text-xs font-black text-slate-800 uppercase tracking-wider">
+
+        {/* Dynamic Context Title */}
+        <div className="hidden sm:flex items-center">
+          <span className="text-lg md:text-xl font-black text-slate-900 tracking-tight">
             {currentContext.title}
           </span>
         </div>
@@ -82,28 +134,13 @@ const TopBar = ({ onMenuClick }) => {
 
       {/* Right side actions */}
       <div className="flex items-center gap-4.5">
-        
+
         {/* Live Pulse Digital Clock */}
         <div className="hidden md:flex items-center gap-2 bg-slate-50 border border-slate-100/80 px-3 py-1.5 rounded-xl font-mono text-[10px] font-black text-slate-500 uppercase tracking-widest">
-          <span className="relative flex h-1.5 w-1.5 shrink-0">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
-          </span>
           <span>Time: {timeStr}</span>
         </div>
 
-        {/* Global Search Input */}
-        <div className="relative group hidden lg:block">
-          <svg className="w-3.5 h-3.5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="11" cy="11" r="8" />
-            <path d="m21 21-4.3-4.3" />
-          </svg>
-          <input
-            type="text"
-            placeholder="Search index database..."
-            className="pl-9 pr-4 py-2 bg-slate-50/70 border border-slate-200/40 rounded-xl text-xs focus:ring-1 focus:ring-indigo-100 focus:border-indigo-500 focus:bg-white w-48 lg:w-56 transition-all outline-none text-slate-600 placeholder:text-slate-400 font-bold"
-          />
-        </div>
+
 
         {/* Notifications Icon with Glow */}
         <button className="relative p-2 text-slate-400 hover:bg-slate-50 hover:text-slate-700 rounded-xl transition-all border-none bg-transparent cursor-pointer">
@@ -115,22 +152,73 @@ const TopBar = ({ onMenuClick }) => {
         </button>
 
         {/* User Node Profile Block */}
-        <div className="flex items-center gap-3 pl-3 border-l border-slate-100">
-          <div className="text-right hidden sm:block">
-            <p className="text-[11px] font-black text-slate-800 tracking-tight leading-none uppercase">
-              {user?.firstName} {user?.lastName}
-            </p>
-            <span className="text-[8.5px] font-bold text-indigo-500/80 uppercase tracking-wider block mt-0.5 leading-none">
-              {getRoleLabel(user?.role)}
-            </span>
+        <div className="relative" ref={dropdownRef}>
+          <div
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className="flex items-center gap-3 pl-3 border-l border-slate-100 cursor-pointer select-none hover:opacity-85 transition-opacity"
+          >
+            <div className="text-right hidden sm:block">
+              <p className="text-[11px] font-black text-slate-800 tracking-tight leading-none uppercase">
+                {user?.firstName} {user?.lastName}
+              </p>
+              <span className="text-[8.5px] font-bold text-indigo-500/80 uppercase tracking-wider block mt-0.5 leading-none">
+                {getRoleLabel(user?.role)}
+              </span>
+            </div>
+
+            <div
+              className="w-9 h-9 rounded-xl bg-black text-white text-xs font-black flex items-center justify-center hover:scale-105 transition-transform shrink-0 border border-slate-100"
+            >
+              {getInitials(user)}
+            </div>
           </div>
 
-          <div 
-            className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white text-xs font-black flex items-center justify-center shadow-md shadow-indigo-100 cursor-pointer hover:scale-105 transition-transform shrink-0 select-none"
-            title={`${user?.firstName} ${user?.lastName} (${user?.role})`}
-          >
-            {getInitials(user)}
-          </div>
+          {/* Dynamic Profile Dropdown Popover */}
+          {isDropdownOpen && (
+            <div className="absolute right-0 mt-3 w-64 bg-white/95 backdrop-blur-md border border-slate-100 shadow-xl rounded-2xl p-4.5 z-50 flex flex-col gap-3.5 animate-slide-in">
+              {/* Header detail block */}
+              <div className="flex items-center gap-3 pb-3 border-b border-slate-50">
+                <div className="w-10 h-10 rounded-xl bg-black text-white text-xs font-black flex items-center justify-center shrink-0 border border-slate-100">
+                  {getInitials(user)}
+                </div>
+                <div className="min-w-0">
+                  <h4 className="text-[12px] font-black text-slate-800 uppercase tracking-tight truncate leading-none">
+                    {user?.firstName} {user?.lastName}
+                  </h4>
+                  <span className="text-[9px] font-bold text-indigo-500 uppercase tracking-wider block mt-1.5 leading-none">
+                    {getRoleLabel(user?.role)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Profile Fields section */}
+              <div className="flex flex-col gap-2.5 text-[10px] font-bold text-slate-500">
+                {user?.email && (
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[8px] uppercase tracking-wider text-slate-400">Email Address</span>
+                    <span className="text-slate-700 truncate">{user.email}</span>
+                  </div>
+                )}
+                {user?.warehouseId && (
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[8px] uppercase tracking-wider text-slate-400">Assigned Facility</span>
+                    <span className="text-slate-700">{warehouseName}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Action logout button */}
+              <button
+                onClick={handleLogout}
+                className="mt-1 w-full py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-100 hover:border-rose-200 font-black text-[10px] uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-3xs"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                Logout
+              </button>
+            </div>
+          )}
         </div>
 
       </div>

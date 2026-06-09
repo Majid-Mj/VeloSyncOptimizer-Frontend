@@ -136,10 +136,10 @@ const VelocityChart = () => {
   const activeProductName = activeProduct?.name || 'Product';
 
   // Calculate real monthly averages based on rolling backend velocities
-  // If no data exists in database, use friendly non-zero defaults so chart is beautiful
-  const month3Daily = realVelocity ? Math.max(0, ((avg90 * 90) - (avg60 * 60)) / 30.0) : 38.5;
-  const month2Daily = realVelocity ? Math.max(0, ((avg60 * 60) - (avg30 * 30)) / 30.0) : 41.2;
-  const month1Daily = realVelocity ? avg30 : 45.8;
+  // If no data exists in database, all averages are 0 (no hardcoded/fake defaults)
+  const month3Daily = realVelocity ? Math.max(0, ((avg90 * 90) - (avg60 * 60)) / 30.0) : 0;
+  const month2Daily = realVelocity ? Math.max(0, ((avg60 * 60) - (avg30 * 30)) / 30.0) : 0;
+  const month1Daily = realVelocity ? avg30 : 0;
 
   // Let's create the 12 columns representing a rolling 12-week timeframe:
   const weekFactors = [
@@ -147,6 +147,9 @@ const VelocityChart = () => {
     0.95, 1.02, 0.97, 1.06,  // Weeks 5-8: Month 2 block (30-60 days ago)
     0.98, 1.04, 0.96, 1.02   // Weeks 9-12: Month 1 block (0-30 days ago)
   ];
+
+  // We will compute remaining stock projection week by week:
+  let projectedStock = stockOnHand;
 
   const bars = weekFactors.map((factor, i) => {
     let baseVelocity = month3Daily;
@@ -159,10 +162,17 @@ const VelocityChart = () => {
       periodName = "Last 30d";
     }
 
-    const velocity = Math.round(baseVelocity * factor);
+    let velocity = Math.round(baseVelocity * factor);
 
-    // Capacity runway represents relative remaining runway in percent:
-    const capacity = Math.min(Math.max(Math.round(40 + (factor * 35)), 20), 98);
+    // Dynamic runway projection:
+    // Decrement projected stock by this week's demand (velocity * 7 days)
+    const weekDemand = velocity * 7;
+    projectedStock = Math.max(0, projectedStock - weekDemand);
+
+    // Calculate capacity percent based on stockOnHand
+    const capacity = stockOnHand > 0 
+      ? Math.round((projectedStock / stockOnHand) * 100) 
+      : 0;
 
     return {
       label: `Wk ${i + 1}`,
@@ -176,11 +186,11 @@ const VelocityChart = () => {
   const maxVelocityVal = Math.max(...bars.map(b => b.velocity), 10);
 
   // Real stock runway calculation: QuantityOnHand / AvgDaily30
-  const runwayDays = avg30 > 0 ? Math.round(stockOnHand / avg30) : (realVelocity ? 0 : 24);
+  const runwayDays = avg30 > 0 ? Math.round(stockOnHand / avg30) : 0;
   const runwayMonths = (runwayDays / 30.0).toFixed(1);
   const runwayDisplay = runwayDays > 0
     ? (chartMode === 'velocity' ? `${runwayDays} Days` : `${runwayMonths} Mo`)
-    : (realVelocity ? "0 Days" : "24 Days");
+    : "0 Days";
 
   return (
     <div className="bg-gradient-to-br from-white to-slate-50/50 rounded-3xl p-5 md:p-6 shadow-[0_4px_16px_-4px_rgba(148,163,184,0.08)] border border-slate-100/90 flex-1 min-w-0 md:min-w-[550px] flex flex-col justify-between hover:shadow-xl transition-all duration-300 group animate-fade-in">
@@ -190,7 +200,7 @@ const VelocityChart = () => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
           <div>
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-indigo-500 animate-pulse shadow-[0_0_8px_rgba(79,70,229,0.4)]"></span>
+              <span className="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
               <h3 className="text-[15px] font-extrabold text-slate-800 tracking-tight">Stock Velocity & Runway Forecasting</h3>
             </div>
             <p className="text-[11px] font-bold text-slate-400 mt-1.5 flex items-center gap-1.5 uppercase tracking-wider">
@@ -206,13 +216,13 @@ const VelocityChart = () => {
           <div className="flex items-center p-1 bg-slate-100/80 border border-slate-200/50 rounded-2xl self-start sm:self-auto shadow-inner">
             <button
               onClick={() => setChartMode('velocity')}
-              className={`px-3 py-1.5 text-[10px] font-black rounded-xl transition-all duration-200 cursor-pointer border-none ${chartMode === 'velocity' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:text-slate-700 bg-transparent'}`}
+              className={`px-3 py-1.5 text-[10px] font-black rounded-xl transition-all duration-200 cursor-pointer border-none ${chartMode === 'velocity' ? 'bg-black text-white shadow-md' : 'text-slate-500 hover:text-slate-700 bg-transparent'}`}
             >
               VELOCITY
             </button>
             <button
               onClick={() => setChartMode('demand')}
-              className={`px-3 py-1.5 text-[10px] font-black rounded-xl transition-all duration-200 cursor-pointer border-none ${chartMode === 'demand' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:text-slate-700 bg-transparent'}`}
+              className={`px-3 py-1.5 text-[10px] font-black rounded-xl transition-all duration-200 cursor-pointer border-none ${chartMode === 'demand' ? 'bg-black text-white shadow-md' : 'text-slate-500 hover:text-slate-700 bg-transparent'}`}
             >
               RUNWAY FORECAST
             </button>
@@ -350,7 +360,7 @@ const VelocityChart = () => {
                     style={{ height: `${Math.max(pct, 5)}%` }}
                   >
                     {i === bars.length - 1 && (
-                      <div className="w-full h-1 bg-white/40 rounded-t-lg animate-pulse" />
+                      <div className="w-full h-1 bg-white/40 rounded-t-lg" />
                     )}
                   </div>
                 </div>
@@ -383,7 +393,7 @@ const VelocityChart = () => {
         <div className="bg-slate-50 border border-slate-200/50 p-3 rounded-2xl flex flex-col">
           <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wide">Avg Monthly</span>
           <span className="text-sm font-black text-indigo-600 mt-1 leading-none flex items-center gap-1.5">
-            {Math.round(avgVelocity * 30)} <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>
+            {Math.round(avgVelocity * 30)} <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
           </span>
         </div>
       </div>

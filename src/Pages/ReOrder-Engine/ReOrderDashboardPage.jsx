@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { HubConnectionBuilder } from '@microsoft/signalr';
 
 // Import modular reorder engine widgets
 import ReOrderStats from './ReOrderStats';
@@ -70,6 +71,7 @@ const ReOrderDashboardPage = () => {
             CreatedAt: s.createdAt || new Date().toISOString()
           }));
           setSuggestions(mapped);
+          window.dispatchEvent(new CustomEvent('reorder-suggestions-updated'));
         } else {
           setSuggestions([]);
         }
@@ -112,6 +114,57 @@ const ReOrderDashboardPage = () => {
     loadDashboardData();
   }, [user]);
 
+  // Real-time stock alerts via SignalR
+  useEffect(() => {
+    const hubConnection = new HubConnectionBuilder()
+      .withUrl('http://localhost:5009/hubs/stock', {
+        withCredentials: true
+      })
+      .withAutomaticReconnect()
+      .build();
+
+    hubConnection.on('StockAlert', (newAlert) => {
+      console.log('ReOrderDashboardPage received real-time StockAlert:', newAlert);
+
+      if (newAlert.isRead) {
+        // Remove the alert from state if it was cleared/read
+        setAlerts(prev => prev.filter(a => !(a.productId === newAlert.productId && a.warehouseId === newAlert.warehouseId)));
+        return;
+      }
+
+      let sev = newAlert.severityId === 1 ? 'HIGH' : newAlert.severityId === 2 ? 'MED' : 'LOW';
+
+      const mappedAlert = {
+        id: newAlert.id || Date.now(),
+        productId: newAlert.productId,
+        warehouseId: newAlert.warehouseId,
+        severity: sev,
+        title: newAlert.alertType || 'Stock Alert',
+        sub: newAlert.message || 'Safety buffer exceeded.',
+        location: newAlert.warehouseName || 'Warehouse',
+        createdAt: new Date(newAlert.timestamp || new Date()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+
+      setAlerts(prev => {
+        const exists = prev.some(a => a.productId === mappedAlert.productId && a.warehouseId === mappedAlert.warehouseId);
+        if (exists) {
+          return prev.map(a => (a.productId === mappedAlert.productId && a.warehouseId === mappedAlert.warehouseId) ? mappedAlert : a);
+        }
+        return [mappedAlert, ...prev];
+      });
+    });
+
+    hubConnection.start()
+      .then(() => console.log('Successfully connected ReOrderDashboardPage to StockHub.'))
+      .catch(err => console.error('Error establishing SignalR connection in ReOrderDashboardPage:', err));
+
+    return () => {
+      hubConnection.stop()
+        .then(() => console.log('Successfully disconnected ReOrderDashboardPage from StockHub.'))
+        .catch(err => console.error('Error disconnecting ReOrderDashboardPage from StockHub:', err));
+    };
+  }, [user]);
+
   // Find user's assigned warehouse
   const activeWarehouse = useMemo(() => {
     if (user?.warehouseId && warehouses.length > 0) {
@@ -127,12 +180,15 @@ const ReOrderDashboardPage = () => {
       const res = await reorderApi.markActioned(id);
       if (res && res.isSuccess) {
         setSuggestions(prev => prev.filter(s => s.id !== id));
+        window.dispatchEvent(new CustomEvent('reorder-suggestions-updated'));
       } else {
         setSuggestions(prev => prev.filter(s => s.id !== id));
+        window.dispatchEvent(new CustomEvent('reorder-suggestions-updated'));
       }
     } catch (err) {
       console.error(err);
       setSuggestions(prev => prev.filter(s => s.id !== id));
+      window.dispatchEvent(new CustomEvent('reorder-suggestions-updated'));
     } finally {
       setActioningId(null);
     }

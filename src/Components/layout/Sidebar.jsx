@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../Store/authSlice';
+import reorderApi from '../../api/reorder.api';
+import { authApi } from '../../api/auth.api';
 
 const NAV_SECTIONS = [
     {
@@ -65,7 +67,6 @@ const NAV_SECTIONS = [
                 key: 'reorder-suggestions',
                 label: 'Reorder Engine',
                 path: '/dashboard/reorder-suggestions',
-                badge: 4,
                 icon: (
                     <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <circle cx="12" cy="12" r="10" />
@@ -135,10 +136,45 @@ const Sidebar = ({ isOpen, onClose }) => {
     const location = useLocation();
     const dispatch = useDispatch();
     const user = useSelector((s) => s.auth.user);
+    const [reorderCount, setReorderCount] = useState(0);
 
     const isActive = (path) => location.pathname === path;
 
-    const handleLogout = () => {
+    useEffect(() => {
+        const fetchReorderCount = async () => {
+            try {
+                const warehouseId = user?.role === 'WarehouseManager' ? user?.warehouseId : null;
+                const sugRes = await reorderApi.getSuggestions({ isCriticalOnly: false, warehouseId });
+                if (sugRes && sugRes.isSuccess && Array.isArray(sugRes.data)) {
+                    setReorderCount(sugRes.data.length);
+                }
+            } catch (err) {
+                console.error('Failed to fetch reorder suggestions count for sidebar:', err);
+            }
+        };
+
+        if (user) {
+            fetchReorderCount();
+        }
+
+        const handleSuggestionsUpdate = () => {
+            if (user) {
+                fetchReorderCount();
+            }
+        };
+
+        window.addEventListener('reorder-suggestions-updated', handleSuggestionsUpdate);
+        return () => {
+            window.removeEventListener('reorder-suggestions-updated', handleSuggestionsUpdate);
+        };
+    }, [user]);
+
+    const handleLogout = async () => {
+        try {
+            await authApi.logout();
+        } catch (err) {
+            console.error("API logout call failed:", err);
+        }
         dispatch(logout());
         navigate('/login');
         if (onClose) onClose();
@@ -155,80 +191,97 @@ const Sidebar = ({ isOpen, onClose }) => {
             {/* ── Brand / Header ── */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800/60 flex-shrink-0">
                 <div className="flex items-center gap-2.5">
-                    <div className="w-8.5 h-8.5 bg-indigo-500/10 border border-indigo-500/30 rounded-xl flex items-center justify-center shrink-0">
-                        <svg className="w-[18px] h-[18px] text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                            <rect x="2" y="2" width="20" height="20" rx="3" />
-                            <path d="M12 2v20M2 12h20" />
-                        </svg>
-                    </div>
+                    <img 
+                        src="/logo.png" 
+                        alt="VeloSync" 
+                        className="w-8.5 h-8.5 object-contain shrink-0" 
+                    />
                     <div>
                         <div className="text-white text-[13px] font-black leading-tight tracking-wider uppercase">VeloSync</div>
                         <div className="text-indigo-400/60 text-[9px] font-bold mt-0.5 uppercase tracking-widest">Inventory Opt</div>
                     </div>
                 </div>
                 {/* Mobile dismiss button */}
-                <button 
-                  onClick={onClose}
-                  className="lg:hidden p-1 bg-transparent border-none text-slate-400 hover:text-white cursor-pointer active:scale-95 transition-all text-xl leading-none"
+                <button
+                    onClick={onClose}
+                    className="lg:hidden p-1 bg-transparent border-none text-slate-400 hover:text-white cursor-pointer active:scale-95 transition-all text-xl leading-none"
                 >
-                  &times;
+                    &times;
                 </button>
             </div>
 
             {/* ── Navigation List ── */}
             <nav className="flex-1 py-3 overflow-y-auto">
-                {NAV_SECTIONS.map((section) => (
-                    <div key={section.label} className="mb-2">
+                {NAV_SECTIONS.map((section) => {
+                    const filteredItems = section.items.filter(item => {
+                        if (item.key === 'suppliers' && user?.role === 'WarehouseManager') {
+                            return false;
+                        }
+                        return true;
+                    });
 
-                        {/* Section label */}
-                        <p className="text-[9px] font-black tracking-widest text-slate-500 uppercase px-5 pt-3 pb-1">
-                            {section.label}
-                        </p>
+                    if (filteredItems.length === 0) return null;
 
-                        {/* Nav items */}
-                        {section.items.map((item) => {
-                            const active = isActive(item.path);
-                            return (
-                                <button
-                                    key={item.key}
-                                    onClick={() => {
-                                        navigate(item.path);
-                                        if (onClose) onClose();
-                                    }}
-                                    className={`
+                    return (
+                        <div key={section.label} className="mb-2">
+
+                            {/* Section label */}
+                            <p className="text-[9px] font-black tracking-widest text-slate-500 uppercase px-5 pt-3 pb-1">
+                                {section.label}
+                            </p>
+
+                            {/* Nav items */}
+                            {filteredItems.map((item) => {
+                                const active = isActive(item.path);
+                                return (
+                                    <button
+                                        key={item.key}
+                                        onClick={() => {
+                                            navigate(item.path);
+                                            if (onClose) onClose();
+                                        }}
+                                        className={`
                                         relative w-full flex items-center gap-3 px-5 py-2.5
                                         text-[12px] text-left border-none cursor-pointer
                                         transition-all duration-150 group
                                         ${active
-                                             ? 'bg-indigo-600/15 text-white font-black'
-                                             : 'bg-transparent text-slate-400 font-bold hover:bg-slate-800/40 hover:text-slate-100 hover:translate-x-0.5'
-                                         }
+                                                ? 'bg-indigo-600/15 text-white font-black'
+                                                : 'bg-transparent text-slate-400 font-bold hover:bg-slate-800/40 hover:text-slate-100 hover:translate-x-0.5'
+                                            }
                                     `}
-                                >
-                                    {/* Active indicator bar */}
-                                    {active && (
-                                        <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-indigo-500 rounded-r-md" />
-                                    )}
+                                    >
+                                        {/* Active indicator bar */}
+                                        {active && (
+                                            <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-indigo-500 rounded-r-md" />
+                                        )}
 
-                                    {/* Icon */}
-                                    <span className={`flex items-center shrink-0 scale-90 ${
-                                        active ? 'text-indigo-400' : 'text-slate-500 group-hover:text-slate-300'
-                                    }`}>{item.icon}</span>
+                                        {/* Icon */}
+                                        <span className={`flex items-center shrink-0 scale-90 ${active ? 'text-indigo-400' : 'text-slate-500 group-hover:text-slate-300'
+                                            }`}>{item.icon}</span>
 
-                                    {/* Label */}
-                                    <span className="flex-1 truncate">{item.label}</span>
+                                        {/* Label */}
+                                        <span className="flex-1 truncate">{item.label}</span>
 
-                                    {/* Badge */}
-                                    {item.badge && (
-                                        <span className="bg-rose-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full min-w-[15px] text-center leading-none">
-                                            {item.badge}
-                                        </span>
-                                    )}
-                                </button>
-                            );
-                        })}
-                    </div>
-                ))}
+                                        {/* Badge */}
+                                        {item.key === 'reorder-suggestions' ? (
+                                            reorderCount > 0 && (
+                                                <span className="bg-rose-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full min-w-[15px] text-center leading-none animate-fade-in">
+                                                    {reorderCount}
+                                                </span>
+                                            )
+                                        ) : (
+                                            item.badge && (
+                                                <span className="bg-rose-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full min-w-[15px] text-center leading-none">
+                                                    {item.badge}
+                                                </span>
+                                            )
+                                        )}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    );
+                })}
 
                 {/* ── Admin Specific Navigation ── */}
                 {user?.role === 'Admin' && (
@@ -254,9 +307,8 @@ const Sidebar = ({ isOpen, onClose }) => {
                             {isActive('/dashboard/user-approvals') && (
                                 <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-indigo-500 rounded-r-md" />
                             )}
-                            <span className={`flex items-center shrink-0 scale-90 ${
-                                isActive('/dashboard/user-approvals') ? 'text-indigo-400' : 'text-slate-500 group-hover:text-slate-300'
-                            }`}>
+                            <span className={`flex items-center shrink-0 scale-90 ${isActive('/dashboard/user-approvals') ? 'text-indigo-400' : 'text-slate-500 group-hover:text-slate-300'
+                                }`}>
                                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
                                     <circle cx="9" cy="7" r="4" />
@@ -274,7 +326,7 @@ const Sidebar = ({ isOpen, onClose }) => {
             <div className="border-t border-slate-800/60 px-5 py-4 bg-slate-950/20 flex-shrink-0">
                 <div className="flex items-center gap-2.5 mb-2.5">
                     {/* Avatar with gradient */}
-                    <div className="w-[32px] h-[32px] rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white text-[11px] font-black flex items-center justify-center shrink-0 shadow-md shadow-indigo-500/10 select-none">
+                    <div className="w-[32px] h-[32px] rounded-xl bg-black text-white text-[11px] font-black flex items-center justify-center shrink-0 border border-slate-800 select-none">
                         {getInitials(user)}
                     </div>
                     {/* Info */}

@@ -43,16 +43,6 @@ const WarehouseCard = ({ id, location, skus, capacity, color = 'blue' }) => {
 
   const currentStyle = styleConfig[color] || styleConfig.blue;
 
-  const getMockTelemetry = () => {
-    if (id.includes('KL')) return { temp: '22.4°C', humi: '55%', activeSensors: '14/14' };
-    if (id.includes('PG')) return { temp: '23.1°C', humi: '61%', activeSensors: '12/12' };
-    if (id.includes('JB')) return { temp: '21.8°C', humi: '58%', activeSensors: '18/18' };
-    if (id.includes('KK')) return { temp: '24.2°C', humi: '67%', activeSensors: '8/10' };
-    return { temp: '22.0°C', humi: '50%', activeSensors: '6/6' };
-  };
-
-  const tele = getMockTelemetry();
-
   // SVG Circle stroke computations
   const radius = 22;
   const circumference = 2 * Math.PI * radius;
@@ -67,8 +57,6 @@ const WarehouseCard = ({ id, location, skus, capacity, color = 'blue' }) => {
       {/* Header telemetry and connection indicator */}
       <div className="flex items-center justify-between border-b border-slate-100 pb-2">
         <div className="flex items-center gap-2">
-          {/* Signal active heartbeat dot */}
-          <span className={`w-1.5 h-1.5 rounded-full ${currentStyle.status}`}></span>
           <span className="text-[12.5px] font-black text-slate-800 tracking-tight leading-none">
             {id}
           </span>
@@ -122,18 +110,6 @@ const WarehouseCard = ({ id, location, skus, capacity, color = 'blue' }) => {
           <div className="absolute text-[10.5px] font-black text-slate-800">
             {capacity}%
           </div>
-        </div>
-      </div>
-
-      {/* Environmental & Telemetry Stats footer */}
-      <div className="grid grid-cols-2 gap-2 mt-1 pt-2.5 border-t border-slate-100 text-[10px] font-black text-slate-600">
-        <div className="flex items-center gap-1.5">
-          <span className="text-slate-400 text-xs">🌡</span>
-          <span>{tele.temp}</span>
-        </div>
-        <div className="flex items-center gap-1.5 justify-end">
-          <span className="text-slate-400 text-xs">💧</span>
-          <span>{tele.humi}</span>
         </div>
       </div>
     </div>

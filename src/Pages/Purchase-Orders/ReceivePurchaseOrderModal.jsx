@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import purchaseOrderApi from '../../api/purchaseOrder.api';
 
 const ReceivePurchaseOrderModal = ({
   isOpen,
@@ -6,40 +7,51 @@ const ReceivePurchaseOrderModal = ({
   selectedPO,
   onSubmit
 }) => {
+  const [poDetails, setPoDetails] = useState(null);
   const [lines, setLines] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [isStockConfirmed, setIsStockConfirmed] = useState(false);
 
   useEffect(() => {
-    if (isOpen && selectedPO) {
-      // Map PO Lines to receive intake model
-      const initialLines = selectedPO.lines.map(line => ({
-        lineId: line.id,
-        productId: line.productId,
-        productName: line.productName,
-        quantityOrdered: line.quantityOrdered,
-        quantityReceivedPrev: line.quantityReceived,
-        quantityReceivedCurrent: line.quantityOrdered - line.quantityReceived // default to the remaining balance
-      }));
-      setLines(initialLines);
+    if (isOpen && selectedPO?.id) {
+      const fetchPO = async () => {
+        setLoading(true);
+        try {
+          const data = await purchaseOrderApi.getById(selectedPO.id);
+          setPoDetails(data);
+
+          // Map hydrated PO Lines to receive intake model
+          const initialLines = data.lines.map(line => ({
+            lineId: line.id,
+            productId: line.productId,
+            productName: line.productName,
+            quantityOrdered: line.quantityOrdered,
+            quantityReceivedPrev: line.quantityReceived,
+            unitCost: line.unitCost,
+            lineTotal: line.lineTotal
+          }));
+          setLines(initialLines);
+        } catch (err) {
+          console.error('Failed to fetch detailed PO for receiving:', err);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchPO();
+      setIsStockConfirmed(false); // Reset confirmation state on PO change
     }
   }, [isOpen, selectedPO]);
 
   if (!isOpen || !selectedPO) return null;
 
-  const handleQtyChange = (idx, val) => {
-    const newLines = [...lines];
-    // Must be greater than or equal to 0
-    newLines[idx].quantityReceivedCurrent = Math.max(0, Number(val));
-    setLines(newLines);
-  };
-
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-    
-    // Check if at least one item is being received
-    const totalCurrentIntake = lines.reduce((acc, cur) => acc + cur.quantityReceivedCurrent, 0);
-    if (totalCurrentIntake <= 0) {
-      alert('Intake must log at least 1 received unit across items.');
+
+    // Safety guard
+    if (!isStockConfirmed) {
+      alert('You must confirm and check the stock intake verification box before proceeding.');
       return;
     }
 
@@ -48,7 +60,7 @@ const ReceivePurchaseOrderModal = ({
     const payload = {
       lines: lines.map(l => ({
         lineId: l.lineId,
-        quantityReceived: l.quantityReceivedCurrent
+        quantityReceived: l.quantityOrdered - l.quantityReceivedPrev // Receive the full remaining balance
       }))
     };
 
@@ -88,76 +100,77 @@ const ReceivePurchaseOrderModal = ({
         <div className="bg-emerald-50/50 border-b border-emerald-100 p-4 shrink-0 text-xs flex flex-wrap justify-between gap-2.5">
           <p className="font-bold text-gray-700">Supplier: <span className="text-gray-800 font-extrabold">{selectedPO.supplierName}</span></p>
           <p className="font-bold text-gray-500">Destination: <span className="text-emerald-700 font-extrabold">{selectedPO.warehouseName}</span></p>
-          <p className="font-bold text-gray-400">Total committed: <span className="text-gray-700 font-extrabold">${Number(selectedPO.totalAmount).toLocaleString()}</span></p>
+          <p className="font-bold text-gray-400">Total committed: <span className="text-gray-700 font-extrabold">₹{Number(selectedPO.totalAmount).toLocaleString()}</span></p>
         </div>
 
-        {/* Form Lines Scrollable */}
-        <form onSubmit={handleFormSubmit} className="p-5 flex-1 overflow-y-auto space-y-4">
-          <div className="space-y-3">
-            {lines.map((line, idx) => {
-              const remaining = line.quantityOrdered - line.quantityReceivedPrev;
-              const hasOverflow = line.quantityReceivedCurrent > remaining;
-
-              return (
-                <div key={line.lineId} className="border border-gray-100 p-3 rounded-xl bg-white shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
-                  {/* Item Description */}
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-bold text-gray-800 truncate">📦 {line.productName}</p>
-                    <div className="flex gap-2.5 mt-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                      <span>Ordered: <strong className="text-gray-600">{line.quantityOrdered}</strong></span>
-                      <span>Received: <strong className="text-emerald-600">{line.quantityReceivedPrev}</strong></span>
-                      <span>Pending: <strong className="text-blue-500">{remaining}</strong></span>
+        {loading ? (
+          <div className="p-10 flex flex-col items-center justify-center gap-3">
+            <div className="w-8 h-8 rounded-full border-4 border-emerald-200 border-t-emerald-600 animate-spin" />
+            <p className="text-xs font-bold text-gray-400">Hydrating materials details list...</p>
+          </div>
+        ) : (
+          <form onSubmit={handleFormSubmit} className="p-5 flex-1 overflow-y-auto space-y-4">
+            <div className="space-y-3">
+              {lines.map((line) => (
+                <div key={line.lineId} className="border border-gray-100 p-3.5 rounded-xl bg-white shadow-sm">
+                  <div className="flex justify-between items-start gap-2.5">
+                    <div>
+                      <p className="text-xs font-bold text-gray-800">📦 {line.productName}</p>
+                      <div className="flex flex-wrap gap-2.5 mt-1 items-center">
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Line Reference: #{line.lineId}</span>
+                        <span className="w-1 h-1 rounded-full bg-gray-200" />
+                        <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-md">
+                          📥 Intake Stock: {line.quantityOrdered - line.quantityReceivedPrev}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs font-extrabold text-gray-800">₹{Number(line.lineTotal).toLocaleString()}</p>
+                      <p className="text-[10px] text-gray-400 font-bold mt-0.5">{line.quantityOrdered} × ₹{Number(line.unitCost).toFixed(2)}</p>
                     </div>
                   </div>
-
-                  {/* Qty Intake Input */}
-                  <div className="w-full sm:w-32 shrink-0">
-                    <label className="block text-[8px] font-bold text-gray-400 uppercase tracking-wider mb-1">Received Intake</label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={line.quantityReceivedCurrent}
-                      onChange={(e) => handleQtyChange(idx, e.target.value)}
-                      className={`w-full text-xs font-extrabold text-gray-700 px-3 py-1.5 rounded-lg border outline-none focus:bg-white transition-all ${
-                        hasOverflow
-                          ? 'border-amber-400 bg-amber-50 focus:border-amber-500'
-                          : 'border-gray-200 bg-[#f8fafc] focus:border-emerald-500'
-                      }`}
-                    />
-                    {hasOverflow && (
-                      <span className="block text-[8px] font-bold text-amber-600 mt-0.5">
-                        ⚠️ Exceeds ordered balance
-                      </span>
-                    )}
-                  </div>
                 </div>
-              );
-            })}
-          </div>
+              ))}
+            </div>
 
-          {/* Intake warning note */}
-          <div className="bg-[#f8fafc] border border-gray-100 p-3 rounded-xl text-[10px] text-gray-400 leading-normal font-medium">
-            💡 <strong>Process Guidance:</strong> Clicking "Submit Delivery" records this intake session and increments warehouse inventory stock count levels automatically. Backorders can be resolved during a future intake session.
-          </div>
+            {/* Intake warning note */}
+            <div className="bg-[#f8fafc] border border-gray-100 p-3 rounded-xl text-[10px] text-gray-400 leading-normal font-medium">
+              💡 <strong>Process Guidance:</strong> Clicking "Submit Delivery Intake" records this intake session and increments warehouse inventory stock count levels automatically.
+            </div>
 
-          {/* Footer Submit Buttons */}
-          <div className="flex gap-3 pt-3 border-t border-gray-100 justify-end shrink-0">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 border border-gray-200 text-gray-500 hover:bg-gray-50 text-xs font-extrabold rounded-xl transition-all cursor-pointer"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={submitting}
-              className="px-4.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold rounded-xl shadow-md shadow-emerald-100 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {submitting ? 'Recording Intake...' : 'Submit Delivery Intake'}
-            </button>
-          </div>
-        </form>
+            {/* Stock Confirmation Checkbox */}
+            <div className="bg-emerald-50/20 border border-emerald-100/50 p-3.5 rounded-xl flex items-start gap-3 mt-4">
+              <input
+                type="checkbox"
+                id="confirm-intake-stocks"
+                checked={isStockConfirmed}
+                onChange={(e) => setIsStockConfirmed(e.target.checked)}
+                className="mt-0.5 cursor-pointer accent-emerald-600 w-4.5 h-4.5 rounded border-gray-300"
+              />
+              <label htmlFor="confirm-intake-stocks" className="text-[11px] font-bold text-slate-600 select-none cursor-pointer leading-normal">
+                I hereby confirm and certify that all of the physical stock items checked above have arrived and reached the destination warehouse successfully.
+              </label>
+            </div>
+
+            {/* Footer Submit Buttons */}
+            <div className="flex gap-3 pt-3 border-t border-gray-100 justify-end shrink-0">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 border border-gray-200 text-gray-500 hover:bg-gray-50 text-xs font-extrabold rounded-xl transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={submitting || !isStockConfirmed}
+                className="px-4.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold rounded-xl shadow-md shadow-emerald-100 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {submitting ? 'Recording Intake...' : 'Submit Delivery Intake'}
+              </button>
+            </div>
+          </form>
+        )}
       </div>
     </div>
   );

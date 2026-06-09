@@ -16,7 +16,7 @@ const ReOrderSuggestionsTable = ({
 }) => {
   return (
     <div className="bg-white/80 backdrop-blur-md border border-slate-100/90 rounded-2xl p-5 flex flex-col justify-between shadow-3xs">
-      
+
       <div>
         {/* Table Header controls */}
         <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4 pb-4 border-b border-slate-100 mb-4">
@@ -57,11 +57,10 @@ const ReOrderSuggestionsTable = ({
                     setSeverityFilter(sev);
                     setCurrentPage(1);
                   }}
-                  className={`px-3 py-1 text-[9px] font-black rounded-lg uppercase tracking-wider transition-all border-none cursor-pointer ${
-                    severityFilter === sev
+                  className={`px-3 py-1 text-[9px] font-black rounded-lg uppercase tracking-wider transition-all border-none cursor-pointer ${severityFilter === sev
                       ? 'bg-indigo-600 text-white shadow-3xs'
                       : 'bg-transparent text-slate-450 hover:text-slate-700'
-                  }`}
+                    }`}
                 >
                   {sev}
                 </button>
@@ -103,12 +102,12 @@ const ReOrderSuggestionsTable = ({
                   const badgeBg = sev === 'Critical' || sev === 'High'
                     ? 'bg-rose-50 border-rose-100/70 text-rose-600'
                     : sev === 'Medium'
-                    ? 'bg-amber-50 border-amber-100/70 text-amber-600'
-                    : 'bg-emerald-50 border-emerald-100/70 text-emerald-600';
+                      ? 'bg-amber-50 border-amber-100/70 text-amber-600'
+                      : 'bg-emerald-50 border-emerald-100/70 text-emerald-600';
 
                   return (
                     <tr key={item.id} className="text-[12px] hover:bg-slate-50/40 transition-all font-bold group/row">
-                      
+
                       {/* Product details */}
                       <td className="py-3.5 pl-2 max-w-[240px]">
                         <div className="flex flex-col min-w-0">

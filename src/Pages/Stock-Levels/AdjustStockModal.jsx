@@ -49,7 +49,7 @@ const AdjustStockModal = ({
                 reason: m.notes || m.reason || 'Manual Correction',
                 qty: m.quantity
               }));
-            
+
             setRecentAdjustments(adjustments.slice(0, 5));
           }
         } catch (err) {
@@ -84,7 +84,7 @@ const AdjustStockModal = ({
   if (!isOpen) return null;
 
   // Resolve current quantities and metadata
-  const currentProduct = selectedItem 
+  const currentProduct = selectedItem
     ? { name: selectedItem.productName, sku: selectedItem.sku }
     : products.find(p => p.id?.toString() === productId?.toString()) || { name: 'Unknown Product', sku: 'N/A' };
 
@@ -95,12 +95,12 @@ const AdjustStockModal = ({
   // Look up actual stock level from database
   const matchedStockLevel = selectedItem || stockLevels.find(
     s => s.productId?.toString() === productId?.toString() &&
-         s.warehouseId?.toString() === warehouseId?.toString()
+      s.warehouseId?.toString() === warehouseId?.toString()
   );
 
-  const currentQty = matchedStockLevel ? matchedStockLevel.quantityOnHand : 0; 
+  const currentQty = matchedStockLevel ? matchedStockLevel.quantityOnHand : 0;
   const reorderPoint = matchedStockLevel?.reorderPoint || 10;
-  
+
   // Calculate preview variables
   const qtyChange = Number(quantity) || 0;
   const delta = adjustType === 'ADD' ? qtyChange : -qtyChange;
@@ -160,17 +160,17 @@ const AdjustStockModal = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div 
-        className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity duration-300" 
-        onClick={onClose} 
+      <div
+        className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity duration-300"
+        onClick={onClose}
       />
 
       {/* Modal Split Box Container */}
       <div className="bg-white rounded-3xl border border-slate-100 shadow-2xl max-w-[820px] w-full z-10 overflow-hidden flex flex-col md:flex-row transition-all duration-300 transform scale-100">
-        
+
         {/* Left Column: Form Details */}
         <div className="w-full md:w-1/2 border-b md:border-b-0 md:border-r border-slate-100 flex flex-col bg-white">
-          
+
           {/* Header */}
           <div className="px-5 py-4 border-b border-slate-100 bg-slate-50/40 flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -183,8 +183,8 @@ const AdjustStockModal = ({
                 Adjust Inventory Stock
               </h3>
             </div>
-            <button 
-              onClick={onClose} 
+            <button
+              onClick={onClose}
               className="text-slate-400 hover:text-slate-600 bg-transparent border-none cursor-pointer p-0.5 flex items-center justify-center transition-colors md:hidden"
             >
               <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
@@ -195,7 +195,7 @@ const AdjustStockModal = ({
 
           {/* Form */}
           <form onSubmit={handleFormSubmit} className="p-5 flex-1 overflow-y-auto max-h-[580px] scrollbar-hide">
-            
+
             {/* PRODUCT CARD BOX */}
             <div className="bg-slate-50/70 border border-slate-100 rounded-2xl p-4 mb-4 shadow-3xs">
               <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Active SKU Context</span>
@@ -210,7 +210,7 @@ const AdjustStockModal = ({
                   · {currentWarehouse.code}
                 </span>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-3 mt-4 pt-3.5 border-t border-slate-100">
                 <div className="flex flex-col gap-0.5">
                   <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Current stock</span>
@@ -230,19 +230,17 @@ const AdjustStockModal = ({
             {/* ADJUSTMENT DIRECTION */}
             <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-2">Adjustment Action</span>
             <div className="grid grid-cols-2 gap-3 mb-4">
-              
+
               {/* Increase Option */}
-              <div 
+              <div
                 onClick={() => setAdjustType('ADD')}
-                className={`rounded-2xl p-3.5 text-center cursor-pointer border-2 transition-all duration-200 flex flex-col items-center gap-1 hover:border-emerald-300 hover:bg-emerald-50/20 ${
-                  adjustType === 'ADD' 
-                    ? 'border-emerald-500 bg-emerald-50/40 shadow-sm shadow-emerald-50' 
-                    : 'border-slate-100 bg-white'
-                }`}
+                className={`rounded-2xl p-3.5 text-center cursor-pointer border-2 transition-all duration-200 flex flex-col items-center gap-1 hover:border-emerald-300 hover:bg-emerald-50/20 ${adjustType === 'ADD'
+                  ? 'border-emerald-500 bg-emerald-50/40 shadow-sm shadow-emerald-50'
+                  : 'border-slate-100 bg-white'
+                  }`}
               >
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-black transition-all ${
-                  adjustType === 'ADD' ? 'bg-emerald-500 text-white shadow-xs' : 'bg-slate-100 text-slate-400'
-                }`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-black transition-all ${adjustType === 'ADD' ? 'bg-emerald-500 text-white shadow-xs' : 'bg-slate-100 text-slate-400'
+                  }`}>
                   ↑
                 </div>
                 <span className={`text-[11px] font-black tracking-wide ${adjustType === 'ADD' ? 'text-emerald-700' : 'text-slate-500'}`}>
@@ -254,17 +252,15 @@ const AdjustStockModal = ({
               </div>
 
               {/* Decrease Option */}
-              <div 
+              <div
                 onClick={() => setAdjustType('SUBTRACT')}
-                className={`rounded-2xl p-3.5 text-center cursor-pointer border-2 transition-all duration-200 flex flex-col items-center gap-1 hover:border-rose-300 hover:bg-rose-50/20 ${
-                  adjustType === 'SUBTRACT' 
-                    ? 'border-rose-500 bg-rose-50/40 shadow-sm shadow-rose-50' 
-                    : 'border-slate-100 bg-white'
-                }`}
+                className={`rounded-2xl p-3.5 text-center cursor-pointer border-2 transition-all duration-200 flex flex-col items-center gap-1 hover:border-rose-300 hover:bg-rose-50/20 ${adjustType === 'SUBTRACT'
+                  ? 'border-rose-500 bg-rose-50/40 shadow-sm shadow-rose-50'
+                  : 'border-slate-100 bg-white'
+                  }`}
               >
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-black transition-all ${
-                  adjustType === 'SUBTRACT' ? 'bg-rose-500 text-white shadow-xs' : 'bg-slate-100 text-slate-400'
-                }`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-black transition-all ${adjustType === 'SUBTRACT' ? 'bg-rose-500 text-white shadow-xs' : 'bg-slate-100 text-slate-400'
+                  }`}>
                   ↓
                 </div>
                 <span className={`text-[11px] font-black tracking-wide ${adjustType === 'SUBTRACT' ? 'text-rose-700' : 'text-slate-500'}`}>
@@ -280,13 +276,13 @@ const AdjustStockModal = ({
             {/* Dynamic Product/Warehouse Selectors (if initialized empty) */}
             {!selectedItem && (
               <div className="flex flex-col gap-3 mb-4">
-                
+
                 {/* Searchable Product Combobox */}
                 <div className="relative">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1.5">
                     Product <span className="text-[9px] font-medium text-slate-400 font-mono">(Type to search)</span>
                   </label>
-                  
+
                   <div className="relative">
                     <input
                       type="text"
@@ -310,7 +306,7 @@ const AdjustStockModal = ({
                     <>
                       {/* Click outside backdrop */}
                       <div className="fixed inset-0 z-40 bg-transparent" onClick={handleDropdownClose} />
-                      
+
                       <div className="absolute z-50 left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white border border-slate-100 rounded-xl shadow-lg divide-y divide-slate-50/60 scrollbar-thin">
                         {filteredProducts.length === 0 ? (
                           <div className="px-3.5 py-3 text-[11px] font-semibold text-slate-400 text-center">
@@ -325,11 +321,10 @@ const AdjustStockModal = ({
                                 setProductSearch(p.name);
                                 setIsDropdownOpen(false);
                               }}
-                              className={`px-3.5 py-2.5 cursor-pointer flex justify-between items-center transition-colors text-xs ${
-                                productId.toString() === p.id.toString()
-                                  ? 'bg-indigo-50/70 text-indigo-700 font-bold'
-                                  : 'text-slate-700 hover:bg-slate-50'
-                              }`}
+                              className={`px-3.5 py-2.5 cursor-pointer flex justify-between items-center transition-colors text-xs ${productId.toString() === p.id.toString()
+                                ? 'bg-indigo-50/70 text-indigo-700 font-bold'
+                                : 'text-slate-700 hover:bg-slate-50'
+                                }`}
                             >
                               <span className="truncate max-w-[220px]">{p.name}</span>
                               <span className="text-[9px] font-mono font-bold bg-slate-100 border border-slate-200/50 text-slate-500 px-1.5 py-0.5 rounded tracking-wide uppercase">
@@ -345,7 +340,7 @@ const AdjustStockModal = ({
 
                 <div>
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1.5">Warehouse Node</label>
-                  <select 
+                  <select
                     value={warehouseId}
                     onChange={(e) => setWarehouseId(e.target.value)}
                     className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-bold outline-none text-slate-700 cursor-pointer focus:border-indigo-500 shadow-3xs"
@@ -362,20 +357,20 @@ const AdjustStockModal = ({
             <div className="mb-4">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1.5">Quantity to Adjust</label>
               <div className="flex gap-2 items-center">
-                <button 
+                <button
                   type="button"
                   onClick={decrementQty}
                   className="w-9 h-9 border border-slate-200 rounded-xl bg-white cursor-pointer font-black text-sm flex items-center justify-center text-slate-500 hover:bg-slate-50 active:scale-95 transition-all shadow-3xs"
                 >
                   −
                 </button>
-                <input 
-                  type="number" 
+                <input
+                  type="number"
                   value={quantity}
                   onChange={(e) => setQuantity(Math.max(1, Number(e.target.value) || 0))}
                   className="flex-1 border border-slate-200 rounded-xl py-2 text-sm font-black outline-none text-slate-800 text-center focus:border-indigo-500 shadow-3xs"
                 />
-                <button 
+                <button
                   type="button"
                   onClick={incrementQty}
                   className="w-9 h-9 border border-slate-200 rounded-xl bg-white cursor-pointer font-black text-sm flex items-center justify-center text-slate-500 hover:bg-slate-50 active:scale-95 transition-all shadow-3xs"
@@ -388,7 +383,7 @@ const AdjustStockModal = ({
             {/* REASON DROP-DOWN */}
             <div className="mb-4">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1.5">Adjustment Reason</label>
-              <select 
+              <select
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-bold outline-none text-slate-700 cursor-pointer focus:border-indigo-500 shadow-3xs"
@@ -456,14 +451,14 @@ const AdjustStockModal = ({
 
             {/* FORM BUTTONS */}
             <div className="flex gap-2.5 mt-5 pt-4 border-t border-slate-100">
-              <button 
+              <button
                 type="button"
                 onClick={onClose}
                 className="flex-1 border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 rounded-xl py-2.5 text-xs font-black tracking-wide uppercase transition-colors cursor-pointer"
               >
                 Cancel
               </button>
-              <button 
+              <button
                 type="submit"
                 disabled={submitting}
                 className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white border-none rounded-xl py-2.5 text-xs font-black tracking-wide uppercase shadow-sm shadow-indigo-100 transition-colors disabled:opacity-50 cursor-pointer"
@@ -484,8 +479,8 @@ const AdjustStockModal = ({
                 </h3>
                 <p className="text-[9px] text-slate-400 font-semibold uppercase tracking-wider">Real-time Stock logs</p>
               </div>
-              <button 
-                onClick={onClose} 
+              <button
+                onClick={onClose}
                 className="text-slate-400 hover:text-slate-650 bg-transparent border-none cursor-pointer p-0.5 hidden md:flex items-center justify-center transition-colors"
               >
                 <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
@@ -517,12 +512,11 @@ const AdjustStockModal = ({
                           {item.warehouseCode} · {item.reason}
                         </div>
                       </div>
-                      
-                      <span className={`font-mono text-xs font-black px-2.5 py-1 rounded-lg border uppercase tracking-wider whitespace-nowrap shadow-2xs ${
-                        isPositive 
-                          ? 'bg-emerald-50 border-emerald-100 text-emerald-600' 
-                          : 'bg-rose-50 border-rose-100 text-rose-600'
-                      }`}>
+
+                      <span className={`font-mono text-xs font-black px-2.5 py-1 rounded-lg border uppercase tracking-wider whitespace-nowrap shadow-2xs ${isPositive
+                        ? 'bg-emerald-50 border-emerald-100 text-emerald-600'
+                        : 'bg-rose-50 border-rose-100 text-rose-600'
+                        }`}>
                         {isPositive ? `+${item.qty}` : item.qty}
                       </span>
                     </div>

@@ -22,10 +22,10 @@ const StockLevelsToolbar = ({
   const renderWarehouses = () => {
     if (isManager && managerWarehouseId) {
       const w = warehouses?.find(x => x.id.toString() === managerWarehouseId) || { id: managerWarehouseId, code: `WH-${managerWarehouseId}` };
-      
+
       return (
-        <button 
-          className="px-4 py-2 text-xs font-bold rounded-xl transition-all duration-200 bg-indigo-600 text-white shadow-sm shadow-indigo-200 border border-indigo-600 flex items-center gap-1.5"
+        <button
+          className="px-4 py-2 text-xs font-bold rounded-xl transition-all duration-200 bg-black text-white border border-black flex items-center gap-1.5"
         >
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse"></span>
           {w.code || `WH-${w.id}`} (My Warehouse)
@@ -36,25 +36,23 @@ const StockLevelsToolbar = ({
     if (warehouses && warehouses.length > 0) {
       return (
         <div className="flex items-center gap-2 flex-wrap">
-          <button 
+          <button
             onClick={() => setWarehouseFilter('ALL')}
-            className={`px-4 py-2 text-xs font-black tracking-wide uppercase rounded-xl transition-all duration-200 border cursor-pointer ${
-              warehouseFilter === 'ALL' 
-                ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm shadow-indigo-100 scale-102' 
+            className={`px-4 py-2 text-xs font-black tracking-wide uppercase rounded-xl transition-all duration-200 border cursor-pointer ${warehouseFilter === 'ALL'
+                ? 'bg-black text-white border-black scale-102'
                 : 'bg-white border-slate-200/80 text-slate-500 hover:text-slate-700 hover:bg-slate-50'
-            }`}
+              }`}
           >
             All warehouses
           </button>
           {warehouses.map(w => (
-            <button 
+            <button
               key={w.id}
               onClick={() => setWarehouseFilter(w.id.toString())}
-              className={`px-4 py-2 text-xs font-black tracking-wide uppercase rounded-xl transition-all duration-200 border cursor-pointer ${
-                warehouseFilter === w.id.toString() 
-                  ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm shadow-indigo-100 scale-102' 
+              className={`px-4 py-2 text-xs font-black tracking-wide uppercase rounded-xl transition-all duration-200 border cursor-pointer ${warehouseFilter === w.id.toString()
+                  ? 'bg-black text-white border-black scale-102'
                   : 'bg-white border-slate-200/80 text-slate-500 hover:text-slate-700 hover:bg-slate-50'
-              }`}
+                }`}
             >
               {w.code || `WH-${w.id}`}
             </button>
@@ -62,11 +60,11 @@ const StockLevelsToolbar = ({
         </div>
       );
     }
-    
+
     // Fallback static pills just in case data isn't loaded yet
     return (
       <div className="flex items-center gap-2 flex-wrap">
-        <button className="px-4 py-2 bg-indigo-600 text-white border border-indigo-600 text-xs font-black tracking-wide uppercase rounded-xl shadow-sm">All warehouses</button>
+        <button className="px-4 py-2 bg-black text-white border border-black text-xs font-black tracking-wide uppercase rounded-xl">All warehouses</button>
         <button className="px-4 py-2 bg-white border border-slate-200 text-slate-500 text-xs font-black tracking-wide uppercase rounded-xl">WH-KL-01</button>
         <button className="px-4 py-2 bg-white border border-slate-200 text-slate-500 text-xs font-black tracking-wide uppercase rounded-xl">WH-PG-02</button>
       </div>
@@ -75,7 +73,7 @@ const StockLevelsToolbar = ({
 
   return (
     <div className="flex flex-col gap-4 w-full bg-white/70 backdrop-blur-md border border-slate-100 shadow-sm p-5 rounded-2xl transition-all duration-300">
-      
+
       {/* Top Row: Warehouses Selector */}
       <div className="flex flex-col gap-2 w-full">
         <span className="text-[10px] font-black tracking-wider text-slate-400 uppercase">Warehouse Node</span>
@@ -88,7 +86,7 @@ const StockLevelsToolbar = ({
 
       {/* Bottom Layout: Filters & Search */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-center w-full">
-        
+
         {/* Search Input - 4 Cols */}
         <div className="lg:col-span-4 relative w-full">
           <svg className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
@@ -105,10 +103,10 @@ const StockLevelsToolbar = ({
 
         {/* Dropdowns Filters - 8 Cols */}
         <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-3 gap-3 w-full">
-          
+
           {/* Status Filter */}
           <div className="relative w-full">
-            <select 
+            <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
               className="w-full bg-white border border-slate-200/95 text-slate-600 text-xs font-bold rounded-xl pl-3.5 pr-9 py-2.5 outline-none appearance-none cursor-pointer hover:border-slate-300 focus:border-indigo-500 transition-colors shadow-xs"
@@ -125,7 +123,7 @@ const StockLevelsToolbar = ({
 
           {/* Categories Filter */}
           <div className="relative w-full">
-            <select 
+            <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
               className="w-full bg-white border border-slate-200/95 text-slate-600 text-xs font-bold rounded-xl pl-3.5 pr-9 py-2.5 outline-none appearance-none cursor-pointer hover:border-slate-300 focus:border-indigo-500 transition-colors shadow-xs"
@@ -142,7 +140,7 @@ const StockLevelsToolbar = ({
 
           {/* Sort Dropdown */}
           <div className="relative w-full">
-            <select 
+            <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
               className="w-full bg-white border border-slate-200/95 text-slate-600 text-xs font-bold rounded-xl pl-3.5 pr-9 py-2.5 outline-none appearance-none cursor-pointer hover:border-slate-300 focus:border-indigo-500 transition-colors shadow-xs"

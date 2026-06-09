@@ -9,6 +9,7 @@ import TransferStockPage from "../Pages/TransferStock/TransferStockPage";
 import PurchaseOrdersPage from "../Pages/Purchase-Orders/PurchaseOrdersPage";
 import ReorderDashboardPage from "../Pages/ReOrder-Engine/ReOrderDashboardPage";
 import UserApprovalPage from "../Pages/Admin/UserApprovalPage";
+import ReportsPage from "../Pages/Reports/ReportsPage";
 import MainLayout from "../Components/layout/MainLayout";
 
 const AppRouter = () => {
@@ -29,7 +30,7 @@ const AppRouter = () => {
           <Route path="reorder-suggestions" element={<ReorderDashboardPage />} />
           <Route path="purchase-orders" element={<PurchaseOrdersPage />} />
           <Route path="suppliers" element={<DashboardPage />} />
-          <Route path="reports" element={<DashboardPage />} />
+          <Route path="reports" element={<ReportsPage />} />
           <Route path="user-approvals" element={<UserApprovalPage />} />
         </Route>
       </Routes>

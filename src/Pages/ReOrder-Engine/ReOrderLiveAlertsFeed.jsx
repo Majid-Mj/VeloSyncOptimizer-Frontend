@@ -7,7 +7,7 @@ const ReOrderLiveAlertsFeed = ({ alerts }) => {
       <div className="pb-3.5 border-b border-slate-100 mb-4 flex items-center justify-between">
         <div>
           <h3 className="text-sm font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-ping"></span>
+            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
             Operational warnings Feed
           </h3>
           <span className="text-[10px] text-slate-455 font-bold uppercase tracking-wider block mt-0.5">
