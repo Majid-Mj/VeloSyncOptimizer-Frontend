@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import { HubConnectionBuilder } from '@microsoft/signalr';
 import alertsApi from '../../api/alerts.api';
 
 const LiveAlerts = () => {
@@ -18,7 +19,10 @@ const LiveAlerts = () => {
     else setLoading(true);
 
     try {
-      const response = await alertsApi.getAlerts({ unreadOnly: false });
+      const response = await alertsApi.getAlerts({ 
+        warehouseId: user?.warehouseId || null, 
+        unreadOnly: false 
+      });
       if (response && response.isSuccess && response.data) {
         const mapped = response.data.map(alert => {
           let sev = alert.severity?.toUpperCase() || 'LOW';
@@ -70,6 +74,8 @@ const LiveAlerts = () => {
 
           return {
             id: alert.id,
+            productId: alert.productId,
+            warehouseId: alert.warehouseId,
             severity: liveSev,
             title: qty === 0 ? 'Stockout' : qty < threshold ? 'Low Stock Warning' : 'Stock Restored',
             sub: customSub,
@@ -101,7 +107,99 @@ const LiveAlerts = () => {
 
   useEffect(() => {
     fetchLiveAlerts();
-  }, []);
+
+    // Establish SignalR StockHub connection
+    const hubConnection = new HubConnectionBuilder()
+      .withUrl('http://localhost:5009/hubs/stock', {
+        withCredentials: true
+      })
+      .withAutomaticReconnect()
+      .build();
+
+    hubConnection.on('StockAlert', (newAlert) => {
+      console.log('Received real-time StockAlert:', newAlert);
+
+      if (newAlert.isRead) {
+        // Auto-dismissal: remove alert from feed
+        setAlerts(prev => prev.filter(a => !(a.productId === newAlert.productId && a.warehouseId === newAlert.warehouseId)));
+        return;
+      }
+
+      // Map to UI alert structure
+      let sev = newAlert.severityId === 1 ? 'HIGH' : newAlert.severityId === 2 ? 'MED' : 'LOW';
+      const qty = newAlert.quantityOnHand ?? 0;
+      const threshold = newAlert.reorderPoint ?? 0;
+      
+      let demand = '14 units/day';
+      if (sev === 'HIGH' || newAlert.alertType?.toLowerCase().includes('stockout')) {
+        demand = '32 units/day';
+      } else if (sev === 'MED' || newAlert.alertType?.toLowerCase().includes('low')) {
+        demand = '18 units/day';
+      } else {
+        demand = '8 units/day';
+      }
+      
+      let runway = '';
+      if (qty === 0) {
+        runway = 'Critical (Stockout)';
+      } else if (qty >= threshold) {
+        runway = 'Healthy (Stock Restored)';
+      } else {
+        const days = Math.round(qty / (parseInt(demand) || 1));
+        runway = `${days <= 0 ? 1 : days} days remaining`;
+      }
+
+      let customSub = newAlert.message || 'Product quantity below safety levels.';
+      if (newAlert.message) {
+        const productName = newAlert.message.split(' at ')[0].split(' in ')[0].split(' is ')[0];
+        if (qty === 0) {
+          customSub = `${productName} is fully out of stock at ${newAlert.warehouseName || 'warehouse'}.`;
+        } else if (qty < threshold) {
+          customSub = `${productName} stock running low at ${newAlert.warehouseName || 'warehouse'}. Current stock: ${qty} units (Threshold: ${threshold}).`;
+        } else {
+          customSub = `${productName} stock has recovered. Current stock: ${qty} units.`;
+        }
+      }
+
+      const mappedAlert = {
+        id: newAlert.id || Date.now(),
+        productId: newAlert.productId,
+        warehouseId: newAlert.warehouseId,
+        severity: sev,
+        title: qty === 0 ? 'Stockout' : qty < threshold ? 'Low Stock Warning' : 'Stock Restored',
+        sub: customSub,
+        location: newAlert.warehouseName || 'Assigned Warehouse',
+        demandSpeed: demand,
+        currentStock: `${qty} units`,
+        runway: runway,
+        createdAt: new Date(newAlert.timestamp || new Date()).toLocaleString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        }),
+        isNew: true
+      };
+
+      setAlerts(prev => {
+        const exists = prev.some(a => a.productId === mappedAlert.productId && a.warehouseId === mappedAlert.warehouseId);
+        if (exists) {
+          return prev.map(a => (a.productId === mappedAlert.productId && a.warehouseId === mappedAlert.warehouseId) ? mappedAlert : a);
+        }
+        return [mappedAlert, ...prev];
+      });
+    });
+
+    hubConnection.start()
+      .then(() => console.log('Successfully connected to StockHub SignalR endpoint.'))
+      .catch(err => console.error('Error establishing SignalR connection to StockHub:', err));
+
+    return () => {
+      hubConnection.stop()
+        .then(() => console.log('Successfully disconnected from StockHub.'))
+        .catch(err => console.error('Error disconnecting from StockHub:', err));
+    };
+  }, [user]);
 
   const handleRefresh = () => {
     fetchLiveAlerts(true);

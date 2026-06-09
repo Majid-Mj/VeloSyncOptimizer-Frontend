@@ -162,7 +162,7 @@ const VelocityChart = () => {
       periodName = "Last 30d";
     }
 
-    const velocity = Math.round(baseVelocity * factor);
+    let velocity = Math.round(baseVelocity * factor);
 
     // Dynamic runway projection:
     // Decrement projected stock by this week's demand (velocity * 7 days)

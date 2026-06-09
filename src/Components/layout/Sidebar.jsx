@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../Store/authSlice';
 import reorderApi from '../../api/reorder.api';
+import { authApi } from '../../api/auth.api';
 
 const NAV_SECTIONS = [
     {
@@ -168,7 +169,12 @@ const Sidebar = ({ isOpen, onClose }) => {
         };
     }, [user]);
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
+        try {
+            await authApi.logout();
+        } catch (err) {
+            console.error("API logout call failed:", err);
+        }
         dispatch(logout());
         navigate('/login');
         if (onClose) onClose();

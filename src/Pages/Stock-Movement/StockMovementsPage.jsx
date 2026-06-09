@@ -167,7 +167,7 @@ const StockMovementsPage = () => {
 
   return (
     <div className="p-4 md:p-6 max-w-[1600px] mx-auto min-h-[calc(100vh-4rem)] flex flex-col gap-6 relative">
-      
+
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -288,14 +288,24 @@ const StockMovementsPage = () => {
       )}
 
       {/* ── Toast Alerts ── */}
-      {toast.show && (
-        <div
-          className={`fixed bottom-5 right-5 z-50 flex items-center gap-2 px-4.5 py-3 rounded-2xl shadow-lg border text-xs font-bold text-white transition-all duration-300 animate-slide-up ${toast.type === 'error' ? 'bg-rose-500 border-rose-400' : 'bg-green-500 border-green-400'
-            }`}
-        >
-          {toast.type === 'error' ? '⚠️' : '✅'} {toast.msg}
+      <div className={`toast-card ${toast.type} ${toast.show ? 'show' : ''}`}>
+        <div className="toast-icon-wrapper">
+          {toast.type === 'error' ? (
+            <svg className="toast-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          ) : (
+            <svg className="toast-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          )}
         </div>
-      )}
+        <div className="toast-content">
+          <div className="toast-title">{toast.type === 'error' ? 'Error' : 'Success'}</div>
+          <div className="toast-message">{toast.msg}</div>
+        </div>
+        <div className="toast-progress" />
+      </div>
     </div>
   );
 };

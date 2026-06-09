@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { logout } from '../../Store/authSlice';
 import warehouseApi from '../../api/warehouse.api';
+import { authApi } from '../../api/auth.api';
 
 const TopBar = ({ onMenuClick }) => {
   const { user } = useSelector((state) => state.auth);
@@ -80,7 +81,12 @@ const TopBar = ({ onMenuClick }) => {
     return map[role] ?? 'User';
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await authApi.logout();
+    } catch (err) {
+      console.error("API logout call failed:", err);
+    }
     dispatch(logout());
     navigate('/login');
   };
