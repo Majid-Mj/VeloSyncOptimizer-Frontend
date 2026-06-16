@@ -53,15 +53,15 @@ const StockMovementsToolbar = ({
   });
 
   return (
-    <div className="bg-white/80 backdrop-blur-md rounded-2xl p-5 border border-slate-100/90 shadow-xs flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+    <div className="premium-card bg-white p-5 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-5">
       {/* Filters Section */}
-      <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4.5">
         
         {/* Warehouse Filter */}
         <div className="relative">
-          <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">Warehouse Location</label>
+          <label className="block text-[10px] font-black text-[#8a8b9d] uppercase tracking-wider mb-1.5">Warehouse Location</label>
           {isManager ? (
-            <div className="w-full bg-slate-50 text-xs font-bold text-slate-700 pl-3.5 pr-4 py-2.5 rounded-xl border border-slate-100 flex items-center gap-2 select-none h-10 shadow-3xs">
+            <div className="w-full bg-slate-50 text-xs font-bold text-slate-700 pl-4 pr-4 py-2.5 rounded-2xl border border-[#eff1f5] flex items-center gap-2 select-none h-10 shadow-3xs">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
               <span className="truncate">
                 {(() => {
@@ -75,7 +75,7 @@ const StockMovementsToolbar = ({
               <select
                 value={warehouseFilter}
                 onChange={(e) => setWarehouseFilter(e.target.value)}
-                className="w-full bg-slate-50 text-xs font-bold text-slate-700 pl-3.5 pr-9 py-2.5 rounded-xl border border-slate-200/60 focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-100 outline-none appearance-none cursor-pointer transition-all shadow-3xs h-10"
+                className="w-full bg-slate-50 text-xs font-bold text-slate-700 pl-4 pr-9 py-2.5 rounded-2xl border border-[#eff1f5] focus:border-indigo-500 focus:bg-white outline-none appearance-none cursor-pointer transition-all shadow-3xs h-10"
               >
                 <option value="ALL">All Warehouses</option>
                 {warehouses.map(w => (
@@ -84,7 +84,7 @@ const StockMovementsToolbar = ({
                   </option>
                 ))}
               </select>
-              <div className="absolute right-3.5 top-3 pointer-events-none text-slate-400">
+              <div className="absolute right-3.5 top-3.5 pointer-events-none text-slate-400">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                 </svg>
@@ -95,7 +95,7 @@ const StockMovementsToolbar = ({
 
         {/* Searchable Product Filter */}
         <div className="relative">
-          <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">
+          <label className="block text-[10px] font-black text-[#8a8b9d] uppercase tracking-wider mb-1.5">
             Filter by Product <span className="text-[9px] font-medium text-slate-400 font-mono">(Type to search)</span>
           </label>
           
@@ -113,10 +113,10 @@ const StockMovementsToolbar = ({
                 }
                 setIsDropdownOpen(true);
               }}
-              className="w-full bg-slate-50 text-xs font-bold text-slate-700 pl-3.5 pr-9 py-2.5 rounded-xl border border-slate-200/60 focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-100 outline-none transition-all shadow-3xs h-10"
+              className="w-full bg-slate-50 text-xs font-bold text-slate-700 pl-4 pr-9 py-2.5 rounded-2xl border border-[#eff1f5] focus:border-indigo-500 focus:bg-white outline-none transition-all shadow-3xs h-10"
               placeholder="Search SKU or Name..."
             />
-            <div className="absolute right-3.5 top-3 pointer-events-none text-slate-400">
+            <div className="absolute right-3.5 top-3.5 pointer-events-none text-slate-400">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
@@ -128,7 +128,7 @@ const StockMovementsToolbar = ({
               {/* Click-outside backdrop */}
               <div className="fixed inset-0 z-40 bg-transparent" onClick={handleDropdownClose} />
               
-              <div className="absolute z-50 left-0 right-0 mt-1.5 max-h-56 overflow-y-auto bg-white border border-slate-100 rounded-xl shadow-lg divide-y divide-slate-50/60 scrollbar-thin">
+              <div className="absolute z-50 left-0 right-0 mt-2 max-h-56 overflow-y-auto bg-white border border-[#eff1f5] rounded-2xl shadow-xl divide-y divide-[#eff1f5] scrollbar-thin">
                 {/* Default All Option */}
                 <div
                   onClick={() => {
@@ -136,9 +136,9 @@ const StockMovementsToolbar = ({
                     setProductSearch('All Products');
                     setIsDropdownOpen(false);
                   }}
-                  className={`px-3.5 py-2.5 cursor-pointer flex justify-between items-center transition-colors text-xs font-bold ${
+                  className={`px-4 py-2.5 cursor-pointer flex justify-between items-center transition-colors text-xs font-bold ${
                     productFilter === 'ALL'
-                      ? 'bg-indigo-50/70 text-indigo-700'
+                      ? 'bg-indigo-50/70 text-[#704efe]'
                       : 'text-slate-700 hover:bg-slate-50'
                   }`}
                 >
@@ -146,7 +146,7 @@ const StockMovementsToolbar = ({
                 </div>
 
                 {filteredProducts.length === 0 ? (
-                  <div className="px-3.5 py-3 text-[11px] font-semibold text-slate-400 text-center">
+                  <div className="px-4 py-3 text-[11px] font-semibold text-slate-400 text-center">
                     No products match query
                   </div>
                 ) : (
@@ -158,14 +158,14 @@ const StockMovementsToolbar = ({
                         setProductSearch(p.name);
                         setIsDropdownOpen(false);
                       }}
-                      className={`px-3.5 py-2.5 cursor-pointer flex justify-between items-center transition-colors text-xs ${
+                      className={`px-4 py-2.5 cursor-pointer flex justify-between items-center transition-colors text-xs ${
                         productFilter.toString() === p.id.toString()
-                          ? 'bg-indigo-50/70 text-indigo-700 font-bold'
+                          ? 'bg-indigo-50/70 text-[#704efe] font-bold'
                           : 'text-slate-700 hover:bg-slate-50'
                       }`}
                     >
-                      <span className="truncate max-w-[190px]">{p.name}</span>
-                      <span className="text-[9px] font-mono font-bold bg-slate-100 border border-slate-200/50 text-slate-500 px-1.5 py-0.5 rounded uppercase tracking-wider scale-95 shrink-0">
+                      <span className="truncate max-w-[190px] font-semibold text-slate-700">{p.name}</span>
+                      <span className="text-[9px] font-mono font-black bg-[#f0ebff] border border-indigo-100 text-[#704efe] px-2 py-0.5 rounded-lg uppercase tracking-wider scale-95 shrink-0">
                         {p.sku}
                       </span>
                     </div>
@@ -178,19 +178,19 @@ const StockMovementsToolbar = ({
 
         {/* Items Per Page Select */}
         <div className="relative">
-          <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">Page Dimension</label>
+          <label className="block text-[10px] font-black text-[#8a8b9d] uppercase tracking-wider mb-1.5">Page Dimension</label>
           <div className="relative">
             <select
               value={pageSize}
               onChange={(e) => setPageSize(Number(e.target.value))}
-              className="w-full bg-slate-50 text-xs font-bold text-slate-700 pl-3.5 pr-9 py-2.5 rounded-xl border border-slate-200/60 focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-100 outline-none appearance-none cursor-pointer transition-all shadow-3xs h-10"
+              className="w-full bg-slate-50 text-xs font-bold text-slate-700 pl-4 pr-9 py-2.5 rounded-2xl border border-[#eff1f5] focus:border-indigo-500 focus:bg-white outline-none appearance-none cursor-pointer transition-all shadow-3xs h-10"
             >
               <option value={10}>10 Records</option>
               <option value={25}>25 Records</option>
               <option value={50}>50 Records</option>
               <option value={100}>100 Records</option>
             </select>
-            <div className="absolute right-3.5 top-3 pointer-events-none text-slate-400">
+            <div className="absolute right-3.5 top-3.5 pointer-events-none text-slate-400">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
               </svg>
@@ -202,7 +202,7 @@ const StockMovementsToolbar = ({
       {/* Clear Action */}
       <button
         onClick={onReset}
-        className="px-5 py-2.5 text-xs font-black text-rose-500 bg-rose-50/50 border border-rose-100 hover:bg-rose-100/60 hover:text-rose-700 rounded-xl transition-all duration-200 cursor-pointer text-center shrink-0 h-10 flex items-center justify-center gap-1.5 lg:self-end"
+        className="px-5 py-2.5 text-xs font-black text-rose-600 bg-rose-50/50 border border-rose-100 hover:bg-rose-100/60 hover:text-rose-700 rounded-2xl transition-all duration-200 cursor-pointer text-center shrink-0 h-10 flex items-center justify-center gap-1.5 lg:self-end"
       >
         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
           <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />

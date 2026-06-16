@@ -81,17 +81,17 @@ const PurchaseOrdersTable = ({
               const isDraft = po.status === 'Draft';
               const isApproved = po.status === 'Approved';
 
-              const canApproveCancel =
+              const canApprove =
                 isDraft &&
-                (userRole === 'ProcurementOfficer' || userRole === 'Admin');
+                (userRole === 'Administrator' || userRole === 'Admin');
 
-              const canCancelApproved =
-                isApproved &&
-                (userRole === 'ProcurementOfficer' || userRole === 'Admin');
+              const canCancel =
+                (isDraft || isApproved) &&
+                (userRole === 'ProcurementOfficer' || userRole === 'Administrator' || userRole === 'Admin' || userRole === 'ProcurementManager');
 
               const canReceive =
                 isApproved &&
-                (userRole === 'WarehouseManager');
+                (userRole === 'WarehouseManager' || userRole === 'Administrator' || userRole === 'Admin');
 
               return (
                 <tr key={po.id} className="hover:bg-slate-50/40 transition-colors duration-150 group">
@@ -181,8 +181,8 @@ const PurchaseOrdersTable = ({
                         👁️ View
                       </button>
 
-                      {/* Approve (Procurement / Admin for Drafts) */}
-                      {canApproveCancel && (
+                      {/* Approve (Admin for Drafts) */}
+                      {canApprove && (
                         <button
                           onClick={() => onApprove(po.id)}
                           className="px-3 py-1.5 text-[10px] font-black text-white bg-black hover:bg-zinc-900 rounded-xl transition-all border-none cursor-pointer flex items-center gap-1 hover:scale-102 active:scale-98"
@@ -202,7 +202,7 @@ const PurchaseOrdersTable = ({
                       )}
 
                       {/* Cancel (Drafts & Approved POs) */}
-                      {(canApproveCancel || canCancelApproved) && (
+                      {canCancel && (
                         <button
                           onClick={() => onCancel(po.id)}
                           className="px-2.5 py-1.5 text-[10px] font-black text-rose-600 bg-rose-50 border border-rose-100 hover:bg-rose-100 rounded-xl transition-all cursor-pointer flex items-center gap-1 hover:scale-102"

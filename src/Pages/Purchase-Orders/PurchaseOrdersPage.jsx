@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
+import { useLocation } from 'react-router-dom';
 import PurchaseOrdersStats from './PurchaseOrdersStats';
 import PurchaseOrdersToolbar from './PurchaseOrdersToolbar';
 import PurchaseOrdersTable from './PurchaseOrdersTable';
@@ -10,6 +11,7 @@ import purchaseOrderApi from '../../api/purchaseOrder.api';
 import supplierApi from '../../api/supplier.api';
 import warehouseApi from '../../api/warehouse.api';
 import productApi from '../../api/product.api';
+import reorderApi from '../../api/reorder.api';
 
 const PurchaseOrdersPage = () => {
   const user = useSelector((s) => s.auth.user);
@@ -28,9 +30,11 @@ const PurchaseOrdersPage = () => {
   // Search & Filter state
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
+  const [warehouseFilter, setWarehouseFilter] = useState('ALL');
 
   // Modal active states
   const [createOpen, setCreateOpen] = useState(false);
+  const [prefillData, setPrefillData] = useState(null);
   const [receiveOpen, setReceiveOpen] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
   const [selectedPO, setSelectedPO] = useState(null);
@@ -43,6 +47,40 @@ const PurchaseOrdersPage = () => {
     setToast({ show: true, msg, type });
     setTimeout(() => setToast({ show: false, msg: '', type: '' }), 4000);
   };
+
+  // Custom Confirmation Modal
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, title: '', message: '', confirmLabel: 'Confirm', onConfirm: null });
+
+  const requestConfirm = (title, message, onConfirm, confirmLabel = 'Confirm') => {
+    setConfirmModal({ isOpen: true, title, message, confirmLabel, onConfirm: () => { onConfirm(); setConfirmModal(s => ({ ...s, isOpen: false })); } });
+  };
+
+  const closeConfirmModal = () => setConfirmModal(s => ({ ...s, isOpen: false }));
+
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.prefill) {
+      const prefill = location.state.prefill;
+      setPrefillData(prefill);
+      setCreateOpen(true);
+
+      // Fetch the product dynamically if it's not present in the loaded list
+      if (prefill.productId) {
+        productApi.getById(prefill.productId).then(res => {
+          if (res && res.data) {
+            setProducts(prev => {
+              if (prev.some(p => p.id === res.data.id)) return prev;
+              return [...prev, res.data];
+            });
+          }
+        }).catch(err => console.error(err));
+      }
+
+      // Clean up the router state to avoid reopening on refresh
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   // Fetch core purchase orders ledger list
   const fetchOrders = async () => {
@@ -114,10 +152,14 @@ const PurchaseOrdersPage = () => {
           statusFilter === 'ALL' ||
           po.status === statusFilter;
 
-        return matchesSearch && matchesStatus;
+        const matchesWarehouse =
+          warehouseFilter === 'ALL' ||
+          String(po.warehouseId) === String(warehouseFilter);
+
+        return matchesSearch && matchesStatus && matchesWarehouse;
       })
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  }, [scopedOrders, searchQuery, statusFilter]);
+  }, [scopedOrders, searchQuery, statusFilter, warehouseFilter]);
 
   // Approve Requisition Handler
   const handleApprove = async (id) => {
@@ -136,20 +178,26 @@ const PurchaseOrdersPage = () => {
   };
 
   // Cancel Requisition Handler
-  const handleCancel = async (id) => {
-    if (!window.confirm('Are you absolutely sure you want to cancel this purchase order?')) return;
-    try {
-      const response = await purchaseOrderApi.cancel(id);
-      if (response.isSuccess) {
-        showToast('Purchase order cancelled successfully', 'success');
-        fetchOrders();
-      } else {
-        showToast(response.message || 'Failed to cancel purchase order', 'error');
-      }
-    } catch (err) {
-      console.error(err);
-      showToast(err.response?.data?.message || 'Failed to cancel purchase order', 'error');
-    }
+  const handleCancel = (id) => {
+    requestConfirm(
+      'Cancel Purchase Order',
+      'Are you absolutely sure you want to cancel this purchase order? This action is permanent and cannot be undone.',
+      async () => {
+        try {
+          const response = await purchaseOrderApi.cancel(id);
+          if (response.isSuccess) {
+            showToast('Purchase order cancelled successfully', 'success');
+            fetchOrders();
+          } else {
+            showToast(response.message || 'Failed to cancel purchase order', 'error');
+          }
+        } catch (err) {
+          console.error(err);
+          showToast(err.response?.data?.message || 'Failed to cancel purchase order', 'error');
+        }
+      },
+      'Yes, Cancel PO'
+    );
   };
 
   // Raise / Generate PO Handler
@@ -158,6 +206,18 @@ const PurchaseOrdersPage = () => {
       const response = await purchaseOrderApi.generate(payload);
       if (response.isSuccess) {
         showToast(`Purchase order generated successfully: ${response.data?.poNumber || ''}`, 'success');
+
+        // If generated from a suggestion, mark it actioned on the backend!
+        if (prefillData?.suggestionId) {
+          try {
+            await reorderApi.markActioned(prefillData.suggestionId);
+          } catch (err) {
+            console.error('Error marking suggestion actioned:', err);
+          }
+          window.dispatchEvent(new CustomEvent('reorder-suggestions-updated'));
+        }
+        window.dispatchEvent(new CustomEvent('purchase-orders-updated'));
+
         fetchOrders();
       } else {
         showToast(response.message || 'Failed to generate purchase order', 'error');
@@ -170,11 +230,23 @@ const PurchaseOrdersPage = () => {
   };
 
   // Receive Deliveries Handler
-  const handleReceiveSubmit = async (id, payload) => {
+  const handleReceiveSubmit = async (id, payload, deliveryData) => {
     try {
       const response = await purchaseOrderApi.receive(id, payload);
       if (response.isSuccess) {
-        showToast('Intake registered successfully! Warehouse quantities incremented.', 'success');
+        if (deliveryData) {
+          try {
+            await supplierApi.recordDelivery({
+              purchaseOrderId: id,
+              supplierId: deliveryData.supplierId,
+              actualDate: deliveryData.actualDate,
+              notes: deliveryData.notes
+            });
+          } catch (delErr) {
+            console.error('Error recording supplier delivery score metrics:', delErr);
+          }
+        }
+        showToast('Intake registered successfully! Warehouse quantities incremented and Supplier KPIs recalculated.', 'success');
         fetchOrders();
       } else {
         showToast(response.message || 'Failed to record intake delivery', 'error');
@@ -273,8 +345,14 @@ const PurchaseOrdersPage = () => {
         setSearchQuery={setSearchQuery}
         statusFilter={statusFilter}
         setStatusFilter={setStatusFilter}
+        warehouseFilter={warehouseFilter}
+        setWarehouseFilter={setWarehouseFilter}
+        warehouses={warehouses}
         userRole={userRole}
-        onOpenCreate={() => setCreateOpen(true)}
+        onOpenCreate={() => {
+          setPrefillData(null);
+          setCreateOpen(true);
+        }}
       />
 
       {/* Data Table */}
@@ -295,6 +373,7 @@ const PurchaseOrdersPage = () => {
         warehouses={warehouses}
         products={products}
         onSubmit={handleCreateSubmit}
+        prefillData={prefillData}
       />
 
       {/* Intake Receive Modal */}
@@ -316,6 +395,32 @@ const PurchaseOrdersPage = () => {
           triggerReceive(po);
         }}
       />
+
+      {/* Custom Confirmation Modal */}
+      {confirmModal.isOpen && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+          <div className="bg-white border border-slate-100 rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden">
+            <div className="px-6 py-5 flex items-center gap-3 border-b border-slate-50 bg-slate-50/50">
+              <div className="w-9 h-9 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center shrink-0">
+                <svg className="w-4.5 h-4.5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-[11px] font-black text-slate-800 uppercase tracking-wider">{confirmModal.title}</p>
+                <p className="text-[10px] text-slate-400 font-semibold mt-0.5">Please confirm this action</p>
+              </div>
+            </div>
+            <div className="px-6 py-5">
+              <p className="text-slate-600 text-[12px] font-medium leading-relaxed">{confirmModal.message}</p>
+            </div>
+            <div className="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex justify-end gap-2.5">
+              <button type="button" onClick={closeConfirmModal} className="px-4 py-2 border border-slate-200 hover:bg-slate-100 text-slate-500 rounded-xl text-[11px] font-black uppercase tracking-wider cursor-pointer transition-all duration-150 active:scale-95">Cancel</button>
+              <button type="button" onClick={confirmModal.onConfirm} className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-[11px] font-black uppercase tracking-wider cursor-pointer transition-all duration-150 active:scale-95">{confirmModal.confirmLabel}</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Toast Alert overlay */}
       <div className={`toast-card ${toast.type} ${toast.show ? 'show' : ''}`}>

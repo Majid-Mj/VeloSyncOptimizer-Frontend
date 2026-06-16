@@ -1,14 +1,21 @@
 import apiClient from './apiClient';
 
-export const reportsApi = {
-  // GET: api/reports/analytics?warehouseId=...&days=...
-  getReportsData: async ({ warehouseId = null, days = 30 } = {}) => {
-    const params = { days };
+const reportsApi = {
+  // Main tab-based endpoint — calls sp_GetReports via QueryMultiple
+  getTabReport: async ({ reportType = 'Overview', days = 30, warehouseId = null } = {}) => {
+    const params = { reportType, days };
     if (warehouseId) params.warehouseId = warehouseId;
+    const response = await apiClient.get('/reports', { params });
+    return response.data;
+  },
 
-    const response = await apiClient.get('/reports/analytics', { params });
-    return response.data; // returns ApiResponse<ReportsDataResponse>
-  }
+  // Legacy — kept so any existing calls still work
+  getReportsData: async ({ warehouseId = null, days = 30 } = {}) => {
+    const params = { reportType: 'Overview', days };
+    if (warehouseId) params.warehouseId = warehouseId;
+    const response = await apiClient.get('/reports', { params });
+    return response.data;
+  },
 };
 
 export default reportsApi;

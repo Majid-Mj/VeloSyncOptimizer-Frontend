@@ -145,7 +145,7 @@ const PurchaseOrderDetailModal = ({
 
         {/* Footer */}
         <div className="p-4 border-t border-gray-100 flex justify-end gap-3 bg-gradient-to-r from-white to-[#fcfdfe] shrink-0">
-          {po && po.status === 'Approved' && userRole === 'WarehouseManager' && (
+          {po && po.status === 'Approved' && (userRole === 'WarehouseManager' || userRole === 'Administrator' || userRole === 'Admin') && (
             <button
               onClick={() => onReceive(po)}
               className="px-4.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold rounded-xl shadow-md shadow-emerald-100 transition-all border-none cursor-pointer"

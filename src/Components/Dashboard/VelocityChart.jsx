@@ -170,8 +170,8 @@ const VelocityChart = () => {
     projectedStock = Math.max(0, projectedStock - weekDemand);
 
     // Calculate capacity percent based on stockOnHand
-    const capacity = stockOnHand > 0 
-      ? Math.round((projectedStock / stockOnHand) * 100) 
+    const capacity = stockOnHand > 0
+      ? Math.round((projectedStock / stockOnHand) * 100)
       : 0;
 
     return {
@@ -206,9 +206,23 @@ const VelocityChart = () => {
             <p className="text-[11px] font-bold text-slate-400 mt-1.5 flex items-center gap-1.5 uppercase tracking-wider">
               <span>Rolling SQL Analytic Engine</span>
               <span className="text-slate-200">•</span>
-              <span className="text-indigo-650 font-extrabold bg-indigo-50 px-2 py-0.5 rounded-lg border border-indigo-100/70">
-                {activeWarehouse ? activeWarehouse.name : 'Loading facility...'}
-              </span>
+              {user?.role !== 'WarehouseManager' ? (
+                <select
+                  value={selectedWarehouseId || ''}
+                  onChange={(e) => setSelectedWarehouseId(Number(e.target.value))}
+                  className="text-[#704efe] font-extrabold bg-indigo-50 px-2 py-0.5 rounded-lg border border-indigo-100/70 outline-none cursor-pointer uppercase text-[10px] min-w-[200px]"
+                >
+                  {warehouses.map((w) => (
+                    <option key={w.id} value={w.id}>
+                      {w.name}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <span className="text-[#704efe] font-extrabold bg-indigo-50 px-2 py-0.5 rounded-lg border border-indigo-100/70">
+                  {activeWarehouse ? activeWarehouse.name : 'Loading facility...'}
+                </span>
+              )}
             </p>
           </div>
 
@@ -292,8 +306,8 @@ const VelocityChart = () => {
                             setProductSearch('');
                           }}
                           className={`w-full text-left px-3 py-2 rounded-xl text-[10.5px] font-bold transition-all border-none cursor-pointer flex flex-col gap-0.5 ${selectedProductId === item.id
-                              ? 'bg-indigo-50 text-indigo-700 font-extrabold'
-                              : 'bg-transparent text-slate-655 hover:bg-slate-50'
+                            ? 'bg-indigo-50 text-indigo-700 font-extrabold'
+                            : 'bg-transparent text-slate-655 hover:bg-slate-50'
                             }`}
                         >
                           <span className="truncate">{item.name}</span>
@@ -379,7 +393,7 @@ const VelocityChart = () => {
       {/* Matching summary widgets */}
       <div className="grid grid-cols-3 gap-3.5 mt-5 pt-4 border-t border-slate-100">
         <div className="bg-slate-50 border border-slate-200/50 p-3 rounded-2xl flex flex-col">
-          <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wide">Avg Speed (30D)</span>
+          <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wide">Avg Speed</span>
           <span className="text-sm font-black text-slate-700 mt-1 leading-none">
             {avg30.toFixed(1)} <span className="text-[9px] font-bold text-slate-400">units/d</span>
           </span>

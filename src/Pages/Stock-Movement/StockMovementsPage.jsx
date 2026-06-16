@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import StockMovementsStats from './StockMovementsStats';
 import StockMovementsToolbar from './StockMovementsToolbar';
 import StockMovementsTable from './StockMovementsTable';
+import PendingTransfersTable from './PendingTransfersTable';
+import ReceiveTransferModal from './ReceiveTransferModal';
 import stockApi from '../../api/stock.api';
 import warehouseApi from '../../api/warehouse.api';
 import productApi from '../../api/product.api';
@@ -13,7 +15,7 @@ const StockMovementsPage = () => {
   // User context & Auth role guards
   const user = useSelector((s) => s.auth.user);
   const userRole = user?.role || 'Guest';
-  const canTransfer = userRole === 'Admin' || userRole === 'WarehouseManager';
+  const canTransfer = userRole === 'Admin' || userRole === 'Administrator' || userRole === 'WarehouseManager';
   const isManager = userRole === 'WarehouseManager';
   const managerWarehouseId = user?.warehouseId;
 
@@ -22,6 +24,11 @@ const StockMovementsPage = () => {
   const [totalCount, setTotalCount] = useState(0);
   const [warehouses, setWarehouses] = useState([]);
   const [products, setProducts] = useState([]);
+  const [transfers, setTransfers] = useState([]);
+  const [transfersLoading, setTransfersLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('LEDGER');
+  const [selectedTransfer, setSelectedTransfer] = useState(null);
+  const [isIntakeModalOpen, setIsIntakeModalOpen] = useState(false);
 
   // Toast notifications state
   const [toast, setToast] = useState({ show: false, msg: '', type: '' });
@@ -66,6 +73,24 @@ const StockMovementsPage = () => {
     }
   };
 
+  const fetchTransfers = async () => {
+    setTransfersLoading(true);
+    try {
+      const params = { status: 'InTransit' };
+      if (warehouseFilter !== 'ALL') {
+        params.destWarehouseId = Number(warehouseFilter);
+      }
+      const response = await stockApi.getTransfers(params);
+      if (response.isSuccess) {
+        setTransfers(response.data || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch transfers:', err);
+    } finally {
+      setTransfersLoading(false);
+    }
+  };
+
   const fetchMovements = async () => {
     setLoading(true);
     setError(null);
@@ -102,7 +127,24 @@ const StockMovementsPage = () => {
   // Run on page or filter state alterations
   useEffect(() => {
     fetchMovements();
+    fetchTransfers();
   }, [pageNumber, pageSize, warehouseFilter, productFilter]);
+
+  const handleAcceptTransfer = async (transferId) => {
+    try {
+      const response = await stockApi.acceptTransfer(transferId);
+      if (response.isSuccess) {
+        showToast('Stock transfer accepted and received successfully!', 'success');
+        fetchMovements();
+        fetchTransfers();
+      } else {
+        showToast(response.message || 'Failed to accept stock transfer', 'error');
+      }
+    } catch (err) {
+      console.error('Accept transfer error:', err);
+      showToast(err.response?.data?.message || 'Error accepting stock transfer', 'error');
+    }
+  };
 
   const handleResetFilters = () => {
     setWarehouseFilter(isManager && managerWarehouseId ? managerWarehouseId.toString() : 'ALL');
@@ -132,15 +174,15 @@ const StockMovementsPage = () => {
         {/* Stats Shimmer */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="bg-slate-50/70 border border-slate-100 rounded-3xl h-24"></div>
+            <div key={i} className="bg-slate-50/70 border border-[#eff1f5] rounded-3xl h-24"></div>
           ))}
         </div>
 
         {/* Toolbar Shimmer */}
-        <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs h-20 w-full animate-pulse"></div>
+        <div className="bg-white rounded-3xl p-5 border border-[#eff1f5] shadow-xs h-20 w-full animate-pulse"></div>
 
         {/* Table Shimmer */}
-        <div className="bg-white rounded-3xl border border-slate-100 shadow-xs h-[420px] w-full animate-pulse"></div>
+        <div className="bg-white rounded-3xl border border-[#eff1f5] shadow-xs h-[420px] w-full animate-pulse"></div>
       </div>
     );
   }
@@ -149,11 +191,11 @@ const StockMovementsPage = () => {
     return (
       <div className="p-4 md:p-6 max-w-[1600px] mx-auto min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center gap-4 text-center">
         <div className="w-16 h-16 rounded-full bg-rose-50 border border-rose-100 text-rose-500 flex items-center justify-center text-xl font-bold animate-bounce shadow-sm">⚠️</div>
-        <h3 className="text-base font-black text-slate-800 uppercase tracking-wide">Audit Ledger Connection Failed</h3>
+        <h3 className="text-base font-black text-slate-805 uppercase tracking-wide">Audit Ledger Connection Failed</h3>
         <p className="text-xs font-semibold text-slate-400 max-w-sm leading-normal">{error}</p>
         <button
           onClick={fetchMovements}
-          className="px-5 py-2.5 bg-black hover:bg-zinc-900 text-white font-black text-xs rounded-xl shadow-md transition-all border-none cursor-pointer"
+          className="px-5 py-2.5 bg-[#704efe] hover:bg-[#5c3edd] text-white font-black text-xs rounded-2xl shadow-md transition-all border-none cursor-pointer"
         >
           Try Again
         </button>
@@ -171,23 +213,23 @@ const StockMovementsPage = () => {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-slate-800 flex items-center gap-2.5 tracking-tight uppercase">
+          <h1 className="text-2xl font-black text-slate-805 flex items-center gap-2.5 tracking-tight uppercase">
             Stock Movements
-            <span className="text-[10px] font-black bg-indigo-50 border border-indigo-100/60 text-indigo-600 px-2.5 py-1 rounded-full uppercase tracking-wider">
+            <span className="text-[10px] font-black bg-[#f0ebff] border border-indigo-150 text-[#704efe] px-2.5 py-1 rounded-full uppercase tracking-wider">
               {totalCount} events logged
             </span>
           </h1>
-          <p className="text-[10px] font-bold text-slate-400 mt-1 tracking-wider uppercase leading-none">
+          <p className="text-[10px] font-bold text-slate-450 mt-1 tracking-wider uppercase leading-none">
             {assignedWarehouse
-              ? `Live Inventory Ledger Trail for ${assignedWarehouse.name} (${assignedWarehouse.code})`
-              : 'Live Inventory Ledger Trail — Receivals, Shipments, Transfers & Adjustments'
+              ? `Live Stock Ledger Trail for ${assignedWarehouse.name} (${assignedWarehouse.code})`
+              : 'Live Stock Ledger Trail — Receivals, Shipments, Transfers & Adjustments'
             }
           </p>
         </div>
         {canTransfer && (
           <button
             onClick={() => navigate('/dashboard/stock-movement/transfer')}
-            className="px-4.5 py-2.5 bg-black hover:bg-zinc-900 text-white font-black text-[11.5px] uppercase tracking-wider rounded-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2 self-start sm:self-auto border-none cursor-pointer"
+            className="px-4.5 py-2.5 bg-[#704efe] hover:bg-[#5c3edd] text-white font-black text-[11px] uppercase tracking-wider rounded-2xl hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2 self-start sm:self-auto border-none cursor-pointer shadow-md shadow-indigo-100/30"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
@@ -213,79 +255,131 @@ const StockMovementsPage = () => {
         onReset={handleResetFilters}
       />
 
-      {/* Movements Table grid */}
-      <div className="relative">
-        {loading && (
-          <div className="absolute inset-0 bg-white/60 backdrop-blur-xs z-10 flex items-center justify-center rounded-3xl">
-            <div className="flex items-center gap-2.5 px-4.5 py-3.5 bg-white/95 shadow-xl border border-slate-100 rounded-2xl text-xs font-black text-slate-700">
-              <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
-              Synchronizing Ledger Trail...
-            </div>
-          </div>
-        )}
-        <StockMovementsTable movements={movements} />
+      {/* Tab Switcher */}
+      <div className="flex border-b border-[#eff1f5] gap-6 mb-2">
+        <button
+          onClick={() => setActiveTab('LEDGER')}
+          className={`pb-3 text-xs font-black uppercase tracking-wider px-2 transition-all border-b-2 cursor-pointer bg-transparent border-none ${activeTab === 'LEDGER'
+              ? 'border-[#704efe] text-[#704efe]'
+              : 'border-transparent text-slate-400 hover:text-slate-600'
+            }`}
+        >
+          Ledger History ({totalCount})
+        </button>
+        <button
+          onClick={() => setActiveTab('PENDING_TRANSFERS')}
+          className={`pb-3 text-xs font-black uppercase tracking-wider px-2 transition-all border-b-2 cursor-pointer bg-transparent border-none flex items-center gap-2 ${activeTab === 'PENDING_TRANSFERS'
+              ? 'border-[#704efe] text-[#704efe]'
+              : 'border-transparent text-slate-400 hover:text-slate-655'
+            }`}
+        >
+          Pending Incoming Transfers
+          {transfers.length > 0 && (
+            <span className="bg-[#df1c41] text-white text-[9px] font-black px-1.5 py-0.5 rounded-full">
+              {transfers.length}
+            </span>
+          )}
+        </button>
       </div>
 
-      {/* Pagination Controls Footer */}
-      {totalPages > 1 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-100 bg-transparent px-2">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
-            Showing page <span className="text-slate-800 font-extrabold">{pageNumber}</span> of <span className="text-slate-800 font-extrabold">{totalPages}</span> — {totalCount.toLocaleString()} total logged events
-          </p>
-
-          <div className="flex items-center gap-1.5">
-            {/* Prev Button */}
-            <button
-              onClick={() => handlePageChange(pageNumber - 1)}
-              disabled={pageNumber === 1}
-              className="w-8.5 h-8.5 border border-slate-200 rounded-xl bg-white hover:bg-slate-50 text-slate-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer flex items-center justify-center shadow-3xs"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-
-            {/* Pagination numbers range */}
-            {[...Array(totalPages)].map((_, i) => {
-              const pageIdx = i + 1;
-              const isCurrent = pageNumber === pageIdx;
-
-              // Only render adjacent page buttons to avoid overflow
-              if (pageIdx === 1 || pageIdx === totalPages || Math.abs(pageIdx - pageNumber) <= 1) {
-                return (
-                  <button
-                    key={pageIdx}
-                    onClick={() => handlePageChange(pageIdx)}
-                    className={`w-8.5 h-8.5 text-xs font-black rounded-xl border transition-all cursor-pointer flex items-center justify-center shadow-3xs ${isCurrent
-                      ? 'bg-black border-black text-white scale-105'
-                      : 'bg-white border-slate-200 text-slate-500 hover:text-slate-800 hover:bg-slate-50'
-                      }`}
-                  >
-                    {pageIdx}
-                  </button>
-                );
-              }
-
-              if (pageIdx === 2 || pageIdx === totalPages - 1) {
-                return <span key={pageIdx} className="text-slate-300 text-xs px-1.5 font-bold">...</span>;
-              }
-
-              return null;
-            })}
-
-            {/* Next Button */}
-            <button
-              onClick={() => handlePageChange(pageNumber + 1)}
-              disabled={pageNumber === totalPages}
-              className="w-8.5 h-8.5 border border-slate-200 rounded-xl bg-white hover:bg-slate-50 text-slate-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer flex items-center justify-center shadow-3xs"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
+      {activeTab === 'LEDGER' ? (
+        <>
+          {/* Movements Table grid */}
+          <div className="relative">
+            {loading && (
+              <div className="absolute inset-0 bg-white/60 backdrop-blur-xs z-10 flex items-center justify-center rounded-3xl">
+                <div className="flex items-center gap-2.5 px-4.5 py-3.5 bg-white/95 shadow-xl border border-[#eff1f5] rounded-2xl text-xs font-black text-slate-700">
+                  <span className="w-2 h-2 rounded-full bg-[#704efe] animate-pulse"></span>
+                  Synchronizing Ledger Trail...
+                </div>
+              </div>
+            )}
+            <StockMovementsTable movements={movements} />
           </div>
-        </div>
+
+          {/* Pagination Controls Footer */}
+          {totalPages > 1 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-[#eff1f5] bg-transparent px-2">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
+                Showing page <span className="text-slate-805 font-extrabold">{pageNumber}</span> of <span className="text-slate-805 font-extrabold">{totalPages}</span> — {totalCount.toLocaleString()} total logged events
+              </p>
+
+              <div className="flex items-center gap-1.5">
+                {/* Prev Button */}
+                <button
+                  onClick={() => handlePageChange(pageNumber - 1)}
+                  disabled={pageNumber === 1}
+                  className="w-8.5 h-8.5 border border-[#eff1f5] rounded-2xl bg-white hover:bg-slate-50 text-slate-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer flex items-center justify-center shadow-3xs"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+
+                {/* Pagination numbers range */}
+                {[...Array(totalPages)].map((_, i) => {
+                  const pageIdx = i + 1;
+                  const isCurrent = pageNumber === pageIdx;
+
+                  // Only render adjacent page buttons to avoid overflow
+                  if (pageIdx === 1 || pageIdx === totalPages || Math.abs(pageIdx - pageNumber) <= 1) {
+                    return (
+                      <button
+                        key={pageIdx}
+                        onClick={() => handlePageChange(pageIdx)}
+                        className={`w-8.5 h-8.5 text-xs font-black rounded-2xl border transition-all cursor-pointer flex items-center justify-center shadow-3xs ${isCurrent
+                          ? 'bg-[#704efe] border-[#704efe] text-white scale-105'
+                          : 'bg-white border-[#eff1f5] text-slate-500 hover:text-slate-805 hover:bg-slate-50'
+                          }`}
+                      >
+                        {pageIdx}
+                      </button>
+                    );
+                  }
+
+                  if (pageIdx === 2 || pageIdx === totalPages - 1) {
+                    return <span key={pageIdx} className="text-slate-300 text-xs px-1.5 font-bold">...</span>;
+                  }
+
+                  return null;
+                })}
+
+                {/* Next Button */}
+                <button
+                  onClick={() => handlePageChange(pageNumber + 1)}
+                  disabled={pageNumber === totalPages}
+                  className="w-8.5 h-8.5 border border-[#eff1f5] rounded-2xl bg-white hover:bg-slate-50 text-slate-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer flex items-center justify-center shadow-3xs"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          )}
+        </>
+      ) : (
+        <PendingTransfersTable
+          transfers={transfers}
+          loading={transfersLoading}
+          userRole={userRole}
+          managerWarehouseId={managerWarehouseId}
+          onIntake={(transfer) => {
+            setSelectedTransfer(transfer);
+            setIsIntakeModalOpen(true);
+          }}
+        />
       )}
+
+      <ReceiveTransferModal
+        isOpen={isIntakeModalOpen}
+        onClose={() => {
+          setIsIntakeModalOpen(false);
+          setSelectedTransfer(null);
+        }}
+        transfer={selectedTransfer}
+        onSubmit={handleAcceptTransfer}
+      />
 
       {/* ── Toast Alerts ── */}
       <div className={`toast-card ${toast.type} ${toast.show ? 'show' : ''}`}>

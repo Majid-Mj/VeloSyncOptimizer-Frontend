@@ -9,6 +9,9 @@ import TransferStockModal from './TransferStockModal';
 import stockApi from '../../api/stock.api';
 import warehouseApi from '../../api/warehouse.api';
 import productApi from '../../api/product.api';
+import reorderApi from '../../api/reorder.api';
+import EditReorderPointModal from './EditReorderPointModal';
+import DemandForecastModal from '../../Components/Dashboard/DemandForecastModal';
 
 const StockLevelsPage = () => {
   const user = useSelector((s) => s.auth.user);
@@ -85,6 +88,13 @@ const StockLevelsPage = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [adjustOpen, setAdjustOpen] = useState(false);
   const [transferOpen, setTransferOpen] = useState(false);
+  const [reorderOpen, setReorderOpen] = useState(false);
+  const [forecastOpen, setForecastOpen] = useState(false);
+
+  const triggerForecast = (item) => {
+    setSelectedItem(item);
+    setForecastOpen(true);
+  };
 
   // Toast notifications state
   const [toast, setToast] = useState({ show: false, msg: '', type: '' });
@@ -173,7 +183,7 @@ const StockLevelsPage = () => {
     try {
       const response = await stockApi.adjust(payload);
       if (response.isSuccess) {
-        showToast('Inventory level adjusted successfully', 'success');
+        showToast('Stock level adjusted successfully', 'success');
         fetchData(); // Refresh list to get current database stats
       } else {
         showToast(response.message || 'Failed to adjust stock level', 'error');
@@ -208,6 +218,26 @@ const StockLevelsPage = () => {
   const triggerTransfer = (item) => {
     setSelectedItem(item);
     setTransferOpen(true);
+  };
+
+  const triggerEditReorderPoint = (item) => {
+    setSelectedItem(item);
+    setReorderOpen(true);
+  };
+
+  const handleReorderPointSubmit = async (stockLevelId, newReorderPoint) => {
+    try {
+      const response = await reorderApi.updateReorderPoint(stockLevelId, newReorderPoint);
+      if (response.isSuccess) {
+        showToast('Reorder point updated successfully', 'success');
+        fetchData();
+      } else {
+        showToast(response.message || 'Failed to update reorder point', 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      showToast(err.response?.data?.message || 'Failed to update reorder point', 'error');
+    }
   };
 
   if (loading) {
@@ -272,10 +302,10 @@ const StockLevelsPage = () => {
             </span>
           </h1>
           <p className="text-[10px] font-black text-slate-400 mt-1 tracking-wider uppercase">
-            Real-time inventory quantities, allocations & safety thresholds
+            Real-time stock quantities, allocations & safety thresholds
           </p>
         </div>
-        {(userRole === 'WarehouseManager') && (
+        {(userRole === 'WarehouseManager' || userRole === 'Admin' || userRole === 'Administrator') && (
           <button
             onClick={() => triggerAdjust(null)}
             className="px-4.5 py-2.5 bg-black hover:bg-zinc-900 text-white font-bold text-xs rounded-xl transition-all duration-200 flex items-center gap-2 self-start sm:self-auto border-none cursor-pointer"
@@ -312,6 +342,8 @@ const StockLevelsPage = () => {
         stockLevels={processedStock}
         userRole={userRole}
         onAdjust={triggerAdjust}
+        onEditReorderPoint={triggerEditReorderPoint}
+        onForecast={triggerForecast}
       />
 
       {/* ── Adjust Stock Modal Overlay ── */}
@@ -333,6 +365,27 @@ const StockLevelsPage = () => {
         warehouses={warehouses}
         onSubmit={handleTransferSubmit}
       />
+
+      {/* ── Edit Reorder Point Modal Overlay ── */}
+      <EditReorderPointModal
+        isOpen={reorderOpen}
+        onClose={() => setReorderOpen(false)}
+        selectedItem={selectedItem}
+        onSubmit={handleReorderPointSubmit}
+      />
+
+      {/* ── AI Demand Forecast Modal Overlay ── */}
+      {forecastOpen && selectedItem && (
+        <DemandForecastModal
+          productId={selectedItem.productId}
+          productName={selectedItem.productName}
+          initialWarehouseId={selectedItem.warehouseId}
+          onClose={() => {
+            setForecastOpen(false);
+            setSelectedItem(null);
+          }}
+        />
+      )}
 
       {/* ── Toast Alerts ── */}
       <div className={`toast-card ${toast.type} ${toast.show ? 'show' : ''}`}>

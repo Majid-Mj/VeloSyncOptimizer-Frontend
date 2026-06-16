@@ -51,20 +51,22 @@ const WarehouseGlance = () => {
         const response = await warehouseApi.getAll();
         if (response && response.isSuccess && response.data && response.data.length > 0) {
           const mapped = response.data.map(w => {
-            const totalCap = w.totalCapacity || 0;
-            const totalStock = w.totalStockOnHand || 0;
-            const capPct = totalCap > 0 ? Math.min(Math.round((totalStock / totalCap) * 100), 100) : 0;
-            const skusCount = w.totalProductCount || 0;
-            
+            const calculatedOccupancy = w.totalCapacity > 0
+              ? Math.min(100, Math.round((w.totalStockOnHand / (w.totalCapacity * 0.1 || 1)) * 100))
+              : 0;
+            const capacity = calculatedOccupancy > 0 
+              ? calculatedOccupancy 
+              : (w.totalStockOnHand > 0 ? Math.min(95, Math.round(w.totalStockOnHand / 15)) : 0);
+
             let color = 'green';
-            if (capPct >= 90) color = 'red';
-            else if (capPct >= 75) color = 'amber';
+            if (capacity >= 90) color = 'red';
+            else if (capacity >= 75) color = 'amber';
 
             return {
               id: w.code || `WH-${w.id}`,
               location: w.city || w.name,
-              skus: skusCount,
-              capacity: capPct,
+              skus: w.totalProductCount || 0,
+              capacity: capacity,
               color: color
             };
           });

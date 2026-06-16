@@ -1,7 +1,7 @@
 import React from 'react';
 import WarehouseCard from './WarehouseCard';
 
-const WarehouseGrid = ({ filteredWarehouses, isAdmin, onDelete }) => {
+const WarehouseGrid = ({ filteredWarehouses, isAdmin, onDelete, onEdit, onViewDetails, onToggleActive }) => {
   if (filteredWarehouses.length === 0) {
     return (
       <div className="flex-1 bg-white border border-gray-100 rounded-2xl p-12 text-center flex flex-col items-center justify-center min-h-[300px]">
@@ -26,6 +26,9 @@ const WarehouseGrid = ({ filteredWarehouses, isAdmin, onDelete }) => {
           wh={wh}
           isAdmin={isAdmin}
           onDelete={onDelete}
+          onEdit={onEdit}
+          onViewDetails={onViewDetails}
+          onToggleActive={onToggleActive}
         />
       ))}
     </div>

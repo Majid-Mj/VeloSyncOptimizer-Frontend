@@ -10,6 +10,12 @@ export const reorderApi = {
     return response.data; // returns ApiResponse<List<ReorderSuggestionDto>>
   },
 
+  // PUT: api/reorder/{id}/reorder-point
+  updateReorderPoint: async (id, reorderPoint) => {
+    const response = await apiClient.put(`/reorder/${id}/reorder-point`, { reorderPoint });
+    return response.data; // returns ApiResponse<bool>
+  },
+
   // PUT: api/reorder/suggestions/{id}/action
   markActioned: async (id) => {
     const response = await apiClient.put(`/reorder/suggestions/${id}/action`);

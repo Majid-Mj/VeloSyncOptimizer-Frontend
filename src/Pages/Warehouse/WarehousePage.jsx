@@ -7,8 +7,6 @@ import WarehouseDrawer from './WarehouseDrawer';
 import warehouseApi from '../../api/warehouse.api';
 import { userApi } from '../../api/user.api';
 
-const MANAGERS = ['Majid Mj', 'Sarah Lee', 'Alex Tan', 'Farhan Ali', 'Wong Siew', 'Jane Doe', 'John Smith'];
-
 const WarehousePage = () => {
   const user = useSelector((s) => s.auth.user);
   const isAdmin = user?.role === 'Admin';
@@ -23,23 +21,23 @@ const WarehousePage = () => {
   // Toast notifications state
   const [toast, setToast] = useState({ show: false, msg: '', type: '' });
 
-  // Slide-over drawer state
+  // Creation Drawer state
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [newWh, setNewWh] = useState({
-    id: '',
+    code: '',
     name: '',
-    location: '',
-    capacity: 50,
-    manager: MANAGERS[0],
-    staff: 5,
-    size: ''
+    city: '',
+    state: '',
+    country: 'Malaysia',
+    totalCapacity: 20000,
+    managerId: ''
   });
 
-  // Reassign Manager states
+  // Modal / Operations states
   const [managersList, setManagersList] = useState([]);
-  const [selectedWarehouseForManager, setSelectedWarehouseForManager] = useState(null);
-  const [newManagerId, setNewManagerId] = useState('');
-  const [reassignLoading, setReassignLoading] = useState(false);
+  const [editingWarehouse, setEditingWarehouse] = useState(null);
+  const [detailWarehouse, setDetailWarehouse] = useState(null);
+  const [deleteWarehouseId, setDeleteWarehouseId] = useState(null);
 
   const showToast = (msg, type = 'success') => {
     setToast({ show: true, msg, type });
@@ -48,11 +46,10 @@ const WarehousePage = () => {
 
   // Map backend DTO to responsive UI visual presentation
   const mapWarehouseDtoToClient = (w) => {
-    // Generate consistent, deterministic stats based on name hash for advanced dashboard presentation
-    const nameHash = w.name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    const capacity = (nameHash % 66) + 30; // 30% to 95%
-    const skus = (nameHash % 700) + 150; // 150 to 850
-    const staff = (nameHash % 15) + 5;   // 5 to 20
+    const calculatedOccupancy = w.totalCapacity > 0
+      ? Math.min(100, Math.round((w.totalStockOnHand / (w.totalCapacity * 0.1 || 1)) * 100))
+      : 0;
+    const capacity = calculatedOccupancy > 0 ? calculatedOccupancy : (w.totalStockOnHand > 0 ? Math.min(95, Math.round(w.totalStockOnHand / 15)) : 0);
 
     let color = 'green';
     let status = 'ACTIVE';
@@ -71,14 +68,19 @@ const WarehousePage = () => {
       id: w.code || `WH-${w.id}`,
       dbId: w.id,
       name: w.name,
+      city: w.city || '',
+      state: w.state || '',
+      country: w.country || 'Malaysia',
       location: locationFormatted,
-      skus: skus,
+      skus: w.totalProductCount,
+      stockOnHand: w.totalStockOnHand,
       capacity: capacity,
       color: color,
       manager: w.managerName || 'Unassigned',
       managerId: w.managerId,
       status: w.isActive ? status : 'INACTIVE',
-      staff: staff,
+      isActive: w.isActive,
+      totalCapacity: w.totalCapacity,
       size: w.totalCapacity ? `${w.totalCapacity.toLocaleString()} sq ft` : '15,000 sq ft'
     };
   };
@@ -116,17 +118,16 @@ const WarehousePage = () => {
 
   useEffect(() => {
     fetchWarehouses();
-    if (isAdmin) {
-      fetchManagers();
-    }
+    fetchManagers();
   }, []);
 
   // Calculate high-level KPIs based on state
   const stats = useMemo(() => {
     const total = warehouses.length;
-    const avgCapacity = total ? Math.round(warehouses.reduce((acc, cur) => acc + cur.capacity, 0) / total) : 0;
+    const activeWh = warehouses.filter(w => w.isActive);
+    const avgCapacity = activeWh.length ? Math.round(activeWh.reduce((acc, cur) => acc + cur.capacity, 0) / activeWh.length) : 0;
     const totalSkus = warehouses.reduce((acc, cur) => acc + cur.skus, 0);
-    const criticalCount = warehouses.filter(w => w.capacity >= 80).length;
+    const criticalCount = activeWh.filter(w => w.capacity >= 80).length;
 
     return { total, avgCapacity, totalSkus, criticalCount };
   }, [warehouses]);
@@ -143,9 +144,9 @@ const WarehousePage = () => {
 
         const matchesStatus =
           statusFilter === 'ALL' ||
-          (statusFilter === 'HIGH_CAPACITY' && w.capacity >= 80) ||
-          (statusFilter === 'ACTIVE' && w.status === 'ACTIVE') ||
-          (statusFilter === 'FULL' && w.status === 'FULL');
+          (statusFilter === 'HIGH_CAPACITY' && w.capacity >= 80 && w.isActive) ||
+          (statusFilter === 'ACTIVE' && w.isActive) ||
+          (statusFilter === 'FULL' && w.status === 'FULL' && w.isActive);
 
         return matchesSearch && matchesStatus;
       })
@@ -157,25 +158,23 @@ const WarehousePage = () => {
       });
   }, [warehouses, searchQuery, statusFilter, sortBy]);
 
-  // Handle Form Submission - Admin Only
+  // Handle Form Submission - Create
   const handleAddWarehouse = async (e) => {
     e.preventDefault();
-    if (!newWh.id || !newWh.name || !newWh.location) return;
-
-    const sizeNum = Number(newWh.size.replace(/[^0-9]/g, '')) || 18000;
+    if (!newWh.code || !newWh.name) return;
 
     const payload = {
-      code: newWh.id.toUpperCase(),
+      code: newWh.code.toUpperCase(),
       name: newWh.name,
-      addressLine1: newWh.location,
-      city: newWh.location,
-      state: '',
-      country: 'Malaysia',
+      addressLine1: newWh.city,
+      city: newWh.city,
+      state: newWh.state,
+      country: newWh.country,
       postalCode: '',
       latitude: null,
       longitude: null,
-      totalCapacity: sizeNum,
-      managerId: user?.id || null
+      totalCapacity: parseInt(newWh.totalCapacity) || 0,
+      managerId: newWh.managerId ? parseInt(newWh.managerId) : null
     };
 
     try {
@@ -185,13 +184,13 @@ const WarehousePage = () => {
 
         // Reset Form & Close Drawer
         setNewWh({
-          id: '',
+          code: '',
           name: '',
-          location: '',
-          capacity: 50,
-          manager: MANAGERS[0],
-          staff: 5,
-          size: ''
+          city: '',
+          state: '',
+          country: 'Malaysia',
+          totalCapacity: 20000,
+          managerId: ''
         });
         setDrawerOpen(false);
 
@@ -206,12 +205,49 @@ const WarehousePage = () => {
     }
   };
 
-  // Handle soft deletion - Admin Only
-  const handleDeleteWarehouse = async (dbId) => {
+  // Handle Edit/Update Form Submit
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    if (!editingWarehouse.code || !editingWarehouse.name) return;
+
+    const payload = {
+      code: editingWarehouse.code.toUpperCase(),
+      name: editingWarehouse.name,
+      city: editingWarehouse.city,
+      state: editingWarehouse.state,
+      country: editingWarehouse.country,
+      totalCapacity: parseInt(editingWarehouse.totalCapacity) || 0,
+      managerId: editingWarehouse.managerId ? parseInt(editingWarehouse.managerId) : null,
+      isActive: editingWarehouse.isActive
+    };
+
     try {
-      const response = await warehouseApi.delete(dbId);
+      const response = await warehouseApi.update(editingWarehouse.dbId, payload);
+      if (response.isSuccess) {
+        showToast('Warehouse updated successfully', 'success');
+        setEditingWarehouse(null);
+        fetchWarehouses();
+      } else {
+        showToast(response.message || 'Failed to update warehouse', 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      showToast(err.response?.data?.errors?.[0] || err.response?.data?.message || 'Failed to update warehouse', 'error');
+    }
+  };
+
+  // Handle soft deletion trigger
+  const handleDeleteWarehouse = (dbId) => {
+    setDeleteWarehouseId(dbId);
+  };
+
+  const confirmDeleteWarehouse = async () => {
+    if (!deleteWarehouseId) return;
+    try {
+      const response = await warehouseApi.delete(deleteWarehouseId);
       if (response.isSuccess) {
         showToast('Warehouse deleted successfully', 'success');
+        setDeleteWarehouseId(null);
         fetchWarehouses();
       } else {
         showToast(response.message || 'Failed to delete warehouse', 'error');
@@ -222,36 +258,25 @@ const WarehousePage = () => {
     }
   };
 
-  // Handle reassigning manager - Admin Only
-  const handleReassignManager = async (e) => {
-    e.preventDefault();
-    if (!selectedWarehouseForManager) return;
-
-    setReassignLoading(true);
+  // Handle active status toggle directly from the card
+  const handleToggleActive = async (wh) => {
     try {
-      const val = newManagerId === 'unassigned' || !newManagerId ? null : Number(newManagerId);
-
-      const response = await userApi.reassignManager(selectedWarehouseForManager.dbId, val);
+      const response = await warehouseApi.update(wh.dbId, { isActive: !wh.isActive });
       if (response.isSuccess) {
-        showToast('Warehouse manager reassigned successfully', 'success');
-        setSelectedWarehouseForManager(null);
-        setNewManagerId('');
+        showToast(`Warehouse ${wh.isActive ? 'deactivated' : 'activated'} successfully`, 'success');
         fetchWarehouses();
       } else {
-        showToast(response.message || 'Failed to reassign manager', 'error');
+        showToast(response.message || 'Failed to update warehouse status', 'error');
       }
     } catch (err) {
       console.error(err);
-      showToast(err.response?.data?.message || 'Failed to reassign manager', 'error');
-    } finally {
-      setReassignLoading(false);
+      showToast(err.response?.data?.message || 'Failed to update warehouse status', 'error');
     }
   };
 
   if (loading) {
     return (
       <div className="p-4 md:p-6 max-w-[1200px] mx-auto min-h-[calc(100vh-4rem)] flex flex-col gap-5">
-        {/* Shimmering Header Skeleton */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-pulse">
           <div className="space-y-2.5">
             <div className="h-7 w-48 bg-slate-200 rounded-xl"></div>
@@ -260,14 +285,12 @@ const WarehousePage = () => {
           <div className="h-9.5 w-36 bg-slate-200 rounded-xl"></div>
         </div>
 
-        {/* Shimmering Stats Skeleton */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="bg-slate-100/70 border border-slate-100 rounded-2xl h-24"></div>
           ))}
         </div>
 
-        {/* Shimmering Toolbar Skeleton */}
         <div className="bg-white rounded-xl p-3.5 border border-slate-100 shadow-3xs flex flex-col md:flex-row justify-between gap-4 animate-pulse">
           <div className="h-9 w-full md:max-w-md bg-slate-100 rounded-xl"></div>
           <div className="flex gap-3.5">
@@ -276,7 +299,6 @@ const WarehousePage = () => {
           </div>
         </div>
 
-        {/* Shimmering Grid Skeleton */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 animate-pulse">
           {[...Array(3)].map((_, i) => (
             <div key={i} className="bg-slate-50/70 border border-slate-100 rounded-2xl h-[280px]"></div>
@@ -294,7 +316,7 @@ const WarehousePage = () => {
         <p className="text-xs font-semibold text-slate-400 max-w-sm leading-normal">{error}</p>
         <button
           onClick={fetchWarehouses}
-          className="px-4.5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[12px] rounded-xl transition-all border-none cursor-pointer"
+          className="px-4.5 py-2.5 bg-[#704efe] hover:bg-[#5c3edd] text-white font-bold text-[12px] rounded-xl transition-all border-none cursor-pointer"
         >
           Try Again
         </button>
@@ -311,7 +333,7 @@ const WarehousePage = () => {
           <h1 className="text-xl font-black text-slate-800 flex items-center gap-2.5 tracking-tight uppercase">
             Facility Network
             <span className="text-[10px] font-black bg-indigo-50 border border-indigo-100/60 text-indigo-600 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-              {warehouses.length} Active
+              {warehouses.filter(w => w.isActive).length} Active
             </span>
           </h1>
           <p className="text-[10px] font-bold text-slate-400 mt-1 tracking-wider uppercase leading-none">
@@ -321,7 +343,7 @@ const WarehousePage = () => {
         {isAdmin && (
           <button
             onClick={() => setDrawerOpen(true)}
-            className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[10px] uppercase tracking-wider rounded-xl shadow-md shadow-indigo-100 transition-all flex items-center gap-1.5 self-start sm:self-auto border-none cursor-pointer"
+            className="px-4.5 py-2.5 bg-black hover:bg-zinc-900 text-white font-black text-[10px] uppercase tracking-wider rounded-xl transition-all flex items-center gap-1.5 self-start sm:self-auto border-none cursor-pointer"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -349,10 +371,21 @@ const WarehousePage = () => {
         filteredWarehouses={filteredWarehouses}
         isAdmin={isAdmin}
         onDelete={handleDeleteWarehouse}
-        onEditManager={(wh) => {
-          setSelectedWarehouseForManager(wh);
-          setNewManagerId(wh.managerId ? wh.managerId.toString() : '');
+        onEdit={(wh) => {
+          setEditingWarehouse({
+            dbId: wh.dbId,
+            code: wh.id,
+            name: wh.name,
+            city: wh.city,
+            state: wh.state,
+            country: wh.country,
+            totalCapacity: wh.totalCapacity,
+            managerId: wh.managerId ? wh.managerId.toString() : '',
+            isActive: wh.isActive
+          });
         }}
+        onViewDetails={(wh) => setDetailWarehouse(wh)}
+        onToggleActive={handleToggleActive}
       />
 
       {/* ── Slide-Over Form Drawer ── */}
@@ -362,30 +395,28 @@ const WarehousePage = () => {
         newWh={newWh}
         setNewWh={setNewWh}
         onSubmit={handleAddWarehouse}
-        managers={MANAGERS}
+        managers={managersList}
       />
 
-      {/* ── Reassign Manager Modal ── */}
-      {selectedWarehouseForManager && (
+      {/* ── View Detail Modal ── */}
+      {detailWarehouse && (
         <div className="fixed inset-0 z-50 overflow-hidden flex items-center justify-center">
-          {/* Dim Overlay Backdrop with Frosted Blur */}
           <div
-            onClick={() => setSelectedWarehouseForManager(null)}
-            className="absolute inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity duration-300"
+            onClick={() => setDetailWarehouse(null)}
+            className="absolute inset-0 bg-[#11121d]/40 backdrop-blur-sm transition-opacity duration-300"
           ></div>
 
-          {/* Glassmorphic Card Container */}
-          <div className="relative bg-white/95 backdrop-blur-md rounded-2xl border border-slate-100 p-6 shadow-2xl w-full max-w-md mx-4 z-50 transform scale-100 transition-all duration-300">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+          <div className="relative bg-white rounded-3xl border border-[#eff1f5] p-6.5 shadow-2xl w-full max-w-lg mx-4 z-50 transform scale-100 transition-all duration-300">
+            <div className="flex items-center justify-between border-b border-[#eff1f5] pb-4 mb-4">
               <div>
-                <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider">Reassign Warehouse Manager</h3>
-                <p className="text-[9px] font-bold text-slate-400 mt-0.5 tracking-wider uppercase">
-                  {selectedWarehouseForManager.name} ({selectedWarehouseForManager.id})
+                <h3 className="text-xs font-black text-slate-805 uppercase tracking-wider">Warehouse Detail Analysis</h3>
+                <p className="text-[10px] font-black text-slate-400 mt-0.5 tracking-wider uppercase">
+                  {detailWarehouse.name} ({detailWarehouse.id})
                 </p>
               </div>
               <button
-                onClick={() => setSelectedWarehouseForManager(null)}
-                className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-50 rounded-xl transition-all border-none bg-transparent cursor-pointer"
+                onClick={() => setDetailWarehouse(null)}
+                className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-50 rounded-2xl transition-all border-none bg-transparent cursor-pointer"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -393,31 +424,197 @@ const WarehousePage = () => {
               </button>
             </div>
 
-            <form onSubmit={handleReassignManager} className="space-y-4">
-              {/* Current Assignment Details */}
-              <div className="bg-slate-50/70 rounded-xl p-3.5 border border-slate-200/40 flex flex-col gap-2">
-                <div className="flex justify-between text-[10px] font-black uppercase">
-                  <span className="text-slate-400 tracking-wider">Current Manager</span>
-                  <span className="text-slate-700 font-extrabold">{selectedWarehouseForManager.manager}</span>
+            <div className="space-y-4">
+              {/* Capacity meter */}
+              <div className="bg-slate-50/50 rounded-2xl p-4.5 border border-[#eff1f5]">
+                <div className="flex justify-between items-center mb-2.5">
+                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider">Storage Capacity Occupied</span>
+                  <span className={`text-[11px] font-black px-2.5 py-0.5 rounded-xl border ${!detailWarehouse.isActive
+                      ? 'bg-slate-50 text-slate-500 border-slate-200'
+                      : detailWarehouse.capacity >= 90
+                        ? 'bg-rose-50 text-rose-650 border-rose-100'
+                        : 'bg-emerald-50 text-emerald-650 border-emerald-100'
+                    }`}>
+                    {detailWarehouse.isActive ? `${detailWarehouse.capacity}%` : 'Offline'}
+                  </span>
                 </div>
-                <div className="flex justify-between text-[10px] font-black uppercase">
-                  <span className="text-slate-400 tracking-wider">Storage Capacity</span>
-                  <span className="text-slate-700 font-extrabold">{selectedWarehouseForManager.size}</span>
+                <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden relative">
+                  {detailWarehouse.isActive && (
+                    <div
+                      className={`absolute h-full rounded-full transition-all duration-700 ${detailWarehouse.color === 'red'
+                          ? 'bg-gradient-to-r from-rose-500 to-red-650'
+                          : detailWarehouse.color === 'amber'
+                            ? 'bg-gradient-to-r from-amber-500 to-orange-500'
+                            : 'bg-gradient-to-r from-emerald-400 to-teal-500'
+                        }`}
+                      style={{ width: `${detailWarehouse.capacity}%` }}
+                    ></div>
+                  )}
                 </div>
               </div>
 
-              {/* Select New Manager Dropdown */}
+              {/* Data Grid */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-slate-50/20 rounded-2xl p-3 border border-[#eff1f5] flex flex-col justify-center">
+                  <span className="text-[8px] font-black text-[#8a8b9d] uppercase tracking-widest leading-none">Code</span>
+                  <span className="text-xs font-black text-slate-800 mt-1">{detailWarehouse.id}</span>
+                </div>
+                <div className="bg-slate-50/20 rounded-2xl p-3 border border-[#eff1f5] flex flex-col justify-center">
+                  <span className="text-[8px] font-black text-[#8a8b9d] uppercase tracking-widest leading-none">Status</span>
+                  <span className="text-xs font-black text-slate-800 mt-1">
+                    {detailWarehouse.isActive ? 'Active / Operational' : 'Inactive / Offline'}
+                  </span>
+                </div>
+                <div className="bg-slate-50/20 rounded-2xl p-3 border border-[#eff1f5] flex flex-col justify-center">
+                  <span className="text-[8px] font-black text-[#8a8b9d] uppercase tracking-widest leading-none">Stock Categories (SKUs)</span>
+                  <span className="text-xs font-black text-slate-800 mt-1">{detailWarehouse.skus} Categories</span>
+                </div>
+                <div className="bg-slate-50/20 rounded-2xl p-3 border border-[#eff1f5] flex flex-col justify-center">
+                  <span className="text-[8px] font-black text-[#8a8b9d] uppercase tracking-widest leading-none">Total Stock Count</span>
+                  <span className="text-xs font-black text-slate-800 mt-1">{detailWarehouse.stockOnHand?.toLocaleString() || 0} Units</span>
+                </div>
+                <div className="bg-slate-50/20 rounded-2xl p-3 border border-[#eff1f5] flex flex-col justify-center">
+                  <span className="text-[8px] font-black text-[#8a8b9d] uppercase tracking-widest leading-none">Total Area Capacity</span>
+                  <span className="text-xs font-black text-slate-800 mt-1">{detailWarehouse.size}</span>
+                </div>
+                <div className="bg-slate-50/20 rounded-2xl p-3 border border-[#eff1f5] flex flex-col justify-center">
+                  <span className="text-[8px] font-black text-[#8a8b9d] uppercase tracking-widest leading-none">Assigned Manager</span>
+                  <span className="text-xs font-black text-slate-800 mt-1">{detailWarehouse.manager}</span>
+                </div>
+              </div>
+
+              {/* Location details */}
+              <div className="bg-slate-50/20 rounded-2xl p-3 border border-[#eff1f5] flex flex-col justify-center">
+                <span className="text-[8px] font-black text-[#8a8b9d] uppercase tracking-widest leading-none">Facility Address Location</span>
+                <span className="text-xs font-black text-slate-800 mt-1">{detailWarehouse.location}</span>
+                <span className="text-[9px] font-black text-slate-400 mt-1 uppercase tracking-wider">
+                  City: {detailWarehouse.city || 'N/A'} | State: {detailWarehouse.state || 'N/A'} | Country: {detailWarehouse.country || 'N/A'}
+                </span>
+              </div>
+            </div>
+
+            <div className="border-t border-[#eff1f5] pt-4 mt-6 flex justify-end">
+              <button
+                onClick={() => setDetailWarehouse(null)}
+                className="px-5 py-2.5 bg-[#202231] hover:bg-[#313346] text-white font-black text-[10px] uppercase tracking-wider rounded-2xl transition-all border-none cursor-pointer"
+              >
+                Close details
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Edit Warehouse Modal ── */}
+      {editingWarehouse && (
+        <div className="fixed inset-0 z-50 overflow-hidden flex items-center justify-center">
+          <div
+            onClick={() => setEditingWarehouse(null)}
+            className="absolute inset-0 bg-[#11121d]/40 backdrop-blur-sm transition-opacity duration-300"
+          ></div>
+
+          <div className="relative bg-white rounded-3xl border border-[#eff1f5] p-6.5 shadow-2xl w-full max-w-md mx-4 z-50 transform scale-100 transition-all duration-300">
+            <div className="flex items-center justify-between border-b border-[#eff1f5] pb-4 mb-4">
               <div>
-                <label className="block text-[10px] font-black text-slate-450 uppercase tracking-widest mb-1.5">Select New Manager</label>
+                <h3 className="text-xs font-black text-slate-805 uppercase tracking-wider">Update Warehouse Info</h3>
+                <p className="text-[10px] font-bold text-slate-400 mt-0.5 tracking-wider uppercase">
+                  Modify operational details
+                </p>
+              </div>
+              <button
+                onClick={() => setEditingWarehouse(null)}
+                className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-50 rounded-2xl transition-all border-none bg-transparent cursor-pointer"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <form onSubmit={handleEditSubmit} className="space-y-4">
+              {/* Code */}
+              <div>
+                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Warehouse Code</label>
+                <input
+                  type="text"
+                  required
+                  value={editingWarehouse.code || ''}
+                  onChange={(e) => setEditingWarehouse({ ...editingWarehouse, code: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-slate-50 border border-[#eff1f5] focus:border-indigo-500 focus:bg-white rounded-2xl text-[12.5px] outline-none font-bold text-slate-700 transition-all shadow-3xs"
+                />
+              </div>
+
+              {/* Name */}
+              <div>
+                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Warehouse Name</label>
+                <input
+                  type="text"
+                  required
+                  value={editingWarehouse.name || ''}
+                  onChange={(e) => setEditingWarehouse({ ...editingWarehouse, name: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-slate-50 border border-[#eff1f5] focus:border-indigo-500 focus:bg-white rounded-2xl text-[12.5px] outline-none font-bold text-slate-700 transition-all shadow-3xs"
+                />
+              </div>
+
+              {/* Location Info */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">City</label>
+                  <input
+                    type="text"
+                    required
+                    value={editingWarehouse.city || ''}
+                    onChange={(e) => setEditingWarehouse({ ...editingWarehouse, city: e.target.value })}
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-[#eff1f5] focus:border-indigo-500 focus:bg-white rounded-2xl text-[12.5px] outline-none font-bold text-slate-700 transition-all shadow-3xs"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">State</label>
+                  <input
+                    type="text"
+                    required
+                    value={editingWarehouse.state || ''}
+                    onChange={(e) => setEditingWarehouse({ ...editingWarehouse, state: e.target.value })}
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-[#eff1f5] focus:border-indigo-500 focus:bg-white rounded-2xl text-[12.5px] outline-none font-bold text-slate-700 transition-all shadow-3xs"
+                  />
+                </div>
+              </div>
+
+              {/* Country & Capacity */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Country</label>
+                  <input
+                    type="text"
+                    required
+                    value={editingWarehouse.country || ''}
+                    onChange={(e) => setEditingWarehouse({ ...editingWarehouse, country: e.target.value })}
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-[#eff1f5] focus:border-indigo-500 focus:bg-white rounded-2xl text-[12.5px] outline-none font-bold text-slate-700 transition-all shadow-3xs"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Capacity (sq ft)</label>
+                  <input
+                    type="number"
+                    required
+                    min="1"
+                    value={editingWarehouse.totalCapacity || ''}
+                    onChange={(e) => setEditingWarehouse({ ...editingWarehouse, totalCapacity: parseInt(e.target.value) || 0 })}
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-[#eff1f5] focus:border-indigo-500 focus:bg-white rounded-2xl text-[12.5px] outline-none font-bold text-slate-700 transition-all shadow-3xs"
+                  />
+                </div>
+              </div>
+
+              {/* Manager */}
+              <div>
+                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Manager Selection</label>
                 <div className="relative">
                   <select
-                    required
-                    value={newManagerId}
-                    onChange={(e) => setNewManagerId(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-slate-50/70 border border-slate-200/50 focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-100 rounded-xl text-xs outline-none font-bold text-slate-700 appearance-none cursor-pointer transition-all shadow-3xs"
+                    value={editingWarehouse.managerId || ''}
+                    onChange={(e) => setEditingWarehouse({ ...editingWarehouse, managerId: e.target.value })}
+                    className="w-full px-4 py-2.5 bg-white border border-[#eff1f5] focus:border-indigo-500 rounded-2xl text-[12.5px] outline-none font-bold text-slate-700 appearance-none cursor-pointer transition-all shadow-3xs"
                   >
-                    <option value="">-- Choose active manager --</option>
-                    <option value="unassigned">None (Unassign Manager)</option>
+                    <option value="">-- Choose manager --</option>
                     {managersList.map((m) => (
                       <option key={m.id} value={m.id.toString()}>
                         {m.fullName} ({m.email})
@@ -430,24 +627,78 @@ const WarehousePage = () => {
                 </div>
               </div>
 
-              {/* Actions */}
-              <div className="flex items-center gap-3 border-t border-slate-100 pt-4 mt-6">
+              {/* Active Toggle Option */}
+              <div className="flex items-center gap-3 py-1 bg-slate-50 px-3.5 rounded-2xl border border-[#eff1f5]">
+                <input
+                  type="checkbox"
+                  id="isActiveToggle"
+                  checked={editingWarehouse.isActive}
+                  onChange={(e) => setEditingWarehouse({ ...editingWarehouse, isActive: e.target.checked })}
+                  className="w-4 h-4 accent-[#704efe] rounded border-slate-350 focus:ring-[#704efe] cursor-pointer"
+                />
+                <label htmlFor="isActiveToggle" className="text-[11px] font-black text-[#202231] uppercase tracking-wider cursor-pointer select-none">
+                  Facility is Active & Operational
+                </label>
+              </div>
+
+              {/* Form Buttons */}
+              <div className="flex items-center gap-3 border-t border-[#eff1f5] pt-4 mt-6">
                 <button
                   type="button"
-                  onClick={() => setSelectedWarehouseForManager(null)}
-                  className="flex-1 py-2.5 bg-white hover:bg-slate-50 border border-slate-200/80 text-slate-500 font-black text-[10px] uppercase tracking-wider rounded-xl transition-all cursor-pointer text-center"
+                  onClick={() => setEditingWarehouse(null)}
+                  className="flex-1 py-3 bg-white hover:bg-slate-50 border border-[#eff1f5] text-slate-500 font-black text-[10px] uppercase tracking-wider rounded-2xl transition-all cursor-pointer text-center"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  disabled={reassignLoading}
-                  className="flex-1 py-2.5 text-white font-black text-[10px] uppercase tracking-wider rounded-xl shadow-md transition-all cursor-pointer text-center bg-indigo-600 hover:bg-indigo-700 shadow-indigo-100"
+                  className="flex-1 py-3 text-white font-black text-[10px] uppercase tracking-wider rounded-2xl shadow-md transition-all cursor-pointer text-center bg-[#704efe] hover:bg-[#5c3edd] shadow-indigo-100/30"
                 >
-                  {reassignLoading ? 'Saving...' : 'Reassign'}
+                  Save Changes
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Delete Confirmation Modal ── */}
+      {deleteWarehouseId && (
+        <div className="fixed inset-0 z-50 overflow-hidden flex items-center justify-center">
+          <div
+            onClick={() => setDeleteWarehouseId(null)}
+            className="absolute inset-0 bg-[#11121d]/40 backdrop-blur-sm transition-opacity duration-300"
+          ></div>
+
+          <div className="relative bg-white rounded-3xl border border-[#eff1f5] p-6.5 shadow-2xl w-full max-w-sm mx-4 z-50 transform scale-100 transition-all duration-300">
+            <div className="text-center space-y-4">
+              <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center text-lg mx-auto font-black">
+                ⚠️
+              </div>
+              <div>
+                <h3 className="text-xs font-black text-slate-805 uppercase tracking-wider">Confirm Delete Facility</h3>
+                <p className="text-[10px] font-bold text-slate-400 mt-2 leading-relaxed uppercase">
+                  Are you sure you want to delete this warehouse? This is a soft delete operation and will deactivate the facility from active operations.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 border-t border-[#eff1f5] pt-4 mt-6">
+              <button
+                type="button"
+                onClick={() => setDeleteWarehouseId(null)}
+                className="flex-1 py-3 bg-white hover:bg-slate-50 border border-[#eff1f5] text-slate-500 font-black text-[10px] uppercase tracking-wider rounded-2xl transition-all cursor-pointer text-center"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmDeleteWarehouse}
+                className="flex-1 py-3 text-white font-black text-[10px] uppercase tracking-wider rounded-2xl shadow-md transition-all cursor-pointer text-center bg-rose-600 hover:bg-rose-700 shadow-rose-100"
+              >
+                Confirm Delete
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -180,7 +180,7 @@ const AdjustStockModal = ({
                 </svg>
               </div>
               <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider">
-                Adjust Inventory Stock
+                Adjust Stock Levels
               </h3>
             </div>
             <button
@@ -461,7 +461,7 @@ const AdjustStockModal = ({
               <button
                 type="submit"
                 disabled={submitting}
-                className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white border-none rounded-xl py-2.5 text-xs font-black tracking-wide uppercase shadow-sm shadow-indigo-100 transition-colors disabled:opacity-50 cursor-pointer"
+                className="flex-1 bg-black hover:bg-zinc-900 text-white border-none rounded-xl py-2.5 text-xs font-black tracking-wide uppercase transition-colors disabled:opacity-50 cursor-pointer"
               >
                 {submitting ? 'Applying...' : 'Apply adjustment →'}
               </button>

@@ -15,7 +15,7 @@ const MainLayout = () => {
   }
 
   return (
-    <div className="flex h-screen bg-[#F8FAFC] overflow-hidden">
+    <div className="flex h-screen bg-[#f4f5f9] overflow-hidden">
       {/* Backdrop overlay for mobile screen viewports */}
       {sidebarOpen && (
         <div 

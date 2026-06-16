@@ -84,7 +84,7 @@ const RegisterPage = () => {
             />
             <div>
               <div className="logo-text">VeloSync</div>
-              <div className="logo-sub">Inventory Optimizer</div>
+              <div className="logo-sub">Stock Optimizer</div>
             </div>
           </div>
           <div className="left-body">
@@ -113,7 +113,7 @@ const RegisterPage = () => {
           </div>
 
           <div className="role-info">
-            ℹ️ Registering as <strong>{role === '2' ? 'Warehouse Manager' : 'Procurement Manager'}</strong>. Your account needs admin approval before you can log in.
+            Registering as <strong>{role === '2' ? 'Warehouse Manager' : 'Procurement Manager'}</strong>. Your account needs admin approval before you can log in.
           </div>
 
           <form onSubmit={handleRegister}>

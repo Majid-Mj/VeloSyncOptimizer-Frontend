@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 
 const GeneratePurchaseOrderModal = ({
@@ -7,35 +7,64 @@ const GeneratePurchaseOrderModal = ({
   suppliers,
   warehouses,
   products,
-  onSubmit
+  onSubmit,
+  prefillData = null
 }) => {
   const [supplierId, setSupplierId] = useState('');
   const [warehouseId, setWarehouseId] = useState('');
   const [expectedDate, setExpectedDate] = useState('');
   const [lines, setLines] = useState([{ productId: '', quantityOrdered: 1, unitCost: 0.00 }]);
   const [submitting, setSubmitting] = useState(false);
+  const [initialized, setInitialized] = useState(false);
 
   const { user } = useSelector(state => state.auth);
   const isManager = user?.role === 'WarehouseManager';
   const managerWarehouseId = user?.warehouseId?.toString();
 
-  const allowedWarehouses = isManager && managerWarehouseId
-    ? warehouses.filter(w => w.id.toString() === managerWarehouseId)
-    : warehouses;
+  const allowedWarehouses = useMemo(() => {
+    return isManager && managerWarehouseId
+      ? warehouses.filter(w => w.id.toString() === managerWarehouseId)
+      : warehouses;
+  }, [warehouses, isManager, managerWarehouseId]);
 
   useEffect(() => {
-    if (isOpen) {
-      setSupplierId(suppliers[0]?.id || '');
-      setWarehouseId(allowedWarehouses[0]?.id || '');
+    if (!isOpen) {
+      setInitialized(false);
+      return;
+    }
+
+    if (isOpen && !initialized) {
+      setSupplierId(prefillData?.supplierId || suppliers[0]?.id || '');
+      setWarehouseId(prefillData?.warehouseId || allowedWarehouses[0]?.id || '');
+
+      if (prefillData) {
+        if (prefillData.lines && prefillData.lines.length > 0) {
+          setLines(prefillData.lines.map(l => ({
+            productId: l.productId?.toString() || '',
+            quantityOrdered: l.quantityOrdered || 1,
+            unitCost: l.unitCost || 0.00
+          })));
+        } else if (prefillData.productId) {
+          setLines([{
+            productId: prefillData.productId.toString(),
+            quantityOrdered: prefillData.quantityOrdered || 1,
+            unitCost: prefillData.unitCost || 0.00
+          }]);
+        } else {
+          setLines([{ productId: '', quantityOrdered: 1, unitCost: 0.00 }]);
+        }
+      } else {
+        setLines([{ productId: '', quantityOrdered: 1, unitCost: 0.00 }]);
+      }
 
       // Default expected date: 7 days from today
       const weekFromNow = new Date();
       weekFromNow.setDate(weekFromNow.getDate() + 7);
       setExpectedDate(weekFromNow.toISOString().split('T')[0]);
 
-      setLines([{ productId: '', quantityOrdered: 1, unitCost: 0.00 }]);
+      setInitialized(true);
     }
-  }, [isOpen, suppliers, allowedWarehouses]);
+  }, [isOpen, initialized, prefillData, suppliers, allowedWarehouses]);
 
   if (!isOpen) return null;
 
@@ -56,8 +85,8 @@ const GeneratePurchaseOrderModal = ({
       newLines[idx].productId = value;
       // Prefill standard product cost if available (from backend product list)
       const selectedProd = products.find(p => p.id === Number(value));
-      if (selectedProd && selectedProd.price) {
-        newLines[idx].unitCost = Number(selectedProd.price); // or unitCost fallback
+      if (selectedProd) {
+        newLines[idx].unitCost = Number(selectedProd.unitCost ?? selectedProd.price ?? 0);
       }
     } else if (field === 'quantityOrdered') {
       newLines[idx].quantityOrdered = Math.max(1, Number(value));
@@ -85,6 +114,7 @@ const GeneratePurchaseOrderModal = ({
       supplierId: Number(supplierId),
       warehouseId: Number(warehouseId),
       expectedDate: new Date(expectedDate).toISOString(),
+      suggestionId: prefillData?.suggestionId ? Number(prefillData.suggestionId) : null,
       lines: validLines.map(l => ({
         productId: Number(l.productId),
         quantityOrdered: Number(l.quantityOrdered),
@@ -117,7 +147,7 @@ const GeneratePurchaseOrderModal = ({
             <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
             </svg>
-            Requisition New Purchase Order
+            Create New Purchase Order
           </h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 bg-transparent border-none cursor-pointer">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">

@@ -12,6 +12,8 @@ const ReceivePurchaseOrderModal = ({
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [isStockConfirmed, setIsStockConfirmed] = useState(false);
+  const [actualDate, setActualDate] = useState('');
+  const [notes, setNotes] = useState('');
 
   useEffect(() => {
     if (isOpen && selectedPO?.id) {
@@ -41,6 +43,8 @@ const ReceivePurchaseOrderModal = ({
 
       fetchPO();
       setIsStockConfirmed(false); // Reset confirmation state on PO change
+      setActualDate(new Date().toISOString().split('T')[0]);
+      setNotes('');
     }
   }, [isOpen, selectedPO]);
 
@@ -65,7 +69,11 @@ const ReceivePurchaseOrderModal = ({
     };
 
     try {
-      await onSubmit(selectedPO.id, payload);
+      await onSubmit(selectedPO.id, payload, {
+        supplierId: selectedPO.supplierId,
+        actualDate: new Date(actualDate).toISOString(),
+        notes: notes
+      });
       onClose();
     } catch (err) {
       console.error(err);
@@ -133,9 +141,33 @@ const ReceivePurchaseOrderModal = ({
               ))}
             </div>
 
+            {/* Actual Delivery Details (feeds supplier scoring) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-emerald-50/10 border border-emerald-100/55 p-3.5 rounded-xl">
+              <div>
+                <label className="block text-[9px] font-extrabold text-emerald-800 uppercase tracking-wider mb-1">Actual Delivery Date</label>
+                <input
+                  type="date"
+                  value={actualDate}
+                  onChange={(e) => setActualDate(e.target.value)}
+                  className="w-full bg-white text-xs font-bold text-gray-700 px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-emerald-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-[9px] font-extrabold text-emerald-800 uppercase tracking-wider mb-1">Delivery Comments / Notes</label>
+                <input
+                  type="text"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="e.g. Received intact, on time"
+                  className="w-full bg-white text-xs font-bold text-gray-700 px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-emerald-500"
+                />
+              </div>
+            </div>
+
             {/* Intake warning note */}
-            <div className="bg-[#f8fafc] border border-gray-100 p-3 rounded-xl text-[10px] text-gray-400 leading-normal font-medium">
-              💡 <strong>Process Guidance:</strong> Clicking "Submit Delivery Intake" records this intake session and increments warehouse inventory stock count levels automatically.
+            <div className="bg-[#f8fafc] border border-gray-150 p-3 rounded-xl text-[10px] text-gray-400 leading-normal font-medium">
+              💡 <strong>Process Guidance:</strong> Clicking "Submit Delivery Intake" records this intake session, updates Supplier delivery scores, and increments warehouse inventory stock count levels automatically.
             </div>
 
             {/* Stock Confirmation Checkbox */}

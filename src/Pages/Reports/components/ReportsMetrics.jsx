@@ -4,7 +4,7 @@ const ReportsMetrics = ({ analytics, loading }) => {
   const metrics = [
     {
       id: 'inbound',
-      title: 'Total units received (30d)',
+      title: 'Total units received',
       value: analytics ? analytics.totalUnitsReceived.toLocaleString() : '0',
       trend: '▲ 14%',
       icon: (
@@ -17,7 +17,7 @@ const ReportsMetrics = ({ analytics, loading }) => {
     },
     {
       id: 'outbound',
-      title: 'Total units dispatched (30d)',
+      title: 'Total units dispatched',
       value: analytics ? analytics.totalUnitsDispatched.toLocaleString() : '0',
       trend: '▼ 3%',
       icon: (
@@ -30,7 +30,7 @@ const ReportsMetrics = ({ analytics, loading }) => {
     },
     {
       id: 'stockout',
-      title: 'Stockout events (30d)',
+      title: 'Stockout events',
       value: analytics ? analytics.stockoutEvents.toString() : '0',
       trend: '▲ 2',
       icon: (

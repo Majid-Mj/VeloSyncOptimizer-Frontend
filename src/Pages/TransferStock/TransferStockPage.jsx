@@ -297,24 +297,24 @@ const TransferStockPage = () => {
   };
 
   return (
-    <div className="p-4 md:p-6 max-w-[1200px] mx-auto min-h-[calc(100vh-4rem)] flex flex-col gap-4.5 box-border">
+    <div className="p-4 md:p-6 max-w-[1200px] mx-auto min-h-[calc(100vh-4rem)] flex flex-col gap-5 box-border">
 
       {/* Page Header */}
       <div className="flex-shrink-0 flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-black text-slate-800 flex items-center gap-2.5 tracking-tight uppercase">
+          <h1 className="text-xl font-black text-slate-850 flex items-center gap-2.5 tracking-tight uppercase">
             Transfer Stock
-            <span className="text-[10px] font-black bg-indigo-50 border border-indigo-100/60 text-indigo-600 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+            <span className="text-[10px] font-black bg-[#f0ebff] border border-indigo-150 text-[#704efe] px-2.5 py-0.5 rounded-full uppercase tracking-wider">
               SignalR Live Sync
             </span>
           </h1>
-          <p className="text-[10px] font-bold text-slate-400 mt-1 tracking-wider uppercase leading-none">
+          <p className="text-[10px] font-bold text-[#8a8b9d] mt-1 tracking-wider uppercase leading-none">
             Relocate product stock quantities across facility hubs instantly
           </p>
         </div>
         <button
           onClick={() => navigate('/dashboard/stock-movement')}
-          className="px-4 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-slate-500 font-black text-[10px] uppercase tracking-wider rounded-xl transition-all flex items-center gap-1.5 cursor-pointer animate-fade-in"
+          className="px-4 py-2 bg-slate-50/20 hover:bg-slate-50 text-slate-500 hover:text-slate-800 border border-[#eff1f5] hover:border-slate-350 font-black text-[10px] uppercase tracking-wider rounded-2xl transition-all flex items-center gap-1.5 cursor-pointer animate-fade-in"
         >
           ← Back to Ledger
         </button>
@@ -339,7 +339,7 @@ const TransferStockPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch w-full flex-1">
 
         {/* CARD 1: TRANSFER FORM */}
-        <div className="h-[520px]">
+        <div className="h-[465px]">
           <TransferForm
             isManager={user?.role === 'WarehouseManager'}
             products={products}
@@ -375,7 +375,7 @@ const TransferStockPage = () => {
         </div>
 
         {/* CARD 2: RECENT TRANSFERS */}
-        <div className="h-[520px]">
+        <div className="h-[465px]">
           <RecentTransfersList
             movements={movements}
             parseTransferRoute={parseTransferRoute}

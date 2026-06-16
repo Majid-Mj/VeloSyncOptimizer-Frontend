@@ -4,89 +4,83 @@ const StatCard = ({ icon, label, value, trend, trendType = 'up', color = 'blue' 
   const isUp = trendType === 'up';
   const isDown = trendType === 'down';
 
-  // Beautiful background matching shades, glowing shadows, and thematic borders
-  const styleConfigs = {
+  // HSL tailored color palette based on mockup
+  const colorConfigs = {
+    indigo: {
+      iconBg: 'bg-[#f0ebff]',
+      iconText: 'text-[#704efe]'
+    },
     blue: {
-      cardBg: 'bg-gradient-to-br from-white to-indigo-50/40 hover:to-indigo-50/80',
-      border: 'border-slate-100 hover:border-indigo-300/60',
-      iconBg: 'bg-indigo-500 text-white shadow-sm shadow-indigo-200',
-      glow: 'hover:shadow-[0_10px_20px_-8px_rgba(79,70,229,0.15)]',
-      sparkColor: '#4F46E5',
-      sparkGradient: 'url(#blueGrad)',
-      bgGrad: 'from-indigo-500/5 to-transparent',
+      iconBg: 'bg-[#e5f3ff]',
+      iconText: 'text-[#0066ff]'
     },
     green: {
-      cardBg: 'bg-gradient-to-br from-white to-emerald-50/40 hover:to-emerald-50/80',
-      border: 'border-slate-100 hover:border-emerald-300/60',
-      iconBg: 'bg-emerald-500 text-white shadow-sm shadow-emerald-200',
-      glow: 'hover:shadow-[0_10px_20px_-8px_rgba(16,185,129,0.15)]',
-      sparkColor: '#0D9488',
-      sparkGradient: 'url(#greenGrad)',
-      bgGrad: 'from-teal-500/5 to-transparent',
+      iconBg: 'bg-[#ebf8f2]',
+      iconText: 'text-[#10b981]'
+    },
+    emerald: {
+      iconBg: 'bg-[#ebf8f2]',
+      iconText: 'text-[#10b981]'
     },
     amber: {
-      cardBg: 'bg-gradient-to-br from-white to-amber-50/45 hover:to-amber-50/80',
-      border: 'border-slate-100 hover:border-amber-300/60',
-      iconBg: 'bg-amber-500 text-white shadow-sm shadow-amber-200',
-      glow: 'hover:shadow-[0_10px_20px_-8px_rgba(245,158,11,0.15)]',
-      sparkColor: '#D97706',
-      sparkGradient: 'url(#amberGrad)',
-      bgGrad: 'from-amber-500/5 to-transparent',
+      iconBg: 'bg-[#fff8eb]',
+      iconText: 'text-[#f59e0b]'
+    },
+    rose: {
+      iconBg: 'bg-[#fff5f5]',
+      iconText: 'text-[#fa5252]'
     },
     red: {
-      cardBg: 'bg-gradient-to-br from-white to-rose-50/40 hover:to-rose-50/80',
-      border: 'border-slate-100 hover:border-rose-300/60',
-      iconBg: 'bg-rose-500 text-white shadow-sm shadow-rose-200',
-      glow: 'hover:shadow-[0_10px_20px_-8px_rgba(225,29,72,0.15)]',
-      sparkColor: '#E11D48',
-      sparkGradient: 'url(#redGrad)',
-      bgGrad: 'from-rose-500/5 to-transparent',
+      iconBg: 'bg-[#fff5f5]',
+      iconText: 'text-[#fa5252]'
     }
   };
 
-  const currentStyle = styleConfigs[color] || styleConfigs.blue;
+  const currentColors = colorConfigs[color] || colorConfigs.blue;
 
   const trendClasses = {
-    up: 'bg-emerald-100/80 text-emerald-800 border-emerald-200',
-    down: 'bg-rose-100/80 text-rose-800 border-rose-200',
-    neutral: 'bg-slate-100 text-slate-700 border-slate-200'
+    up: 'bg-[#e8fbf0] text-[#10b981]',
+    down: 'bg-[#fff5f5] text-[#fa5252]',
+    neutral: 'bg-slate-100 text-slate-600'
   };
 
   return (
-    <div className={`relative rounded-3xl p-4 border shadow-[0_4px_16px_-4px_rgba(148,163,184,0.06)] flex flex-col justify-between overflow-hidden transition-all duration-300 hover:-translate-y-1 ${currentStyle.cardBg} ${currentStyle.border} ${currentStyle.glow} group cursor-pointer`}>
+    <div className="bg-white border border-[#eff1f5] rounded-3xl p-4 shadow-[0_8px_30px_rgba(0,0,0,0.012)] transition-all duration-300 hover:shadow-[0_20px_40px_rgba(16,24,40,0.03)] hover:-translate-y-0.5 group flex flex-col justify-between min-h-[142px]">
       
-      {/* Decorative colored background gradient pulse */}
-      <div className={`absolute inset-0 bg-gradient-to-tr ${currentStyle.bgGrad} pointer-events-none opacity-40`} />
-
-      {/* Concise header block - smaller padding and heights */}
-      <div className="relative z-10 flex items-center justify-between">
-        {/* Compact Thematic Icon Container */}
-        <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 ${currentStyle.iconBg}`}>
-          {React.cloneElement(icon, { className: 'w-4 h-4' })}
+      {/* 1. Top row: Icon Badge */}
+      <div className="flex items-center">
+        <div className={`w-9.5 h-9.5 rounded-2xl flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-105 group-hover:rotate-1 ${currentColors.iconBg} ${currentColors.iconText}`}>
+          {React.cloneElement(icon, { className: 'w-4.5 h-4.5' })}
         </div>
+      </div>
 
-        {/* Compact Trend Tag */}
-        {trend && (
-          <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-[9.5px] font-black border leading-none shadow-sm transition-all duration-300 ${trendClasses[trendType]}`}>
+      {/* 2. Middle section: Label & Value */}
+      <div className="mt-3 flex-1 flex flex-col justify-center">
+        <span className="text-[9.5px] font-black text-[#8a8b9d] uppercase tracking-wider leading-none">
+          {label}
+        </span>
+        <span className="text-[22px] font-black text-[#11121d] tracking-tight mt-1.5 leading-none">
+          {value}
+        </span>
+      </div>
+
+      {/* 3. Bottom row: Trend Pill & Description */}
+      {trend && (
+        <div className="mt-3.5 flex items-center gap-2 border-t border-slate-50 pt-2.5">
+          <span className={`flex items-center gap-1 px-2 py-0.5 rounded-lg text-[9px] font-black tracking-wide ${trendClasses[trendType] || trendClasses.neutral}`}>
             <span className="text-[7.5px]">{isUp ? '▲' : isDown ? '▼' : '■'}</span>
-            <span>{trend}</span>
-          </div>
-        )}
-      </div>
-
-      {/* Concise metrics block - height reduced from mt-6 to mt-3.5 */}
-      <div className="relative z-10 mt-3.5 flex items-end justify-between">
-        <div>
-          <span className="text-2xl font-black text-slate-900 tracking-tight leading-none">
-            {value}
+            <span>{trend.replace(' vs last mo', '').replace('Awaiting admin approval', 'Pending').replace('Needs supplier follow-up', 'Urgent').replace('Personal activity summary', 'Personal').replace('Budget awareness metric', 'Budget').replace('Live DB Sync', 'Sync OK').replace('Live DB Valuation', 'Value OK').replace('100% capacity OK', 'Optimal').replace('critical stockouts', 'Critical').replace('new warnings', 'Warning')}</span>
           </span>
-          <h4 className="text-[10px] font-extrabold text-slate-400 mt-2 uppercase tracking-wider leading-none">
-            {label}
-          </h4>
+          <span className="text-[9.5px] font-bold text-[#8a8b9d]">
+            {trend.toLowerCase().includes('approval') || trend.toLowerCase().includes('follow-up') 
+              ? 'Status' 
+              : trend.toLowerCase().includes('db')
+              ? 'Database State'
+              : 'Than Last Month'}
+          </span>
         </div>
+      )}
 
-
-      </div>
     </div>
   );
 };

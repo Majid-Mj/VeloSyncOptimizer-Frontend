@@ -16,21 +16,21 @@ const WarehouseDrawer = ({
       {/* Dim Overlay Backdrop with Frosted Blur */}
       <div
         onClick={onClose}
-        className="absolute inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity duration-300"
+        className="absolute inset-0 bg-[#11121d]/40 backdrop-blur-sm transition-opacity duration-300"
       ></div>
 
       {/* Sliding Panel */}
-      <div className="relative w-full max-w-md bg-white/95 backdrop-blur-md shadow-2xl border-l border-slate-100 flex flex-col h-full z-50 animate-slide-in-right">
+      <div className="relative w-full max-w-md bg-white border-l border-[#eff1f5] flex flex-col h-full z-50 animate-slide-in-right shadow-2xl">
 
         {/* Panel Header */}
-        <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/40 flex items-center justify-between flex-shrink-0">
+        <div className="px-6 py-5 border-b border-[#eff1f5] flex items-center justify-between flex-shrink-0">
           <div>
-            <h3 className="text-sm font-black text-slate-800 uppercase tracking-wider">Create Warehouse</h3>
+            <h3 className="text-sm font-black text-slate-805 uppercase tracking-wider">Create Warehouse</h3>
             <p className="text-[10px] font-bold text-slate-400 mt-0.5 tracking-wider uppercase">Add operational facility details</p>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-50 rounded-xl transition-all border-none bg-transparent cursor-pointer"
+            className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-50 rounded-2xl transition-all border-none bg-transparent cursor-pointer"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -44,97 +44,98 @@ const WarehouseDrawer = ({
 
             {/* ID Input */}
             <div>
-              <label className="block text-[10px] font-black text-slate-450 uppercase tracking-widest mb-1.5">Warehouse Code</label>
+              <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Warehouse Code</label>
               <input
                 type="text"
                 required
                 placeholder="e.g. WH-KL-06"
-                value={newWh.id}
-                onChange={(e) => setNewWh({ ...newWh, id: e.target.value })}
-                className="w-full px-3.5 py-2.5 bg-slate-50/70 border border-slate-200/50 focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-100 rounded-xl text-xs outline-none font-bold text-slate-700 transition-all shadow-3xs"
+                value={newWh.code}
+                onChange={(e) => setNewWh({ ...newWh, code: e.target.value })}
+                className="w-full px-4 py-2.5 bg-slate-50 border border-[#eff1f5] focus:border-indigo-500 focus:bg-white rounded-2xl text-[12.5px] outline-none font-semibold text-slate-700 transition-all shadow-3xs"
               />
             </div>
 
             {/* Name Input */}
             <div>
-              <label className="block text-[10px] font-black text-slate-450 uppercase tracking-widest mb-1.5">Warehouse Name</label>
+              <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Warehouse Name</label>
               <input
                 type="text"
                 required
                 placeholder="e.g. Klang Valley Distribution Hub"
                 value={newWh.name}
                 onChange={(e) => setNewWh({ ...newWh, name: e.target.value })}
-                className="w-full px-3.5 py-2.5 bg-slate-50/70 border border-slate-200/50 focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-100 rounded-xl text-xs outline-none font-bold text-slate-700 transition-all shadow-3xs"
+                className="w-full px-4 py-2.5 bg-slate-50 border border-[#eff1f5] focus:border-indigo-500 focus:bg-white rounded-2xl text-[12.5px] outline-none font-semibold text-slate-700 transition-all shadow-3xs"
               />
             </div>
 
-            {/* Location Input */}
+            {/* City Input */}
             <div>
-              <label className="block text-[10px] font-black text-slate-450 uppercase tracking-widest mb-1.5">Location / City</label>
+              <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">City</label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. Shah Alam"
+                value={newWh.city}
+                onChange={(e) => setNewWh({ ...newWh, city: e.target.value })}
+                className="w-full px-4 py-2.5 bg-slate-50 border border-[#eff1f5] focus:border-indigo-500 focus:bg-white rounded-2xl text-[12.5px] outline-none font-semibold text-slate-700 transition-all shadow-3xs"
+              />
+            </div>
+
+            {/* State Input */}
+            <div>
+              <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">State</label>
               <input
                 type="text"
                 required
                 placeholder="e.g. Selangor"
-                value={newWh.location}
-                onChange={(e) => setNewWh({ ...newWh, location: e.target.value })}
-                className="w-full px-3.5 py-2.5 bg-slate-50/70 border border-slate-200/50 focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-100 rounded-xl text-xs outline-none font-bold text-slate-700 transition-all shadow-3xs"
+                value={newWh.state}
+                onChange={(e) => setNewWh({ ...newWh, state: e.target.value })}
+                className="w-full px-4 py-2.5 bg-slate-50 border border-[#eff1f5] focus:border-indigo-500 focus:bg-white rounded-2xl text-[12.5px] outline-none font-semibold text-slate-700 transition-all shadow-3xs"
               />
             </div>
 
-            {/* Size Area Input */}
+            {/* Country Input */}
             <div>
-              <label className="block text-[10px] font-black text-slate-450 uppercase tracking-widest mb-1.5">Storage Size</label>
+              <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Country</label>
               <input
                 type="text"
-                placeholder="e.g. 18,500 sq ft"
-                value={newWh.size}
-                onChange={(e) => setNewWh({ ...newWh, size: e.target.value })}
-                className="w-full px-3.5 py-2.5 bg-slate-50/70 border border-slate-200/50 focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-100 rounded-xl text-xs outline-none font-bold text-slate-700 transition-all shadow-3xs"
+                required
+                placeholder="e.g. Malaysia"
+                value={newWh.country}
+                onChange={(e) => setNewWh({ ...newWh, country: e.target.value })}
+                className="w-full px-4 py-2.5 bg-slate-50 border border-[#eff1f5] focus:border-indigo-500 focus:bg-white rounded-2xl text-[12.5px] outline-none font-semibold text-slate-700 transition-all shadow-3xs"
               />
             </div>
 
-            {/* Staff Count Input */}
+            {/* Capacity Input */}
             <div>
-              <label className="block text-[10px] font-black text-slate-450 uppercase tracking-widest mb-1.5">Active Staff Count</label>
+              <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Total Capacity (sq ft)</label>
               <input
                 type="number"
+                required
                 min="1"
-                value={newWh.staff}
-                onChange={(e) => setNewWh({ ...newWh, staff: e.target.value })}
-                className="w-full px-3.5 py-2.5 bg-slate-50/70 border border-slate-200/50 focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-100 rounded-xl text-xs outline-none font-bold text-slate-700 transition-all shadow-3xs"
-              />
-            </div>
-
-            {/* Capacity Slide Range */}
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <label className="text-[10px] font-black text-slate-450 uppercase tracking-widest">Storage Capacity Utilized</label>
-                <span className="text-[9.5px] font-black text-indigo-600 bg-indigo-50 border border-indigo-100/50 px-2 py-0.5 rounded-lg">{newWh.capacity}%</span>
-              </div>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={newWh.capacity}
-                onChange={(e) => setNewWh({ ...newWh, capacity: e.target.value })}
-                className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600 outline-none"
+                placeholder="e.g. 25000"
+                value={newWh.totalCapacity}
+                onChange={(e) => setNewWh({ ...newWh, totalCapacity: parseInt(e.target.value) || 0 })}
+                className="w-full px-4 py-2.5 bg-slate-50 border border-[#eff1f5] focus:border-indigo-500 focus:bg-white rounded-2xl text-[12.5px] outline-none font-semibold text-slate-700 transition-all shadow-3xs"
               />
             </div>
 
             {/* Manager Selection */}
             <div>
-              <label className="block text-[10px] font-black text-slate-450 uppercase tracking-widest mb-1.5">Assigned Manager</label>
+              <label className="block text-[10px] font-black text-[#202231] uppercase tracking-widest mb-1.5">Assigned Manager</label>
               <div className="relative">
                 <select
-                  value={newWh.manager}
-                  onChange={(e) => setNewWh({ ...newWh, manager: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-50/70 border border-slate-200/50 focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-100 rounded-xl text-xs outline-none font-bold text-slate-700 appearance-none cursor-pointer transition-all shadow-3xs"
+                  value={newWh.managerId}
+                  onChange={(e) => setNewWh({ ...newWh, managerId: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-white border border-[#eff1f5] focus:border-indigo-500 rounded-2xl text-[12.5px] outline-none font-semibold text-slate-700 appearance-none cursor-pointer transition-all shadow-3xs"
                 >
-                  {managers.map(manager => (
-                    <option key={manager} value={manager}>{manager}</option>
+                  <option value="">-- Select active manager --</option>
+                  {managers.map(m => (
+                    <option key={m.id} value={m.id}>{m.fullName} ({m.email})</option>
                   ))}
                 </select>
-                <svg className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <svg className="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="m6 9 6 6 6-6" />
                 </svg>
               </div>
@@ -142,17 +143,17 @@ const WarehouseDrawer = ({
           </div>
 
           {/* Form Actions Footer */}
-          <div className="flex items-center gap-3.5 border-t border-slate-100 pt-4 mt-6">
+          <div className="flex items-center gap-3.5 border-t border-[#eff1f5] pt-4 mt-6">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-2.5 bg-white hover:bg-slate-50 border border-slate-200/80 text-slate-500 font-black text-[10px] uppercase tracking-wider rounded-xl transition-all cursor-pointer text-center"
+              className="flex-1 py-3 bg-white hover:bg-slate-50 border border-[#eff1f5] text-slate-500 font-black text-[10px] uppercase tracking-wider rounded-2xl transition-all cursor-pointer text-center"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex-1 py-2.5 text-white font-black text-[10px] uppercase tracking-wider rounded-xl shadow-md transition-all cursor-pointer text-center bg-indigo-600 hover:bg-indigo-700 shadow-indigo-100"
+              className="flex-1 py-3 text-white font-black text-[10px] uppercase tracking-wider rounded-2xl shadow-md transition-all cursor-pointer text-center bg-[#704efe] hover:bg-[#5c3edd] shadow-indigo-100/30"
             >
               Save Warehouse
             </button>

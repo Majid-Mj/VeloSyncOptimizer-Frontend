@@ -28,5 +28,15 @@ export const userApi = {
   reassignManager: async (warehouseId, managerId) => {
     const response = await apiClient.patch('/users/reassign-manager', { warehouseId, managerId });
     return response.data;
+  },
+
+  getAll: async () => {
+    const response = await apiClient.get('/users');
+    return response.data;
+  },
+
+  toggleStatus: async (userId, isActive) => {
+    const response = await apiClient.patch('/users/toggle-status', { userId, isActive });
+    return response.data;
   }
 };

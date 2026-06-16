@@ -19,9 +19,10 @@ const parseUserFromData = (data) => {
       const claims = JSON.parse(jsonPayload);
       
       // Extract role claim
-      const roleClaim = claims["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || claims["role"];
-      email = claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"] || claims["email"] || '';
+      const roleClaim = claims["role"] || claims["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+      email = claims["email"] || claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"] || '';
       const tokenWarehouseId = claims["WarehouseId"] || claims["warehouseId"];
+      const tokenUserId = claims["nameid"] || claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"] || claims["sub"] || claims["id"] || claims["userId"];
       
       if (roleClaim === 'Administrator') {
         role = 'Admin';
@@ -31,6 +32,9 @@ const parseUserFromData = (data) => {
       
       if (tokenWarehouseId) {
         parsedData.warehouseId = Number(tokenWarehouseId);
+      }
+      if (tokenUserId) {
+        parsedData.id = Number(tokenUserId);
       }
     } catch (e) {
       console.error("JWT parse error:", e);

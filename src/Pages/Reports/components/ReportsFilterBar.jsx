@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 
 const ReportsFilterBar = ({
   timeRange,
@@ -11,6 +11,8 @@ const ReportsFilterBar = ({
   showWarehousePicker = true
 }) => {
   const timePills = ['7 days', '30 days', '90 days', 'Custom'];
+  const fromInputRef = useRef(null);
+  const toInputRef = useRef(null);
 
   return (
     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -61,26 +63,50 @@ const ReportsFilterBar = ({
       </div>
 
       {/* Date Inputs Range */}
-      <div className="flex items-center gap-2.5 bg-white border border-slate-100 rounded-xl px-3 py-1.5 shadow-3xs text-[11px] font-bold text-slate-600 max-w-sm">
-        <input
-          type="text"
-          value={dateRange.from}
-          onChange={(e) => onDateRangeChange({ ...dateRange, from: e.target.value })}
-          className="w-20 text-center bg-transparent border-none text-slate-700 outline-none text-[11px] font-black"
-        />
-        <svg className="w-3.5 h-3.5 text-slate-400 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
-        <span className="text-slate-400 font-semibold mx-1">to</span>
-        <input
-          type="text"
-          value={dateRange.to}
-          onChange={(e) => onDateRangeChange({ ...dateRange, to: e.target.value })}
-          className="w-20 text-center bg-transparent border-none text-slate-700 outline-none text-[11px] font-black"
-        />
-        <svg className="w-3.5 h-3.5 text-slate-400 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
+      <div className="flex items-center gap-2 bg-white border border-slate-100 rounded-xl px-3 py-1.5 shadow-3xs text-[11px] font-bold text-slate-600 max-w-sm">
+        <div className="flex items-center gap-1.5">
+          <input
+            ref={fromInputRef}
+            type="date"
+            value={dateRange.from || ''}
+            onChange={(e) => onDateRangeChange({ ...dateRange, from: e.target.value })}
+            onClick={(e) => e.target.showPicker?.()}
+            className="bg-transparent border-none text-slate-700 outline-none text-[11px] font-black w-[110px] cursor-pointer"
+          />
+          <svg 
+            onClick={() => fromInputRef.current?.showPicker?.()}
+            className="w-3.5 h-3.5 text-slate-400 cursor-pointer hover:text-slate-600 transition-colors" 
+            fill="none" 
+            viewBox="0 0 24 24" 
+            stroke="currentColor" 
+            strokeWidth="2.5"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+        </div>
+
+        <span className="text-slate-400 font-semibold mx-0.5">to</span>
+
+        <div className="flex items-center gap-1.5">
+          <input
+            ref={toInputRef}
+            type="date"
+            value={dateRange.to || ''}
+            onChange={(e) => onDateRangeChange({ ...dateRange, to: e.target.value })}
+            onClick={(e) => e.target.showPicker?.()}
+            className="bg-transparent border-none text-slate-700 outline-none text-[11px] font-black w-[110px] cursor-pointer"
+          />
+          <svg 
+            onClick={() => toInputRef.current?.showPicker?.()}
+            className="w-3.5 h-3.5 text-slate-400 cursor-pointer hover:text-slate-600 transition-colors" 
+            fill="none" 
+            viewBox="0 0 24 24" 
+            stroke="currentColor" 
+            strokeWidth="2.5"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+        </div>
       </div>
     </div>
   );

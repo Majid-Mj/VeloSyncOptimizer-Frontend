@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { HubConnectionBuilder } from '@microsoft/signalr';
 import alertsApi from '../../api/alerts.api';
 
 const LiveAlerts = () => {
+  const navigate = useNavigate();
   const { user } = useSelector(state => state.auth);
   const userRole = user?.role || '';
   const [alerts, setAlerts] = useState([]);
@@ -426,7 +428,15 @@ const LiveAlerts = () => {
               {(userRole === 'ProcurementOfficer' || userRole === 'Administrator') ? (
                 <button
                   onClick={() => {
-                    handleAction(detailModalAlert.id, 'Reorder');
+                    navigate('/dashboard/purchase-orders', {
+                      state: {
+                        prefill: {
+                          warehouseId: detailModalAlert.warehouseId,
+                          productId: detailModalAlert.productId,
+                          quantityOrdered: 15
+                        }
+                      }
+                    });
                     setDetailModalAlert(null);
                   }}
                   className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-black py-2.5 px-3 rounded-xl shadow-md shadow-indigo-200 active:scale-95 transition-all border-none cursor-pointer text-center"

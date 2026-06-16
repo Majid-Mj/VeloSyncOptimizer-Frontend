@@ -1,10 +1,110 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
+@theme {
+  --color-dark-sidebar: #11121d;
+  --color-active-pill: #202231;
+  --color-dashboard-bg: #f4f5f9;
+}
+
 body {
   font-family: 'Plus Jakarta Sans', sans-serif;
+  background-color: #f4f5f9;
+  color: #1e293b;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom premium scrollbar style */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 99px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Base custom interactive styles */
+.premium-card {
+  background: #ffffff;
+  border: 1px solid #eff1f5;
+  border-radius: 24px;
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.015), 0 4px 12px -3px rgba(0, 0, 0, 0.005);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.premium-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 40px -5px rgba(16, 24, 40, 0.03), 0 6px 18px -4px rgba(16, 24, 40, 0.01);
+  border-color: #e2e8f0;
+}
+
+.premium-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.premium-table th {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #8a8b9d;
+  background-color: #fafbfd;
+  border-bottom: 1px solid #f1f3f7;
+  padding: 14px 18px;
+}
+
+.premium-table td {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  border-bottom: 1px solid #f1f3f7;
+  padding: 14px 18px;
+  transition: background-color 0.15s ease;
+}
+
+.premium-table tr:hover td {
+  background-color: #fafbfd;
+}
+
+.premium-input {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.premium-input:focus {
+  background: #ffffff;
+  border-color: #704efe;
+  box-shadow: 0 0 0 4px rgba(112, 78, 254, 0.1);
+}
+
+
+/* Hide scrollbar utility */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 /* Enterprise-Grade Global Toast Card Styles */
@@ -52,11 +152,13 @@ body {
 }
 
 .toast-card.success::before {
-  background: #10b981; /* emerald-500 */
+  background: #10b981;
+  /* emerald-500 */
 }
 
 .toast-card.error::before {
-  background: #ef4444; /* red-500 */
+  background: #ef4444;
+  /* red-500 */
 }
 
 /* Icon Wrapper */
@@ -71,13 +173,17 @@ body {
 }
 
 .toast-card.success .toast-icon-wrapper {
-  background: #ecfdf5; /* emerald-50 */
-  color: #10b981; /* emerald-500 */
+  background: #ecfdf5;
+  /* emerald-50 */
+  color: #10b981;
+  /* emerald-500 */
 }
 
 .toast-card.error .toast-icon-wrapper {
-  background: #fef2f2; /* red-50 */
-  color: #ef4444; /* red-500 */
+  background: #fef2f2;
+  /* red-50 */
+  color: #ef4444;
+  /* red-500 */
 }
 
 .toast-icon {
@@ -101,17 +207,20 @@ body {
 }
 
 .toast-card.success .toast-title {
-  color: #065f46; /* emerald-800 */
+  color: #065f46;
+  /* emerald-800 */
 }
 
 .toast-card.error .toast-title {
-  color: #991b1b; /* red-800 */
+  color: #991b1b;
+  /* red-800 */
 }
 
 .toast-message {
   font-size: 12px;
   font-weight: 550;
-  color: #64748b; /* slate-500 */
+  color: #64748b;
+  /* slate-500 */
   line-height: 1.4;
   white-space: normal;
   word-break: break-word;
@@ -153,7 +262,138 @@ body {
   from {
     transform: scaleX(1);
   }
+
   to {
     transform: scaleX(0);
+  }
+}
+
+/* Custom Dropdown Animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ==========================================
+   PREMIUM CORPORATE PRINT / PDF EXPORT
+   ========================================== */
+@media print {
+  /* Force browsers to render color backgrounds, gradients, and borders */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    box-shadow: none !important;
+  }
+
+  /* Hide screen navigation UI, buttons, tabs, scrollbars, and sidebar */
+  aside,
+  header,
+  .no-print,
+  button,
+  select,
+  input[type="date"],
+  svg,
+  iframe {
+    display: none !important;
+  }
+
+  /* Reset layout constraints and overflow behaviors for clean pagination */
+  html, body, #root, .flex.h-screen, main, .min-h-screen, .flex-1 {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: block !important;
+  }
+
+  main {
+    overflow-y: visible !important;
+  }
+
+  /* Adjust page margins and body layout for A4 size */
+  @page {
+    size: A4 portrait;
+    margin: 1.5cm;
+  }
+
+  /* Align inner page layout and remove max-width limitations */
+  .p-4, .md:p-6, .max-w-\[1600px\] {
+    padding: 0 !important;
+    max-width: none !important;
+    margin: 0 !important;
+    width: auto !important;
+  }
+
+  /* Prevent elements from breaking awkwardly across page boundaries */
+  .premium-card, tr, table, canvas, .grid {
+    page-break-inside: avoid !important;
+  }
+
+  /* Ensure card containers are clean and presentable */
+  .premium-card {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 12px !important;
+    padding: 18px !important;
+    margin-bottom: 1.25rem !important;
+  }
+
+  /* Make metrics grid display in a solid 2x2 grid when printed */
+  .grid-cols-4 {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 1rem !important;
+  }
+
+  .grid-cols-2 {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 1.5rem !important;
+  }
+
+  /* Ensure tables look incredibly sharp and vector-drawn */
+  .premium-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    border: 1px solid #e2e8f0 !important;
+  }
+
+  .premium-table th {
+    background-color: #f8fafc !important;
+    color: #0f172a !important;
+    border-bottom: 2px solid #cbd5e1 !important;
+    padding: 10px 12px !important;
+    font-size: 10px !important;
+  }
+
+  .premium-table td {
+    border-bottom: 1px solid #e2e8f0 !important;
+    padding: 10px 12px !important;
+    font-size: 11px !important;
+    color: #334155 !important;
+  }
+
+  /* Typography color refinement */
+  .text-slate-900, .text-slate-700 {
+    color: #0f172a !important;
+  }
+
+  .text-slate-500, .text-slate-400 {
+    color: #64748b !important;
   }
 }
