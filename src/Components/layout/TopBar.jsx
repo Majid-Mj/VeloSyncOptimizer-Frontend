@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { HubConnectionBuilder } from '@microsoft/signalr';
+import { useSignalR } from '../../context/SignalRContext';
 import { logout } from '../../Store/authSlice';
 import warehouseApi from '../../api/warehouse.api';
 import { authApi } from '../../api/auth.api';
@@ -12,6 +12,7 @@ const TopBar = ({ onMenuClick }) => {
   const location = useLocation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const connection = useSignalR();
 
   // References
   const dropdownRef = useRef(null);
@@ -127,15 +128,9 @@ const TopBar = ({ onMenuClick }) => {
   useEffect(() => {
     fetchAlerts();
 
-    // Establish SignalR connection
-    const hubConnection = new HubConnectionBuilder()
-      .withUrl('http://localhost:5009/hubs/stock', {
-        withCredentials: true
-      })
-      .withAutomaticReconnect()
-      .build();
+    if (!connection) return;
 
-    hubConnection.on('StockAlert', (newAlert) => {
+    const handleStockAlert = (newAlert) => {
       console.log('TopBar received StockAlert SignalR event:', newAlert);
 
       const readIds = getReadAlertIds();
@@ -168,16 +163,14 @@ const TopBar = ({ onMenuClick }) => {
         setUnreadCount(updated.filter(a => !a.isRead).length);
         return updated;
       });
-    });
+    };
 
-    hubConnection.start()
-      .then(() => console.log('TopBar connected to StockHub.'))
-      .catch(err => console.error('TopBar SignalR Hub error:', err));
+    connection.on('StockAlert', handleStockAlert);
 
     return () => {
-      hubConnection.stop().catch(err => console.error('TopBar SignalR cleanup error:', err));
+      connection.off('StockAlert', handleStockAlert);
     };
-  }, [user]);
+  }, [user, connection]);
 
   // Click outside listener for multiple popovers
   useEffect(() => {

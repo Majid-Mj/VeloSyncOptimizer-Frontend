@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { HubConnectionBuilder } from '@microsoft/signalr';
+import { useSignalR } from '../../context/SignalRContext';
 import alertsApi from '../../api/alerts.api';
 
 const LiveAlerts = () => {
   const navigate = useNavigate();
   const { user } = useSelector(state => state.auth);
+  const connection = useSignalR();
   const userRole = user?.role || '';
   const [alerts, setAlerts] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -110,15 +111,9 @@ const LiveAlerts = () => {
   useEffect(() => {
     fetchLiveAlerts();
 
-    // Establish SignalR StockHub connection
-    const hubConnection = new HubConnectionBuilder()
-      .withUrl('http://localhost:5009/hubs/stock', {
-        withCredentials: true
-      })
-      .withAutomaticReconnect()
-      .build();
+    if (!connection) return;
 
-    hubConnection.on('StockAlert', (newAlert) => {
+    const handleStockAlert = (newAlert) => {
       console.log('Received real-time StockAlert:', newAlert);
 
       if (newAlert.isRead) {
@@ -190,18 +185,14 @@ const LiveAlerts = () => {
         }
         return [mappedAlert, ...prev];
       });
-    });
+    };
 
-    hubConnection.start()
-      .then(() => console.log('Successfully connected to StockHub SignalR endpoint.'))
-      .catch(err => console.error('Error establishing SignalR connection to StockHub:', err));
+    connection.on('StockAlert', handleStockAlert);
 
     return () => {
-      hubConnection.stop()
-        .then(() => console.log('Successfully disconnected from StockHub.'))
-        .catch(err => console.error('Error disconnecting from StockHub:', err));
+      connection.off('StockAlert', handleStockAlert);
     };
-  }, [user]);
+  }, [user, connection]);
 
   const handleRefresh = () => {
     fetchLiveAlerts(true);

@@ -30,5 +30,15 @@ export const authApi = {
   logout: async () => {
     const response = await apiClient.post('/auth/logout');
     return response.data;
+  },
+
+  forgotPassword: async (email, clientAppUrl) => {
+    const response = await apiClient.post('/auth/forgot-password', { email, clientAppUrl });
+    return response.data;
+  },
+
+  resetPassword: async (email, token, password, confirmPassword) => {
+    const response = await apiClient.post('/auth/reset-password', { email, token, password, confirmPassword });
+    return response.data;
   }
 };

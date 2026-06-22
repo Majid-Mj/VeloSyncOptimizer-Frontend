@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { authApi } from '../../api/auth.api';
 import { setLoading } from '../../Store/authSlice';
-import './Auth.css';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -67,76 +66,87 @@ const RegisterPage = () => {
     }
   };
 
-  const strengthClass = strength <= 1 ? 'weak' : strength <= 2 ? 'medium' : strength <= 3 ? 'medium' : 'strong';
+  const strengthClass = strength <= 1 ? 'bg-rose-500' : strength <= 3 ? 'bg-amber-500' : 'bg-emerald-500';
   const strengthLabels = ['Enter a password', 'Weak', 'Fair', 'Good', 'Strong'];
   const strengthColors = ['', '#E24B4A', '#BA7517', '#1D9E75', '#085041'];
 
   return (
-    <div className="auth-wrapper">
-      <div className="page active">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 font-sans">
+      <div className="flex w-full max-w-[980px] min-h-[580px] bg-white rounded-[24px] overflow-hidden border border-slate-200/80 shadow-[0_8px_48px_rgba(15,20,40,0.12),0_2px_8px_rgba(15,20,40,0.06)]">
+        
         {/* LEFT PANEL */}
-        <div className="left">
-          <div className="logo">
+        <div className="hidden md:flex md:w-[40%] bg-dark-sidebar flex-col justify-between p-10 relative overflow-hidden">
+          {/* Background shapes */}
+          <div className="absolute w-[360px] h-[360px] rounded-full bg-[radial-gradient(circle,rgba(112,78,254,0.18)_0%,transparent_70%)] -top-[100px] -right-[100px] pointer-events-none"></div>
+          <div className="absolute w-[240px] h-[240px] rounded-full bg-[radial-gradient(circle,rgba(99,210,190,0.08)_0%,transparent_70%)] -bottom-[30px] -left-[60px] pointer-events-none"></div>
+
+          <div className="flex items-center gap-2.5 z-10">
             <img
               src="/logo.png"
               alt="VeloSync"
-              className="logo-img"
+              className="w-[38px] h-[38px] object-contain rounded-xl"
             />
             <div>
-              <div className="logo-text">VeloSync</div>
-              <div className="logo-sub">Stock Optimizer</div>
+              <div className="text-white text-[15px] font-black tracking-wider uppercase">VeloSync</div>
+              <div className="text-white/40 text-[9.5px] font-bold tracking-widest uppercase mt-0.5">Stock Optimizer</div>
             </div>
           </div>
-          <div className="left-body">
-            <div className="left-title">Start optimizing your supply chain today</div>
-            <div className="left-desc">
+          <div className="z-10 my-auto">
+            <div className="text-white text-lg font-extrabold leading-snug mb-2.5 tracking-tight">Start optimizing your supply chain today</div>
+            <div className="text-white/50 text-[12px] leading-relaxed font-medium">
               Join thousands of warehouse teams that use VeloSync to eliminate stockouts and automate purchase orders.
             </div>
-            <div className="feature-list">
-              {['Real-time stock dashboard across all warehouses', '90-day velocity engine predicts stockouts', 'Auto-generated purchase orders via Hangfire', 'Live SignalR alerts — never miss a reorder'].map((text, i) => (
-                <div className="feature" key={i}>
-                  <div className="feature-dot"></div>
-                  <div className="feature-text">{text}</div>
+            <div className="mt-6 flex flex-col gap-3">
+              {[
+                'Multi-Warehouse Inventory Tracking',
+                'AI-Powered Demand Forecasting',
+                'Automated Replenishment & Reorders',
+                'Supplier Performance & Delivery Metrics',
+                'Intra-Warehouse Stock Transfers'
+              ].map((text, i) => (
+                <div className="flex items-center gap-2.5" key={i}>
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#704efe] shrink-0 shadow-[0_0_8px_rgba(112,78,254,0.5)]"></div>
+                  <div className="text-white/70 text-[12px] font-medium">{text}</div>
                 </div>
               ))}
             </div>
           </div>
-          <div className="left-footer">© 2026 VeloSync Optimizer. All rights reserved.</div>
+          <div className="text-white/20 text-[10.5px] font-medium z-10">© 2026 VeloSync Optimizer. All rights reserved.</div>
         </div>
 
         {/* RIGHT PANEL */}
-        <div className="right">
-          <div className="form-title">Create your account</div>
-          <div className="form-sub">
+        <div className="flex-1 p-10 md:p-12 flex flex-col justify-center overflow-y-auto bg-white">
+          <div className="text-[22px] font-black text-slate-900 mb-1 tracking-tight">Create your account</div>
+          <div className="text-[12.5px] text-slate-500 font-semibold mb-6">
             Already have an account?
-            <button className="switch-link" onClick={() => navigate('/login')}> Sign in →</button>
+            <button className="text-indigo-600 font-bold hover:text-indigo-800 hover:underline cursor-pointer bg-transparent border-none text-[12.5px]" onClick={() => navigate('/login')}> Sign in →</button>
           </div>
 
-          <div className="role-info">
+          <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-2.5 text-[11.5px] text-indigo-700 font-bold mb-3.5 leading-relaxed">
             Registering as <strong>{role === '2' ? 'Warehouse Manager' : 'Procurement Manager'}</strong>. Your account needs admin approval before you can log in.
           </div>
 
-          <form onSubmit={handleRegister}>
-            <div className="form-row">
-              <div className="form-group">
-                <label className="form-label">First name</label>
-                <input className="form-input" name="firstName" type="text" placeholder="Arun" required />
+          <form onSubmit={handleRegister} className="space-y-3.5">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-[11.5px] font-bold text-slate-600 mb-1.5 block uppercase tracking-wider">First name</label>
+                <input className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-800 outline-none bg-slate-50 focus:border-indigo-600 focus:bg-white focus:ring-4 focus:ring-indigo-600/10 transition-all placeholder-slate-400" name="firstName" type="text" placeholder="e.g. John" required />
               </div>
-              <div className="form-group">
-                <label className="form-label">Last name</label>
-                <input className="form-input" name="lastName" type="text" placeholder="Kumar" required />
+              <div>
+                <label className="text-[11.5px] font-bold text-slate-600 mb-1.5 block uppercase tracking-wider">Last name</label>
+                <input className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-800 outline-none bg-slate-50 focus:border-indigo-600 focus:bg-white focus:ring-4 focus:ring-indigo-600/10 transition-all placeholder-slate-400" name="lastName" type="text" placeholder="e.g. Doe" required />
               </div>
             </div>
 
-            <div className="form-group">
-              <label className="form-label">Email address</label>
-              <input className="form-input" id="r-email" name="email" type="email" placeholder="arun@velosync.com" required />
+            <div>
+              <label className="text-[11.5px] font-bold text-slate-600 mb-1.5 block uppercase tracking-wider">Email address</label>
+              <input className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-800 outline-none bg-slate-50 focus:border-indigo-600 focus:bg-white focus:ring-4 focus:ring-indigo-600/10 transition-all placeholder-slate-400" id="r-email" name="email" type="email" placeholder="example@company.com" required />
             </div>
 
-            <div className="form-group">
-              <label className="form-label">Position / Role</label>
+            <div>
+              <label className="text-[11.5px] font-bold text-slate-600 mb-1.5 block uppercase tracking-wider">Position / Role</label>
               <select
-                className="form-input"
+                className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-805 outline-none bg-slate-50 focus:border-indigo-600 focus:bg-white focus:ring-4 focus:ring-indigo-600/10 transition-all cursor-pointer"
                 name="role"
                 required
                 value={role}
@@ -145,14 +155,14 @@ const RegisterPage = () => {
                 <option value="2">Warehouse Manager</option>
                 <option value="3">Procurement Manager</option>
               </select>
-              <div className="pwd-label" style={{ marginTop: '4px' }}>Select your primary management responsibility</div>
+              <div className="text-[10.5px] text-slate-400 font-semibold mt-1.5">Select your primary management responsibility</div>
             </div>
 
-            <div className="form-group">
-              <label className="form-label">Password</label>
-              <div className="input-wrap">
+            <div>
+              <label className="text-[11.5px] font-bold text-slate-600 mb-1.5 block uppercase tracking-wider">Password</label>
+              <div className="relative">
                 <input
-                  className="form-input"
+                  className="w-full border border-slate-200 rounded-xl pl-3.5 pr-10 py-2.5 text-xs font-semibold text-slate-800 outline-none bg-slate-50 focus:border-indigo-600 focus:bg-white focus:ring-4 focus:ring-indigo-600/10 transition-all placeholder-slate-400"
                   id="r-pwd"
                   name="password"
                   type={showPwd ? "text" : "password"}
@@ -160,44 +170,44 @@ const RegisterPage = () => {
                   onInput={(e) => checkStrength(e.target.value)}
                   required
                 />
-                <button className="eye-btn" type="button" onClick={() => setShowPwd(!showPwd)}>
-                  <svg viewBox="0 0 24 24" style={{ opacity: showPwd ? 1 : 0.4 }}>
+                <button className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-450 hover:text-slate-600 transition-colors cursor-pointer" type="button" onClick={() => setShowPwd(!showPwd)}>
+                  <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-[1.8]" style={{ opacity: showPwd ? 1 : 0.4 }}>
                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
                   </svg>
                 </button>
               </div>
-              <div className="pwd-strength">
-                <div className="pwd-bars">
+              <div className="mt-2">
+                <div className="flex gap-1 mb-1.5">
                   {[1, 2, 3, 4].map(i => (
-                    <div key={i} className={`pwd-bar ${i <= strength ? strengthClass : ''}`}></div>
+                    <div key={i} className={`h-[3px] flex-1 rounded-full bg-slate-205 transition-colors duration-300 ${i <= strength ? strengthClass : 'bg-slate-200'}`}></div>
                   ))}
                 </div>
-                <div className="pwd-label" style={{ color: strengthColors[strength] }}>{strengthLabels[strength]}</div>
+                <div className="text-[10.5px] font-semibold" style={{ color: strengthColors[strength] }}>{strengthLabels[strength]}</div>
               </div>
             </div>
 
-            <div className="form-group">
-              <label className="form-label">Confirm password</label>
-              <div className="input-wrap">
-                <input className="form-input" name="confirmPassword" type={showCPwd ? "text" : "password"} placeholder="Re-enter your password" required />
-                <button className="eye-btn" type="button" onClick={() => setShowCPwd(!showCPwd)}>
-                  <svg viewBox="0 0 24 24" style={{ opacity: showCPwd ? 1 : 0.4 }}>
+            <div>
+              <label className="text-[11.5px] font-bold text-slate-600 mb-1.5 block uppercase tracking-wider">Confirm password</label>
+              <div className="relative">
+                <input className="w-full border border-slate-200 rounded-xl pl-3.5 pr-10 py-2.5 text-xs font-semibold text-slate-800 outline-none bg-slate-50 focus:border-indigo-600 focus:bg-white focus:ring-4 focus:ring-indigo-600/10 transition-all placeholder-slate-400" name="confirmPassword" type={showCPwd ? "text" : "password"} placeholder="Re-enter your password" required />
+                <button className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-450 hover:text-slate-600 transition-colors cursor-pointer" type="button" onClick={() => setShowCPwd(!showCPwd)}>
+                  <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-[1.8]" style={{ opacity: showCPwd ? 1 : 0.4 }}>
                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
                   </svg>
                 </button>
               </div>
             </div>
 
-            <div className="check-row">
-              <input type="checkbox" id="r-terms" required />
-              <label className="check-label" htmlFor="r-terms">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></label>
+            <div className="flex items-start gap-2 mb-4">
+              <input type="checkbox" id="r-terms" required className="mt-1 accent-indigo-600 w-3.5 h-3.5" />
+              <label className="text-[12px] text-slate-500 leading-normal font-semibold" htmlFor="r-terms">I agree to the <a href="#" className="text-indigo-600 hover:underline font-bold">Terms of Service</a> and <a href="#" className="text-indigo-600 hover:underline font-bold">Privacy Policy</a></label>
             </div>
 
-            <button className={`btn-primary ${storeLoading ? 'loading' : ''}`} type="submit" disabled={storeLoading}>
+            <button className={`w-full bg-black hover:bg-slate-900 text-white font-extrabold text-xs uppercase tracking-wider py-3 px-4 rounded-xl transition-all active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${storeLoading ? 'opacity-70 cursor-not-allowed' : ''}`} type="submit" disabled={storeLoading}>
               {storeLoading ? 'Creating account...' : 'Create account'}
             </button>
 
-            <div className="terms" style={{ marginTop: '10px' }}>
+            <div className="text-[11px] text-slate-400 text-center mt-5 leading-relaxed font-semibold">
               © 2026 VeloSync Optimizer. All rights reserved.
             </div>
           </form>

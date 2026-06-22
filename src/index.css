@@ -332,7 +332,7 @@ body {
   }
 
   /* Align inner page layout and remove max-width limitations */
-  .p-4, .md:p-6, .max-w-\[1600px\] {
+  .p-4, .md\:p-6, .max-w-\[1600px\] {
     padding: 0 !important;
     max-width: none !important;
     margin: 0 !important;

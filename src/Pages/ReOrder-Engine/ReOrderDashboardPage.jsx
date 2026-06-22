@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { HubConnectionBuilder } from '@microsoft/signalr';
+import { useSignalR } from '../../context/SignalRContext';
 
 // Import modular reorder engine widgets
 import ReOrderStats from './ReOrderStats';
@@ -20,6 +20,7 @@ import productApi from '../../api/product.api';
 const ReOrderDashboardPage = () => {
   const { user } = useSelector((s) => s.auth);
   const navigate = useNavigate();
+  const connection = useSignalR();
 
   // Core API states
   const [suggestions, setSuggestions] = useState([]);
@@ -146,14 +147,9 @@ const ReOrderDashboardPage = () => {
 
   // Real-time stock alerts via SignalR
   useEffect(() => {
-    const hubConnection = new HubConnectionBuilder()
-      .withUrl('http://localhost:5009/hubs/stock', {
-        withCredentials: true
-      })
-      .withAutomaticReconnect()
-      .build();
+    if (!connection) return;
 
-    hubConnection.on('StockAlert', (newAlert) => {
+    const handleStockAlert = (newAlert) => {
       console.log('ReOrderDashboardPage received real-time StockAlert:', newAlert);
 
       // Filter real-time alert by active warehouse filter
@@ -191,18 +187,14 @@ const ReOrderDashboardPage = () => {
         }
         return [mappedAlert, ...prev];
       });
-    });
+    };
 
-    hubConnection.start()
-      .then(() => console.log('Successfully connected ReOrderDashboardPage to StockHub.'))
-      .catch(err => console.error('Error establishing SignalR connection in ReOrderDashboardPage:', err));
+    connection.on('StockAlert', handleStockAlert);
 
     return () => {
-      hubConnection.stop()
-        .then(() => console.log('Successfully disconnected ReOrderDashboardPage from StockHub.'))
-        .catch(err => console.error('Error disconnecting ReOrderDashboardPage from StockHub:', err));
+      connection.off('StockAlert', handleStockAlert);
     };
-  }, [user]);
+  }, [user, connection]);
 
   // Find user's assigned warehouse
   const activeWarehouse = useMemo(() => {
