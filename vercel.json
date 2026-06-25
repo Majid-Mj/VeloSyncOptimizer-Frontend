@@ -1,6 +1,14 @@
 {
   "rewrites": [
     {
+      "source": "/api/:path*",
+      "destination": "http://16.16.189.250/api/:path*"
+    },
+    {
+      "source": "/hubs/:path*",
+      "destination": "http://16.16.189.250/hubs/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
