@@ -21,11 +21,13 @@ export const SignalRProvider = ({ children }) => {
       return;
     }
 
-    // Determine Hub URL based on VITE_API_BASE_URL
+    // Determine Hub URL based on VITE_HUB_URL or VITE_API_BASE_URL
     const baseApiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5009/api';
-    const hubUrl = baseApiUrl.endsWith('/api')
-      ? baseApiUrl.substring(0, baseApiUrl.length - 4) + '/hubs/stock'
-      : baseApiUrl + '/hubs/stock';
+    const hubUrl = import.meta.env.VITE_HUB_URL || (
+      baseApiUrl.endsWith('/api')
+        ? baseApiUrl.substring(0, baseApiUrl.length - 4) + '/hubs/stock'
+        : baseApiUrl + '/hubs/stock'
+    );
 
     console.log('Connecting to StockHub at:', hubUrl);
 

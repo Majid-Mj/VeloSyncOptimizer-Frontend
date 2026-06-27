@@ -34,7 +34,25 @@ const LoginPage = () => {
         showToast(response.message || 'Login failed', 'error');
       }
     } catch (error) {
-      const errorMsg = error.response?.data?.errors?.[0] || error.response?.data?.message || 'Connection failed';
+      const data = error.response?.data;
+      let errorMsg = 'Connection failed';
+
+      if (data) {
+        if (data.errors) {
+          if (Array.isArray(data.errors)) {
+            errorMsg = data.errors[0];
+          } else if (typeof data.errors === 'object') {
+            const firstKey = Object.keys(data.errors)[0];
+            if (firstKey && Array.isArray(data.errors[firstKey])) {
+              errorMsg = data.errors[firstKey][0];
+            } else if (firstKey) {
+              errorMsg = data.errors[firstKey];
+            }
+          }
+        } else if (data.message) {
+          errorMsg = data.message;
+        }
+      }
       dispatch(loginFailure(errorMsg));
       showToast(errorMsg, 'error');
     } finally {
