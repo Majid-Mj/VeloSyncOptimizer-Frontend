@@ -204,7 +204,7 @@ const TopBar = ({ onMenuClick }) => {
       ProcurementManager: 'Procurement Manager',
       ProcurementOfficer: 'Procurement Manager',
     };
-    return map[role] ?? 'User';
+    return map[role] ?? '';
   };
 
   const handleLogout = async () => {
@@ -373,9 +373,11 @@ const TopBar = ({ onMenuClick }) => {
               <p className="text-[12px] font-extrabold text-[#11121d] tracking-tight leading-none uppercase">
                 {user?.firstName} {user?.lastName}
               </p>
-              <span className="text-[9px] font-bold text-[#704efe] uppercase tracking-wider block mt-1 leading-none">
-                {getRoleLabel(user?.role)}
-              </span>
+              {getRoleLabel(user?.role) && (
+                <span className="text-[9px] font-bold text-[#704efe] uppercase tracking-wider block mt-1 leading-none">
+                  {getRoleLabel(user?.role)}
+                </span>
+              )}
             </div>
 
             <div
@@ -397,9 +399,11 @@ const TopBar = ({ onMenuClick }) => {
                   <h4 className="text-[13px] font-black text-[#11121d] uppercase tracking-tight truncate leading-none">
                     {user?.firstName} {user?.lastName}
                   </h4>
-                  <span className="text-[9.5px] font-bold text-[#704efe] uppercase tracking-wider block mt-1.5 leading-none">
-                    {getRoleLabel(user?.role)}
-                  </span>
+                  {getRoleLabel(user?.role) && (
+                    <span className="text-[9.5px] font-bold text-[#704efe] uppercase tracking-wider block mt-1.5 leading-none">
+                      {getRoleLabel(user?.role)}
+                    </span>
+                  )}
                 </div>
               </div>
 

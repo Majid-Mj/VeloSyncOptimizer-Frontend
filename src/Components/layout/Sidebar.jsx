@@ -239,7 +239,7 @@ const getRoleLabel = (role) => {
         ProcurementManager: 'Procurement Manager',
         ProcurementOfficer: 'Procurement Manager',
     };
-    return map[role] ?? 'User';
+    return map[role] ?? '';
 };
 
 const getInitials = (user) => {
@@ -384,7 +384,9 @@ const Sidebar = ({ isOpen, onClose }) => {
                                     </span>
                                 </div>
                             ) : (
-                                <div className="text-[#8a8b9d] text-[9.5px] font-bold mt-1.5 uppercase tracking-widest leading-none">{getRoleLabel(user?.role)}</div>
+                                getRoleLabel(user?.role) && (
+                                    <div className="text-[#8a8b9d] text-[9.5px] font-bold mt-1.5 uppercase tracking-widest leading-none">{getRoleLabel(user?.role)}</div>
+                                )
                             )}
                         </div>
                     </div>
@@ -496,9 +498,11 @@ const Sidebar = ({ isOpen, onClose }) => {
                         <div className="text-white text-[12.5px] font-black truncate uppercase leading-none">
                             {user?.firstName} {user?.lastName}
                         </div>
-                        <div className="text-[#8a8b9d] text-[9.5px] font-bold mt-1.5 truncate uppercase tracking-wider leading-none">
-                            {getRoleLabel(user?.role)}
-                        </div>
+                        {getRoleLabel(user?.role) && (
+                            <div className="text-[#8a8b9d] text-[9.5px] font-bold mt-1.5 truncate uppercase tracking-wider leading-none">
+                                {getRoleLabel(user?.role)}
+                            </div>
+                        )}
                     </div>
                 </div>
 
