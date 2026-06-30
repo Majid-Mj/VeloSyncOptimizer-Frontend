@@ -191,9 +191,25 @@ const TopBar = ({ onMenuClick }) => {
     };
   }, [isDropdownOpen, isNotificationsOpen]);
 
+  const getDisplayName = (u) => {
+    if (!u) return '';
+    const first = u.firstName || '';
+    const last = u.lastName || '';
+    if (last.toLowerCase() === 'user') {
+      return first;
+    }
+    return `${first} ${last}`.trim();
+  };
+
   const getInitials = (u) => {
-    const f = u?.firstName?.[0] ?? '';
-    const l = u?.lastName?.[0] ?? '';
+    if (!u) return 'VS';
+    const first = u.firstName || '';
+    const last = u.lastName || '';
+    if (last.toLowerCase() === 'user') {
+      return first.slice(0, 2).toUpperCase() || 'VS';
+    }
+    const f = first[0] ?? '';
+    const l = last[0] ?? '';
     return (f + l).toUpperCase() || 'VS';
   };
 
@@ -371,7 +387,7 @@ const TopBar = ({ onMenuClick }) => {
           >
             <div className="text-right hidden sm:block">
               <p className="text-[12px] font-extrabold text-[#11121d] tracking-tight leading-none uppercase">
-                {user?.firstName} {user?.lastName}
+                {getDisplayName(user)}
               </p>
               {getRoleLabel(user?.role) && (
                 <span className="text-[9px] font-bold text-[#704efe] uppercase tracking-wider block mt-1 leading-none">
@@ -397,7 +413,7 @@ const TopBar = ({ onMenuClick }) => {
                 </div>
                 <div className="min-w-0">
                   <h4 className="text-[13px] font-black text-[#11121d] uppercase tracking-tight truncate leading-none">
-                    {user?.firstName} {user?.lastName}
+                    {getDisplayName(user)}
                   </h4>
                   {getRoleLabel(user?.role) && (
                     <span className="text-[9.5px] font-bold text-[#704efe] uppercase tracking-wider block mt-1.5 leading-none">

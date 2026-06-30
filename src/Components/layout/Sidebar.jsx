@@ -242,9 +242,25 @@ const getRoleLabel = (role) => {
     return map[role] ?? '';
 };
 
+const getDisplayName = (user) => {
+    if (!user) return '';
+    const first = user.firstName || '';
+    const last = user.lastName || '';
+    if (last.toLowerCase() === 'user') {
+        return first;
+    }
+    return `${first} ${last}`.trim();
+};
+
 const getInitials = (user) => {
-    const f = user?.firstName?.[0] ?? '';
-    const l = user?.lastName?.[0] ?? '';
+    if (!user) return 'VS';
+    const first = user.firstName || '';
+    const last = user.lastName || '';
+    if (last.toLowerCase() === 'user') {
+        return first.slice(0, 2).toUpperCase() || 'VS';
+    }
+    const f = first[0] ?? '';
+    const l = last[0] ?? '';
     return (f + l).toUpperCase() || 'VS';
 };
 
@@ -496,7 +512,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                     {/* Info */}
                     <div className="overflow-hidden">
                         <div className="text-white text-[12.5px] font-black truncate uppercase leading-none">
-                            {user?.firstName} {user?.lastName}
+                            {getDisplayName(user)}
                         </div>
                         {getRoleLabel(user?.role) && (
                             <div className="text-[#8a8b9d] text-[9.5px] font-bold mt-1.5 truncate uppercase tracking-wider leading-none">
